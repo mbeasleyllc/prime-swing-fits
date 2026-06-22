@@ -27,17 +27,16 @@ export default function FittingReport() {
   useEffect(() => {
     if (!id || !user) return;
 
-    const loadResults = async () => {
+    const loadData = async () => {
       const sessionId = Array.isArray(id) ? id[0] : id;
 
-      const [recRes, playerRes, swingRes, courseRes, physicalRes, equipmentRes, sessionRes] = await Promise.all([
+      const [recRes, playerRes, swingRes, courseRes, physicalRes, equipmentRes] = await Promise.all([
         supabase.from("fitting_recommendations").select("*").eq("session_id", sessionId).eq("user_id", user.id).single(),
         supabase.from("player_profile").select("*").eq("session_id", sessionId).eq("user_id", user.id).single(),
         supabase.from("swing_profile").select("*").eq("session_id", sessionId).eq("user_id", user.id).single(),
         supabase.from("course_conditions").select("*").eq("session_id", sessionId).eq("user_id", user.id).single(),
         supabase.from("physical_profile").select("*").eq("session_id", sessionId).eq("user_id", user.id).single(),
         supabase.from("current_equipment").select("*").eq("session_id", sessionId).eq("user_id", user.id).single(),
-        supabase.from("fitting_sessions").select("*").eq("id", sessionId).single(),
       ]);
 
       if (recRes.data) setRecommendations(recRes.data);
@@ -46,12 +45,11 @@ export default function FittingReport() {
       if (courseRes.data) setCourseConditions(courseRes.data);
       if (physicalRes.data) setPhysicalProfile(physicalRes.data);
       if (equipmentRes.data) setCurrentEquipment(equipmentRes.data);
-      if (sessionRes.data) setSession(sessionRes.data);
 
       setIsLoading(false);
     };
 
-    loadResults();
+    loadData();
   }, [id, user]);
 
   const handlePrint = () => {
@@ -225,6 +223,159 @@ export default function FittingReport() {
               <div><dt className="font-bold text-primary">Club Type</dt><dd className="text-lg mt-1 capitalize">{recommendations.club_type_rec}</dd></div>
             </dl>
           </section>
+
+          {/* Performance Predictions */}
+          <section className="space-y-3 break-inside-avoid">
+            <h2 className="text-xl font-bold text-primary border-b border-border pb-2">
+              Performance Predictions
+            </h2>
+            <div className="space-y-2">
+              <div>
+                <p className="text-sm text-muted-foreground">Predicted Distance Gain</p>
+                <p className="font-semibold">{recommendations.predicted_driver_gain}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Predicted Accuracy Improvement</p>
+                <p className="font-semibold">{recommendations.predicted_accuracy}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Predicted Consistency Improvement</p>
+                <p className="font-semibold">{recommendations.predicted_consistency}</p>
+              </div>
+              <p className="text-xs text-muted-foreground italic mt-3">
+                Note: These are estimates based on your input profile. Actual results depend on swing changes and club build quality.
+              </p>
+            </div>
+          </section>
+
+          {/* Gapping Analysis - Core and above */}
+          {(playerProfile?.budget_range === "mid_range" || playerProfile?.budget_range === "premium") && (
+            <section className="space-y-3 break-inside-avoid">
+              <h2 className="text-xl font-bold text-primary border-b border-border pb-2">
+                Gapping Analysis & Bag Configuration
+              </h2>
+              <div className="space-y-3">
+                {recommendations.gaps_identified && recommendations.gaps_identified.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">Gaps Identified:</h4>
+                    <ul className="list-disc list-inside space-y-0.5 text-sm">
+                      {recommendations.gaps_identified.map((gap: string, idx: number) => (
+                        <li key={idx} className="text-muted-foreground">{gap}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {recommendations.redundancies && recommendations.redundancies.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-sm mb-1">Redundancies:</h4>
+                    <ul className="list-disc list-inside space-y-0.5 text-sm">
+                      {recommendations.redundancies.map((red: string, idx: number) => (
+                        <li key={idx} className="text-muted-foreground">{red}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div>
+                  <h4 className="font-semibold text-sm mb-1">Recommended Bag Configuration:</h4>
+                  <p className="text-sm bg-muted p-2 rounded">{recommendations.recommended_bag}</p>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Confidence Scores - Premium only */}
+          {playerProfile?.budget_range === "premium" && (
+            <section className="space-y-3 break-inside-avoid">
+              <h2 className="text-xl font-bold text-primary border-b border-border pb-2">
+                Fit Confidence Scores
+              </h2>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium">Driver Fit Confidence</span>
+                    <span className="text-sm font-medium">{recommendations.driver_confidence}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-accent h-2 rounded-full"
+                      style={{ width: `${recommendations.driver_confidence}%` }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium">Irons Fit Confidence</span>
+                    <span className="text-sm font-medium">{recommendations.irons_confidence}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-accent h-2 rounded-full"
+                      style={{ width: `${recommendations.irons_confidence}%` }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium">Wedges Fit Confidence</span>
+                    <span className="text-sm font-medium">{recommendations.wedge_confidence}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-accent h-2 rounded-full"
+                      style={{ width: `${recommendations.wedge_confidence}%` }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium">Putter Fit Confidence</span>
+                    <span className="text-sm font-medium">{recommendations.putter_confidence}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-accent h-2 rounded-full"
+                      style={{ width: `${recommendations.putter_confidence}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Full Bag Breakdown - Core and above */}
+          {(playerProfile?.budget_range === "mid_range" || playerProfile?.budget_range === "premium") && (
+            <section className="space-y-3 break-inside-avoid">
+              <h2 className="text-xl font-bold text-primary border-b border-border pb-2">
+                Complete Bag Breakdown
+              </h2>
+              <div className="space-y-2 text-sm">
+                <div>
+                  <h4 className="font-semibold mb-0.5">Driver</h4>
+                  <p className="text-muted-foreground">{recommendations.driver_spec}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-0.5">Fairway Woods</h4>
+                  <p className="text-muted-foreground">{recommendations.fairway_woods}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-0.5">Hybrids</h4>
+                  <p className="text-muted-foreground">{recommendations.hybrids}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-0.5">Irons</h4>
+                  <p className="text-muted-foreground">{recommendations.irons_spec}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-0.5">Wedges</h4>
+                  <p className="text-muted-foreground">{recommendations.wedges_spec}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-0.5">Putter</h4>
+                  <p className="text-muted-foreground">{recommendations.putter_spec}</p>
+                </div>
+              </div>
+            </section>
+          )}
 
           {recommendations.advisory_notes && (
             <section className="mb-8 bg-amber-50 p-6 rounded-lg border border-amber-200">
