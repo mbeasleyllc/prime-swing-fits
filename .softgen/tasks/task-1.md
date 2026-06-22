@@ -13,20 +13,20 @@ position: 1
 Set up complete Supabase backend with all 10 tables, RLS policies, and auth configuration for ProSwing golf fitting tool.
 
 ## Checklist
-- [ ] Create users table with role field
-- [ ] Create fitting_sessions table with status tracking
-- [ ] Create player_profile table
-- [ ] Create swing_profile table
-- [ ] Create course_conditions table
-- [ ] Create physical_profile table
-- [ ] Create current_equipment table
-- [ ] Create fitting_recommendations table
-- [ ] Create fitting_rules static lookup table
-- [ ] Create products catalog table
-- [ ] Enable RLS on all tables with user_id policies
-- [ ] Configure Supabase Auth for email/password + Google OAuth
-- [ ] Generate TypeScript types from schema
-- [ ] Create auth trigger to insert users table row on signup
+- [x] Create users table with role field
+- [x] Create fitting_sessions table with status tracking
+- [x] Create player_profile table
+- [x] Create swing_profile table
+- [x] Create course_conditions table
+- [x] Create physical_profile table
+- [x] Create current_equipment table
+- [x] Create fitting_recommendations table
+- [x] Create fitting_rules static lookup table
+- [x] Create products catalog table
+- [x] Enable RLS on all tables with user_id policies
+- [x] Configure Supabase Auth for email/password + Google OAuth
+- [x] Generate TypeScript types from schema
+- [x] Create auth trigger to insert users table row on signup
 
 ## Acceptance
 - All tables exist in Supabase with proper foreign keys and constraints
