@@ -11,14 +11,16 @@ export function Navigation() {
     <nav className="border-b border-border bg-card">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
-              <Target className="h-6 w-6" />
-            </div>
-            <span className="font-heading font-bold text-xl text-foreground">Prime Swing Fits</span>
+          <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary hover:text-accent transition-colors">
+            <Target className="h-6 w-6" />
+            <span>Prime Swing Fits</span>
           </Link>
 
           <div className="flex items-center gap-4">
+            <Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
+              Pricing
+            </Link>
+
             {isLoading ? (
               <div className="w-20 h-9 bg-muted animate-pulse rounded" />
             ) : user ? (
