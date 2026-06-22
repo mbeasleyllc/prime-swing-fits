@@ -4,32 +4,34 @@ import { useAuth } from "@/hooks/useAuth";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requireAdmin?: boolean;
+  adminOnly?: boolean;
 }
 
-export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!user) {
-        router.push("/auth/login");
-      } else if (requireAdmin && user.user_metadata?.role !== "admin") {
-        router.push("/dashboard");
-      }
+    if (!isLoading && !user) {
+      router.push("/auth/login");
     }
-  }, [user, isLoading, requireAdmin, router]);
+  }, [user, isLoading, router]);
+
+  useEffect(() => {
+    if (!isLoading && user && adminOnly && user.user_metadata?.role !== "admin") {
+      router.push("/dashboard");
+    }
+  }, [user, isLoading, adminOnly, router]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-      </div>
-    );
+    return null;
   }
 
-  if (!user || (requireAdmin && user.user_metadata?.role !== "admin")) {
+  if (!user) {
+    return null;
+  }
+
+  if (adminOnly && user.user_metadata?.role !== "admin") {
     return null;
   }
 
