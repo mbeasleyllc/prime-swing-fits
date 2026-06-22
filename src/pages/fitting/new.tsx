@@ -57,6 +57,24 @@ export default function NewFitting() {
 
     setIsLoading(true);
 
+    // Verify session is valid before attempting insert
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !sessionData.session) {
+      console.error("Session validation error:", sessionError);
+      toast({
+        title: "Session Error",
+        description: "Your session expired. Please log in again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      router.push("/auth/login");
+      return;
+    }
+
+    console.log("User ID:", user.id);
+    console.log("Session valid:", !!sessionData.session);
+
     const { data, error } = await supabase
       .from("fitting_sessions")
       .insert({
@@ -68,9 +86,11 @@ export default function NewFitting() {
       .single();
 
     if (error) {
+      console.error("Fitting session creation error:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
       toast({
         title: "Error",
-        description: "Failed to create fitting session. Please try again.",
+        description: `Failed to create fitting session: ${error.message}`,
         variant: "destructive",
       });
       setIsLoading(false);
