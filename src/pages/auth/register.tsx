@@ -44,7 +44,7 @@ export default function Register() {
     } else {
       toast({
         title: "Account created!",
-        description: "Welcome to ProSwing. Redirecting to your dashboard...",
+        description: "Welcome to Prime Swing Fits. Redirecting to your dashboard...",
       });
       router.push("/dashboard");
     }

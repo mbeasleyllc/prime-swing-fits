@@ -106,7 +106,8 @@ export default function AdminSessions() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `proswing-sessions-${new Date().toISOString().split("T")[0]}.csv`;
+    a.download = `prime-swing-fits-sessions-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
     a.click();
 
     toast({
