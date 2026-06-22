@@ -13,14 +13,16 @@ position: 6
 Create user dashboard showing all fitting sessions with status badges, progress indicators, and action buttons.
 
 ## Checklist
-- [ ] Create /dashboard route with session list
-- [ ] Display session cards/table with date, status, progress
-- [ ] Show status badges (In Progress yellow / Completed green)
-- [ ] Add Resume button for in-progress sessions
-- [ ] Add View Results + Download Report for completed
-- [ ] Create Start New Fitting CTA button
-- [ ] Show empty state for users with no sessions
-- [ ] Add skeleton loaders during fetch
+- [x] Create /dashboard page for authenticated users
+- [x] Display welcome message with user name
+- [x] Show "Start New Fitting" CTA button
+- [x] List all user's fitting sessions in cards
+- [x] Show status badges (In Progress / Completed)
+- [x] Display step progress for in-progress sessions
+- [x] Add Resume button for in-progress sessions
+- [x] Add View Results + Download Report buttons for completed sessions
+- [x] Show empty state for new users with CTA
+- [x] Skeleton loaders during fetch
 
 ## Acceptance
 - Dashboard lists all user sessions correctly

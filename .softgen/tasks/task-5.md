@@ -13,16 +13,16 @@ position: 5
 Build results display page, printable report page, and PDF export using html2canvas + jsPDF.
 
 ## Checklist
-- [ ] Create /fitting/[id]/results page with recommendations display
-- [ ] Show matched products with affiliate links
-- [ ] Display advisory notes callout box
-- [ ] Add collapsible accordion for input summary
-- [ ] Create /fitting/[id]/report print-optimized page
-- [ ] Implement window.print() for print button
-- [ ] Install html2canvas and jsPDF packages
-- [ ] Create PDF download function with canvas capture
-- [ ] Upload generated PDF to Supabase Storage
-- [ ] Format filename as ProSwing-Fitting-Report-YYYY-MM-DD.pdf
+- [x] Create /fitting/[id]/results page with recommendations display
+- [x] Show personalized recommendations in highlighted card
+- [x] Display advisory notes with warning callouts
+- [x] Query and display matched products (up to 3)
+- [x] Add collapsible accordion for all input data
+- [x] Create /fitting/[id]/report page with print-optimized layout
+- [x] Implement print button (window.print)
+- [x] Implement PDF download with html2canvas + jsPDF
+- [x] Apply @media print styles to hide nav/buttons
+- [x] Save PDF to Supabase Storage /reports/[user_id]/[session_id].pdf
 
 ## Acceptance
 - Results page shows all recommendations clearly
