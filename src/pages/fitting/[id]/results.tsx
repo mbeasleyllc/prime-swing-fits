@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, Download, Printer, ArrowLeft, Play } from "lucide-react";
+import { AlertCircle, Download, Printer, ArrowLeft, Play, TrendingUp } from "lucide-react";
 
 export default function FittingResults() {
   const router = useRouter();
@@ -153,6 +153,162 @@ export default function FittingResults() {
             </CardContent>
           </Card>
 
+          {/* Performance Predictions */}
+          <Card className="bg-blue-50 border-blue-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
+                Performance Predictions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Predicted Distance Gain</p>
+                <p className="font-semibold text-blue-900">{recommendations.predicted_driver_gain}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Predicted Accuracy Improvement</p>
+                <p className="font-semibold text-blue-900">{recommendations.predicted_accuracy}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Predicted Consistency Improvement</p>
+                <p className="font-semibold text-blue-900">{recommendations.predicted_consistency}</p>
+              </div>
+              <p className="text-xs text-muted-foreground italic mt-4">
+                Note: These are estimates based on your input profile. Actual results depend on swing changes and club build quality.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Gapping Analysis - Core and above only */}
+          {(playerProfile?.budget_range === "mid_range" || playerProfile?.budget_range === "premium") && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Gapping Analysis & Bag Configuration</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {recommendations.gaps_identified && recommendations.gaps_identified.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Gaps Identified:</h4>
+                    <ul className="list-disc list-inside space-y-1">
+                      {recommendations.gaps_identified.map((gap: string, idx: number) => (
+                        <li key={idx} className="text-sm text-muted-foreground">{gap}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {recommendations.redundancies && recommendations.redundancies.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Redundancies:</h4>
+                    <ul className="list-disc list-inside space-y-1">
+                      {recommendations.redundancies.map((red: string, idx: number) => (
+                        <li key={idx} className="text-sm text-muted-foreground">{red}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div>
+                  <h4 className="font-semibold mb-2">Recommended Bag Configuration:</h4>
+                  <p className="text-sm bg-accent/10 p-3 rounded">{recommendations.recommended_bag}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Confidence Scores - Premium only */}
+          {playerProfile?.budget_range === "premium" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Fit Confidence Scores</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium">Driver Fit Confidence</span>
+                    <span className="text-sm font-medium">{recommendations.driver_confidence}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-accent h-2 rounded-full transition-all"
+                      style={{ width: `${recommendations.driver_confidence}%` }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium">Irons Fit Confidence</span>
+                    <span className="text-sm font-medium">{recommendations.irons_confidence}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-accent h-2 rounded-full transition-all"
+                      style={{ width: `${recommendations.irons_confidence}%` }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium">Wedges Fit Confidence</span>
+                    <span className="text-sm font-medium">{recommendations.wedge_confidence}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-accent h-2 rounded-full transition-all"
+                      style={{ width: `${recommendations.wedge_confidence}%` }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium">Putter Fit Confidence</span>
+                    <span className="text-sm font-medium">{recommendations.putter_confidence}%</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div
+                      className="bg-accent h-2 rounded-full transition-all"
+                      style={{ width: `${recommendations.putter_confidence}%` }}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Full Bag Breakdown - Core and above */}
+          {(playerProfile?.budget_range === "mid_range" || playerProfile?.budget_range === "premium") && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Complete Bag Breakdown</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h4 className="font-semibold mb-1">Driver</h4>
+                  <p className="text-sm text-muted-foreground">{recommendations.driver_spec}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-1">Fairway Woods</h4>
+                  <p className="text-sm text-muted-foreground">{recommendations.fairway_woods}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-1">Hybrids</h4>
+                  <p className="text-sm text-muted-foreground">{recommendations.hybrids}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-1">Irons</h4>
+                  <p className="text-sm text-muted-foreground">{recommendations.irons_spec}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-1">Wedges</h4>
+                  <p className="text-sm text-muted-foreground">{recommendations.wedges_spec}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-1">Putter</h4>
+                  <p className="text-sm text-muted-foreground">{recommendations.putter_spec}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {recommendations.advisory_notes && (
             <Card className="mb-6 border-amber-500/30 bg-amber-50/50">
               <CardHeader>
@@ -185,58 +341,43 @@ export default function FittingResults() {
             </Card>
           )}
 
-          {products.length > 0 && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>Recommended Products</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {products.map((product) => (
-                    <Card key={product.id}>
-                      <CardContent className="pt-6">
-                        <div className="aspect-square bg-muted rounded-lg mb-3 flex items-center justify-center">
-                          {product.image_url ? (
-                            <img src={product.image_url} alt={product.model_name} className="w-full h-full object-cover rounded-lg" />
-                          ) : (
-                            <span className="text-muted-foreground text-sm">No image</span>
-                          )}
-                        </div>
-                        <Badge variant="secondary" className="mb-2">
-                          {product.category}
-                        </Badge>
-                        <p className="font-semibold text-sm mb-1">{product.brand}</p>
-                        <p className="text-sm text-muted-foreground mb-2">{product.model_name}</p>
-                        <p className="text-lg font-bold text-accent mb-3">
-                          ${product.price_usd?.toFixed(2) || "N/A"}
-                        </p>
-                        {product.affiliate_url && (
-                          <Button variant="outline" size="sm" className="w-full" asChild>
-                            <a href={product.affiliate_url} target="_blank" rel="noopener noreferrer">
-                              View Product
-                            </a>
-                          </Button>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {products.length === 0 && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>Recommended Products</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">
+          {/* Matched Products */}
+          <div>
+            <h2 className="text-2xl font-bold mb-4">Recommended Products for Your Profile</h2>
+            {products.length === 0 ? (
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
                   Product recommendations will be updated soon. Contact us for personalized suggestions.
-                </p>
-              </CardContent>
-            </Card>
-          )}
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {products.map((product) => (
+                  <Card key={product.id} className="hover:shadow-lg transition-shadow">
+                    <CardContent className="pt-6">
+                      {product.image_url && (
+                        <div className="aspect-square bg-muted rounded mb-4 flex items-center justify-center">
+                          <img src={product.image_url} alt={product.model_name} className="max-h-full max-w-full object-contain" />
+                        </div>
+                      )}
+                      <Badge className="mb-2 bg-accent text-accent-foreground">Best Match for Your Profile</Badge>
+                      <h3 className="font-bold text-lg mb-1">{product.brand}</h3>
+                      <p className="text-sm text-muted-foreground mb-2">{product.model_name}</p>
+                      <p className="text-sm mb-1">Flex: {product.flex_category}</p>
+                      <p className="text-2xl font-bold text-accent mb-4">${product.price_usd}</p>
+                      {product.affiliate_url && (
+                        <Button className="w-full" asChild>
+                          <a href={product.affiliate_url} target="_blank" rel="noopener noreferrer">
+                            Buy Now →
+                          </a>
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
 
           <Card className="mb-6">
             <CardHeader>

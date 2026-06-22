@@ -113,40 +113,88 @@ export type Database = {
           advisory_notes: string | null
           club_length_adj: string | null
           club_type_rec: string | null
+          driver_confidence: number | null
+          driver_spec: string | null
+          fairway_woods: string | null
+          gaps_identified: string[] | null
           generated_at: string | null
           grip_size_rec: string | null
+          hybrids: string | null
           id: string
+          irons_confidence: number | null
+          irons_spec: string | null
           lie_angle_adj: string | null
+          predicted_accuracy: string | null
+          predicted_consistency: string | null
+          predicted_driver_gain: string | null
+          putter_confidence: number | null
+          putter_spec: string | null
+          recommended_bag: string | null
+          redundancies: string[] | null
           session_id: string
           shaft_flex_rec: string | null
           shaft_weight: string | null
           user_id: string
+          wedge_confidence: number | null
+          wedges_spec: string | null
         }
         Insert: {
           advisory_notes?: string | null
           club_length_adj?: string | null
           club_type_rec?: string | null
+          driver_confidence?: number | null
+          driver_spec?: string | null
+          fairway_woods?: string | null
+          gaps_identified?: string[] | null
           generated_at?: string | null
           grip_size_rec?: string | null
+          hybrids?: string | null
           id?: string
+          irons_confidence?: number | null
+          irons_spec?: string | null
           lie_angle_adj?: string | null
+          predicted_accuracy?: string | null
+          predicted_consistency?: string | null
+          predicted_driver_gain?: string | null
+          putter_confidence?: number | null
+          putter_spec?: string | null
+          recommended_bag?: string | null
+          redundancies?: string[] | null
           session_id: string
           shaft_flex_rec?: string | null
           shaft_weight?: string | null
           user_id: string
+          wedge_confidence?: number | null
+          wedges_spec?: string | null
         }
         Update: {
           advisory_notes?: string | null
           club_length_adj?: string | null
           club_type_rec?: string | null
+          driver_confidence?: number | null
+          driver_spec?: string | null
+          fairway_woods?: string | null
+          gaps_identified?: string[] | null
           generated_at?: string | null
           grip_size_rec?: string | null
+          hybrids?: string | null
           id?: string
+          irons_confidence?: number | null
+          irons_spec?: string | null
           lie_angle_adj?: string | null
+          predicted_accuracy?: string | null
+          predicted_consistency?: string | null
+          predicted_driver_gain?: string | null
+          putter_confidence?: number | null
+          putter_spec?: string | null
+          recommended_bag?: string | null
+          redundancies?: string[] | null
           session_id?: string
           shaft_flex_rec?: string | null
           shaft_weight?: string | null
           user_id?: string
+          wedge_confidence?: number | null
+          wedges_spec?: string | null
         }
         Relationships: [
           {
@@ -293,6 +341,7 @@ export type Database = {
       player_profile: {
         Row: {
           age: number | null
+          budget_range: string | null
           dominant_hand: string | null
           experience: string | null
           full_name: string | null
@@ -304,6 +353,7 @@ export type Database = {
         }
         Insert: {
           age?: number | null
+          budget_range?: string | null
           dominant_hand?: string | null
           experience?: string | null
           full_name?: string | null
@@ -315,6 +365,7 @@ export type Database = {
         }
         Update: {
           age?: number | null
+          budget_range?: string | null
           dominant_hand?: string | null
           experience?: string | null
           full_name?: string | null

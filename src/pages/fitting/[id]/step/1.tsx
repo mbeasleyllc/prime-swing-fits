@@ -28,6 +28,7 @@ export default function Step1() {
   const [experience, setExperience] = useState("");
   const [handicap, setHandicap] = useState("");
   const [primaryGoal, setPrimaryGoal] = useState("");
+  const [budgetRange, setBudgetRange] = useState("mid_range");
 
   useEffect(() => {
     if (!id || !user) return;
@@ -49,6 +50,7 @@ export default function Step1() {
         setExperience(data.experience || "");
         setHandicap(data.handicap || "");
         setPrimaryGoal(data.primary_goal || "");
+        setBudgetRange(data.budget_range || "mid_range");
       }
 
       setIsLoading(false);
@@ -57,7 +59,7 @@ export default function Step1() {
     loadData();
   }, [id, user]);
 
-  const isFormValid = fullName && age && dominantHand && experience && handicap && primaryGoal;
+  const isFormValid = fullName && age && dominantHand && experience && handicap && primaryGoal && budgetRange;
 
   const handleNext = async () => {
     if (!user || !id) return;
@@ -76,6 +78,7 @@ export default function Step1() {
         experience,
         handicap,
         primary_goal: primaryGoal,
+        budget_range: budgetRange,
       }, {
         onConflict: "session_id",
       });
@@ -213,14 +216,28 @@ export default function Step1() {
                   Primary Goal <span className="text-destructive">*</span>
                 </Label>
                 <Select value={primaryGoal} onValueChange={setPrimaryGoal}>
-                  <SelectTrigger id="primaryGoal">
-                    <SelectValue placeholder="Select goal" />
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select your primary goal" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="distance">Distance</SelectItem>
                     <SelectItem value="accuracy">Accuracy</SelectItem>
                     <SelectItem value="consistency">Consistency</SelectItem>
                     <SelectItem value="all_around">All-Around</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="budget_range">Budget Range</Label>
+                <Select value={budgetRange} onValueChange={setBudgetRange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select your budget range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="budget">Budget ($0-$500)</SelectItem>
+                    <SelectItem value="mid_range">Mid-Range ($500-$1500)</SelectItem>
+                    <SelectItem value="premium">Premium ($1500+)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
