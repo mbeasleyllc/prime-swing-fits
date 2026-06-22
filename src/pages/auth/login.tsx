@@ -70,7 +70,7 @@ export default function Login() {
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
             <CardDescription>
-              Enter your credentials to access your ProSwing account
+              Enter your credentials to access your Prime Swing Fits account
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

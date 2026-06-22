@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Play, Eye, Download, Clock, CheckCircle2 } from "lucide-react";
+import { Play, Eye, Download, Clock, CheckCircle2, Target } from "lucide-react";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -72,21 +72,22 @@ export default function Dashboard() {
           </div>
 
           {sessions.length === 0 ? (
-            <Card className="border-dashed">
-              <CardContent className="pt-12 pb-12 text-center">
-                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                  <Play className="h-8 w-8 text-muted-foreground" />
+            <Card>
+              <CardContent className="py-16 text-center">
+                <div className="max-w-md mx-auto">
+                  <div className="bg-muted rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                    <Target className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3">Start Your First Fitting</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Get personalized club recommendations with Prime Swing Fits' guided fitting wizard.
+                  </p>
+                  <Button size="lg" asChild>
+                    <Link href="/fitting/new">
+                      Begin Fitting Process
+                    </Link>
+                  </Button>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">No fitting sessions yet</h3>
-                <p className="text-muted-foreground mb-6">
-                  Get started with your first golf club fitting and receive personalized recommendations.
-                </p>
-                <Button size="lg" asChild className="bg-accent hover:bg-accent/90">
-                  <Link href="/fitting/new">
-                    <Play className="h-5 w-5 mr-2" />
-                    Start Your First Fitting
-                  </Link>
-                </Button>
               </CardContent>
             </Card>
           ) : (

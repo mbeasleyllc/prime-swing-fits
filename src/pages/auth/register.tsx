@@ -75,10 +75,10 @@ export default function Register() {
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-            <CardDescription>
-              Get started with your free ProSwing fitting
-            </CardDescription>
+            <h1 className="text-3xl font-bold text-center mb-2">Create Your Account</h1>
+            <p className="text-center text-muted-foreground mb-6">
+              Start your Prime Swing Fits journey today
+            </p>
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleEmailRegister} className="space-y-4">

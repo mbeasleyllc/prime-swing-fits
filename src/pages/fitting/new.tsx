@@ -131,6 +131,12 @@ export default function NewFitting() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                <div className="max-w-2xl mx-auto">
+                  <h1 className="text-3xl font-bold mb-4">Start New Fitting</h1>
+                  <p className="text-muted-foreground mb-8">
+                    Begin your personalized Prime Swing Fits club fitting journey.
+                  </p>
+                </div>
                 <Button onClick={handleNewSession} size="lg" className="w-full">
                   Begin Fitting
                 </Button>

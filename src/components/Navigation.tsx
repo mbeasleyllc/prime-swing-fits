@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut, LayoutDashboard, Shield } from "lucide-react";
+import { Target, LayoutDashboard, Shield, LogOut } from "lucide-react";
 
 export function Navigation() {
   const { user, isLoading, signOut } = useAuth();
@@ -13,9 +13,9 @@ export function Navigation() {
         <div className="flex justify-between items-center h-16">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
-              <span className="text-accent-foreground font-bold text-sm">PS</span>
+              <Target className="h-6 w-6" />
             </div>
-            <span className="font-heading font-bold text-xl text-foreground">ProSwing</span>
+            <span className="font-heading font-bold text-xl text-foreground">Prime Swing Fits</span>
           </Link>
 
           <div className="flex items-center gap-4">

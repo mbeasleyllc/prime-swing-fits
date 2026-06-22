@@ -113,7 +113,7 @@ export default function FittingResults() {
         
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Your ProSwing Fitting Results</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Your Prime Swing Fits Fitting Results</h1>
             <p className="text-muted-foreground">
               {playerProfile?.full_name} • {session?.completed_at ? new Date(session.completed_at).toLocaleDateString() : ""}
             </p>

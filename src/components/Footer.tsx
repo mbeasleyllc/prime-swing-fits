@@ -6,17 +6,12 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border bg-card mt-auto">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
-                <span className="text-accent-foreground font-bold text-sm">PS</span>
-              </div>
-              <span className="font-heading font-bold text-xl text-foreground">ProSwing</span>
-            </div>
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="space-y-4">
+            <h3 className="font-bold text-lg text-foreground">Prime Swing Fits</h3>
             <p className="text-sm text-muted-foreground">
-              Professional golf club fitting recommendations in minutes.
+              Professional golf club fitting guidance at your fingertips.
             </p>
           </div>
 
@@ -51,10 +46,21 @@ export function Footer() {
               </li>
             </ul>
           </div>
+
+          <div>
+            <h4 className="font-semibold mb-4">Contact</h4>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <a href="mailto:support@primeswingfits.app" className="text-muted-foreground hover:text-accent">
+                  support@primeswingfits.app
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          © {currentYear} ProSwing. All rights reserved.
+          © {currentYear} Prime Swing Fits. All rights reserved.
         </div>
       </div>
     </footer>

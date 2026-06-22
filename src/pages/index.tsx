@@ -3,151 +3,175 @@ import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Target, CheckCircle, FileText, TrendingUp, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { ClipboardCheck, Target, FileText, TrendingUp, ArrowRight } from "lucide-react";
 
 export default function Home() {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen bg-background">
       <Navigation />
 
-      {/* Hero Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto text-center space-y-6">
-          <h1 className="text-5xl sm:text-6xl font-bold text-foreground tracking-tight">
-            Get Fitted. Play Better.
-          </h1>
-          <p className="text-xl sm:text-2xl text-muted-foreground max-w-3xl mx-auto">
-            ProSwing gives you a professional static golf club fitting in minutes — no pro shop required.
-          </p>
-          <div className="pt-4">
-            <Button size="lg" asChild className="text-lg px-8 py-6">
+      <section className="relative bg-gradient-to-br from-primary via-primary to-accent py-24">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center text-white">
+            <div className="flex justify-center mb-6">
+              <Target className="h-20 w-20" />
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6">
+              Get Fitted. Play Better.
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 text-white/90">
+              Prime Swing Fits gives you a professional static golf club fitting in minutes — no pro shop required.
+            </p>
+            <Button size="lg" asChild className="text-lg px-8 py-6 bg-white text-primary hover:bg-white/90">
               <Link href={user ? "/fitting/new" : "/auth/register"}>
                 Start My Free Fitting
-                <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
             </Button>
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-muted/30">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-foreground mb-12">
-            How It Works
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto">
-                <ClipboardCheck className="w-8 h-8 text-accent-foreground" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground">Answer Questions</h3>
-              <p className="text-muted-foreground">
-                Complete our guided 6-step wizard covering your physical measurements, swing profile, and equipment preferences.
-              </p>
-            </div>
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto">
-                <Target className="w-8 h-8 text-accent-foreground" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground">Get Recommendations</h3>
-              <p className="text-muted-foreground">
-                Receive personalized club fitting recommendations based on proven fitting science and algorithms.
-              </p>
-            </div>
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto">
-                <TrendingUp className="w-8 h-8 text-accent-foreground" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground">Play Better</h3>
-              <p className="text-muted-foreground">
-                Download your detailed report and take it to your preferred club fitter or pro shop to order your perfect clubs.
-              </p>
+      <section className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground">
+              How It Works
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <Card className="text-center hover:shadow-lg transition-shadow">
+                <CardContent className="pt-8 pb-6">
+                  <div className="bg-accent/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle className="h-8 w-8 text-accent" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-3">1. Answer Questions</h3>
+                  <p className="text-muted-foreground">
+                    Complete our 6-step guided wizard about your playing profile, swing, and physical measurements.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center hover:shadow-lg transition-shadow">
+                <CardContent className="pt-8 pb-6">
+                  <div className="bg-accent/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <TrendingUp className="h-8 w-8 text-accent" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-3">2. Get Recommendations</h3>
+                  <p className="text-muted-foreground">
+                    Our expert algorithm analyzes your data and generates personalized club fitting recommendations.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="text-center hover:shadow-lg transition-shadow">
+                <CardContent className="pt-8 pb-6">
+                  <div className="bg-accent/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileText className="h-8 w-8 text-accent" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-3">3. Play Better</h3>
+                  <p className="text-muted-foreground">
+                    Download your detailed fitting report and find the perfect clubs for your game.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Feature Highlights */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-foreground mb-12">
-            Why ProSwing?
-          </h2>
-          <div className="grid sm:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ClipboardCheck className="w-5 h-5 text-accent" />
-                  Guided Wizard
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Step-by-step questionnaire with clear instructions and helpful measurement guides to ensure accurate inputs.
-                </CardDescription>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-accent" />
-                  Personalized Results
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Get specific recommendations for club length, lie angle, grip size, shaft flex, and club type tailored to your profile.
-                </CardDescription>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-accent" />
-                  Downloadable Report
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Export your fitting report as a PDF to share with club fitters, coaches, or keep for your records.
-                </CardDescription>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-accent" />
-                  Built on Fitting Science
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Our recommendations are based on established club fitting principles used by professional fitters worldwide.
-                </CardDescription>
-              </CardContent>
-            </Card>
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground">
+              Why Choose Prime Swing Fits?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-accent/10 p-3 rounded-lg flex-shrink-0">
+                      <Zap className="h-6 w-6 text-accent" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2">Guided Wizard</h3>
+                      <p className="text-muted-foreground">
+                        Step-by-step process with clear instructions and helpful tips at every stage.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-accent/10 p-3 rounded-lg flex-shrink-0">
+                      <Target className="h-6 w-6 text-accent" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2">Personalized Results</h3>
+                      <p className="text-muted-foreground">
+                        Recommendations tailored to your unique swing characteristics and playing style.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-accent/10 p-3 rounded-lg flex-shrink-0">
+                      <FileText className="h-6 w-6 text-accent" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2">Downloadable Report</h3>
+                      <p className="text-muted-foreground">
+                        Get a professional PDF report you can take to any club fitter or pro shop.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-accent/10 p-3 rounded-lg flex-shrink-0">
+                      <CheckCircle className="h-6 w-6 text-accent" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2">Built on Fitting Science</h3>
+                      <p className="text-muted-foreground">
+                        Based on proven club fitting principles used by professional fitters worldwide.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-primary text-primary-foreground">
-        <div className="max-w-4xl mx-auto text-center space-y-6">
-          <h2 className="text-4xl font-bold">Ready to find your perfect clubs?</h2>
-          <p className="text-xl opacity-90">
-            Join thousands of golfers who have improved their game with ProSwing fitting recommendations.
-          </p>
-          <Button size="lg" variant="secondary" asChild className="text-lg px-8 py-6">
-            <Link href={user ? "/fitting/new" : "/auth/register"}>
-              Start Free Fitting Now
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Link>
-          </Button>
+      <section className="py-16 bg-gradient-to-br from-accent to-primary text-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Ready to find your perfect clubs?
+            </h2>
+            <p className="text-xl mb-8 text-white/90">
+              Start your personalized fitting journey today — completely free.
+            </p>
+            <Button size="lg" asChild className="text-lg px-8 py-6 bg-white text-primary hover:bg-white/90">
+              <Link href={user ? "/fitting/new" : "/auth/register"}>
+                Get Started Now
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 

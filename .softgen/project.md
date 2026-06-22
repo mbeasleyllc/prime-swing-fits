@@ -1,7 +1,7 @@
-# ProSwing — Golf Club Fitting Application
+# Prime Swing Fits — Golf Club Fitting Application
 
 ## Vision
-ProSwing is a self-guided, static golf club fitting tool that empowers golfers to receive personalized club fitting recommendations without visiting a pro shop. Built for tablet-first use (768px primary), fully responsive for mobile and desktop.
+Prime Swing Fits is a self-guided, static golf club fitting tool that empowers golfers to receive personalized club fitting recommendations without visiting a pro shop. Built for tablet-first use (768px primary), fully responsive for mobile and desktop.
 
 ## Design
 **Palette:** Deep navy (#0A1628) primary for trust and technical authority, forest green (#2E7D4F) accent representing the fairway, white backgrounds for clarity.
