@@ -1,6 +1,6 @@
 ---
 title: User Dashboard
-status: todo
+status: done
 priority: medium
 type: feature
 tags: [dashboard, sessions]
