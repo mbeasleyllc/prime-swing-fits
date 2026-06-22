@@ -13,14 +13,14 @@ position: 2
 Implement ProSwing design system with navy/green palette, tablet-first responsive layout, navigation, and reusable components.
 
 ## Checklist
-- [ ] Theme globals.css with navy primary (#0A1628) and green accent (#2E7D4F)
-- [ ] Register clean sans-serif fonts (Inter-style)
-- [ ] Create Navigation component with logo and auth state
-- [ ] Create Footer component
-- [ ] Create protected route wrapper component
-- [ ] Create admin route wrapper component
-- [ ] Build landing page hero and features sections
-- [ ] Create auth pages: login, register, reset
+- [x] Theme globals.css with navy primary (#0A1628) and green accent (#2E7D4F)
+- [x] Register clean sans-serif fonts (Inter-style)
+- [x] Create Navigation component with logo and auth state
+- [x] Create Footer component
+- [x] Create protected route wrapper component
+- [x] Create admin route wrapper component
+- [x] Build landing page hero and features sections
+- [x] Create auth pages: login, register, reset
 
 ## Acceptance
 - Color system matches navy/green specification
