@@ -1,6 +1,6 @@
 ---
 title: 6-Step Fitting Wizard
-status: todo
+status: done
 priority: high
 type: feature
 tags: [wizard, forms, ux]
