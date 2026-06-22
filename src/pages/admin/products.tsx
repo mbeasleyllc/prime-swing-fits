@@ -24,7 +24,7 @@ interface Product {
   flex_category: string;
   weight_grams: number;
   grip_size: string;
-  price_usd: string;
+  price_usd: number;
   affiliate_url: string;
   image_url: string;
 }
@@ -45,7 +45,7 @@ export default function AdminProducts() {
     flex_category: "",
     weight_grams: 0,
     grip_size: "",
-    price_usd: "",
+    price_usd: 0,
     affiliate_url: "",
     image_url: "",
   });
@@ -116,7 +116,7 @@ export default function AdminProducts() {
       flex_category: "",
       weight_grams: 0,
       grip_size: "",
-      price_usd: "",
+      price_usd: 0,
       affiliate_url: "",
       image_url: "",
     });
@@ -290,8 +290,10 @@ export default function AdminProducts() {
                         <Label htmlFor="price_usd">Price (USD)</Label>
                         <Input
                           id="price_usd"
+                          type="number"
+                          step="0.01"
                           value={formData.price_usd}
-                          onChange={(e) => setFormData({ ...formData, price_usd: e.target.value })}
+                          onChange={(e) => setFormData({ ...formData, price_usd: parseFloat(e.target.value) })}
                           required
                         />
                       </div>
