@@ -215,7 +215,7 @@ export default function AdminProducts() {
                       flex_category: "",
                       weight_grams: 0,
                       grip_size: "",
-                      price_usd: "",
+                      price_usd: 0,
                       affiliate_url: "",
                       image_url: "",
                     });
