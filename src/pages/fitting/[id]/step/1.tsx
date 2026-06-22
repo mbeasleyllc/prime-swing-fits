@@ -33,10 +33,12 @@ export default function Step1() {
     if (!id || !user) return;
 
     const loadData = async () => {
+      const sessionId = Array.isArray(id) ? id[0] : id;
+      
       const { data, error } = await supabase
         .from("player_profile")
         .select("*")
-        .eq("session_id", id)
+        .eq("session_id", sessionId)
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -60,12 +62,13 @@ export default function Step1() {
   const handleNext = async () => {
     if (!user || !id) return;
 
+    const sessionId = Array.isArray(id) ? id[0] : id;
     setIsSaving(true);
 
     const { error: profileError } = await supabase
       .from("player_profile")
       .upsert({
-        session_id: id as string,
+        session_id: sessionId,
         user_id: user.id,
         full_name: fullName,
         age: parseInt(age),
@@ -90,7 +93,7 @@ export default function Step1() {
     const { error: sessionError } = await supabase
       .from("fitting_sessions")
       .update({ current_step: 2 })
-      .eq("id", id);
+      .eq("id", sessionId);
 
     if (sessionError) {
       console.error("Failed to update session step:", sessionError);
@@ -101,7 +104,7 @@ export default function Step1() {
       description: "Moving to next step...",
     });
 
-    router.push(`/fitting/${id}/step/2`);
+    router.push(`/fitting/${sessionId}/step/2`);
   };
 
   if (isLoading) {
