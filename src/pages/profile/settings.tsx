@@ -833,6 +833,15 @@ function PasswordSecuritySection({ user }: { user: any }) {
 }
 
 // SECTION 3: Notification Preferences
+type NotificationKey = 
+  | 'order_confirmations'
+  | 'fitting_report_ready'
+  | 'refitting_reminders'
+  | 'club_database_updates'
+  | 'weekly_golf_tips'
+  | 'promotional_offers'
+  | 'blog_updates';
+
 function NotificationPreferencesSection({
   profile,
   onUpdate,
@@ -841,7 +850,7 @@ function NotificationPreferencesSection({
   onUpdate: () => void;
 }) {
   const { toast } = useToast();
-  const [notifications, setNotifications] = useState<Record<string, boolean>>({
+  const [notifications, setNotifications] = useState<Record<NotificationKey, boolean>>({
     order_confirmations: true,
     fitting_report_ready: true,
     refitting_reminders: true,
@@ -872,7 +881,12 @@ function NotificationPreferencesSection({
     }
   };
 
-  const notificationsList = [
+  const notificationsList: Array<{
+    key: NotificationKey;
+    label: string;
+    description: string;
+    locked: boolean;
+  }> = [
     {
       key: "order_confirmations",
       label: "Order Confirmations",
