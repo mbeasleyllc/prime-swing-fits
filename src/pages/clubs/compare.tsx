@@ -149,6 +149,19 @@ export default function ClubComparison() {
         } finally {
           setIsSearching(false);
         }
+      } else if (selectedCategory !== "All" || selectedBrand !== "All Brands") {
+        // Show filtered catalog when filters are active but no search query
+        let filtered = [...CLUB_DATABASE];
+        
+        if (selectedCategory !== "All") {
+          filtered = filtered.filter(p => p.category === selectedCategory);
+        }
+        
+        if (selectedBrand !== "All Brands") {
+          filtered = filtered.filter(p => p.brand === selectedBrand);
+        }
+        
+        setSearchResults(filtered);
       } else {
         setSearchResults([]);
       }
@@ -234,9 +247,16 @@ export default function ClubComparison() {
     return CLUB_DATABASE.filter(club => club.category === category).length;
   };
 
-  const filteredFeaturedClubs = selectedBrand !== "All Brands" 
-    ? featuredClubs.filter(club => club.brand === selectedBrand)
-    : featuredClubs;
+  // Apply both category and brand filters to featured clubs
+  const filteredFeaturedClubs = featuredClubs.filter(club => {
+    const categoryMatch = selectedCategory === "All" || club.category === selectedCategory;
+    const brandMatch = selectedBrand === "All Brands" || club.brand === selectedBrand;
+    return categoryMatch && brandMatch;
+  });
+
+  // Determine if we should show featured clubs or search results
+  const showFeaturedClubs = searchQuery.length === 0 && searchResults.length === 0;
+  const showSearchResults = searchQuery.length >= 2 || searchResults.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -347,11 +367,11 @@ export default function ClubComparison() {
                         </p>
                       )}
 
-                      {searchQuery.length === 0 && (
+                      {showFeaturedClubs && filteredFeaturedClubs.length > 0 && (
                         <div className="space-y-4">
                           <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
                             <Trophy className="h-4 w-4 text-gold" />
-                            Featured Clubs
+                            {selectedCategory !== "All" || selectedBrand !== "All Brands" ? "Filtered Clubs" : "Featured Clubs"}
                           </h3>
                           <div className="grid grid-cols-2 gap-3">
                             {filteredFeaturedClubs.map((product) => (
@@ -400,7 +420,15 @@ export default function ClubComparison() {
                         </div>
                       )}
 
-                      {searchResults.length > 0 && (
+                      {showFeaturedClubs && filteredFeaturedClubs.length === 0 && (selectedCategory !== "All" || selectedBrand !== "All Brands") && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p className="font-medium mb-1">No clubs found</p>
+                          <p className="text-sm">Try different filters</p>
+                        </div>
+                      )}
+
+                      {showSearchResults && searchResults.length > 0 && (
                         <div className="space-y-2 max-h-[600px] overflow-y-auto">
                           {searchResults.map((product) => (
                             <Card 
@@ -457,7 +485,7 @@ export default function ClubComparison() {
                         </div>
                       )}
 
-                      {searchQuery.length >= 2 && searchResults.length === 0 && !isSearching && (
+                      {showSearchResults && searchResults.length === 0 && searchQuery.length >= 2 && !isSearching && (
                         <div className="text-center py-8 text-muted-foreground">
                           <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           <p>No clubs found</p>
