@@ -964,7 +964,7 @@ function NotificationPreferencesSection({
                     <Switch
                       checked={notifications[notification.key] || false}
                       onCheckedChange={(checked) =>
-                        setNotifications(prev => ({ ...prev, [notification.key]: checked }))
+                        setNotifications(prev => ({ ...prev, [notification.key]: checked } as Record<NotificationKey, boolean>))
                       }
                       disabled={notification.locked}
                     />
