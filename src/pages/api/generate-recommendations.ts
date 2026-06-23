@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
+import { sendFittingReportEmail } from "@/lib/emailService";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -169,6 +170,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (recError) {
       console.error("Failed to insert recommendation:", recError);
       return res.status(500).json({ error: "Failed to create recommendation" });
+    }
+
+    // Send email notification with fitting report
+    try {
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("email, full_name")
+        .eq("id", profile.user_id)
+        .single();
+
+      if (userData && userData.email) {
+        await sendFittingReportEmail({
+          to: userData.email,
+          userName: userData.full_name || "Golfer",
+          sessionId: sessionId,
+          recommendations: {
+            clubLengthAdj,
+            lieAngleAdj,
+            gripSizeRec,
+            shaftFlexRec,
+            shaftWeight,
+            clubTypeRec,
+            advisoryNotes: advisoryNotes.trim(),
+          },
+        });
+        console.log(`Fitting report email sent to ${userData.email}`);
+      }
+    } catch (emailError) {
+      // Don't fail the request if email fails - log and continue
+      console.error("Failed to send email notification:", emailError);
     }
 
     return res.status(200).json({ recommendation });
