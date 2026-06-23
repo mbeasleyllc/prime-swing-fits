@@ -57,6 +57,25 @@ export default function Support() {
     setIsSubmitting(true);
 
     try {
+      // Save to database first
+      const { data: supportRequest, error: dbError } = await supabase
+        .from('support_requests')
+        .insert({
+          name: formData.name,
+          email: formData.email,
+          order_number: formData.orderNumber || null,
+          subject: formData.subject,
+          message: formData.message,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (dbError) {
+        console.error('Database error:', dbError);
+        throw dbError;
+      }
+
       // Format email HTML for admin
       const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -68,6 +87,10 @@ export default function Support() {
             <div style="background: white; padding: 25px; border-radius: 8px; border-left: 4px solid #22C55E;">
               <h2 style="color: #0A0A0A; margin-top: 0; font-size: 20px;">Contact Information</h2>
               <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-weight: 600; width: 140px;">Request ID:</td>
+                  <td style="padding: 10px 0; color: #0A0A0A; font-family: monospace; font-size: 12px;">${supportRequest.id}</td>
+                </tr>
                 <tr>
                   <td style="padding: 10px 0; color: #6b7280; font-weight: 600; width: 140px;">Name:</td>
                   <td style="padding: 10px 0; color: #0A0A0A;">${formData.name}</td>
@@ -98,6 +121,9 @@ export default function Support() {
               <p style="color: #1e40af; margin: 0; font-size: 14px;">
                 📧 Reply directly to <a href="mailto:${formData.email}" style="color: #22C55E; text-decoration: none; font-weight: 600;">${formData.email}</a>
               </p>
+              <p style="color: #1e40af; margin: 10px 0 0 0; font-size: 14px;">
+                📋 View in admin: <a href="${typeof window !== 'undefined' ? window.location.origin : ''}/admin/support-requests" style="color: #22C55E; text-decoration: none; font-weight: 600;">Support Dashboard</a>
+              </p>
             </div>
 
             <div style="margin-top: 20px; text-align: center; color: #9ca3af; font-size: 12px;">
@@ -114,17 +140,17 @@ export default function Support() {
       `;
 
       // Call the send-email edge function
-      const { data, error } = await supabase.functions.invoke('send-email', {
+      const { error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
-          to: 'support@primeswingfits.com', // Admin email - update this to your actual admin email
-          subject: `[Support] ${formData.subject} - ${formData.name}`,
+          to: 'support@primeswingfits.com',
+          subject: `[Support #${supportRequest.id.split('-')[0]}] ${formData.subject} - ${formData.name}`,
           html: emailHtml
         }
       });
 
-      if (error) {
-        console.error('Edge function error:', error);
-        throw error;
+      if (emailError) {
+        console.error('Email error:', emailError);
+        // Don't throw - request is saved in database even if email fails
       }
 
       toast({
