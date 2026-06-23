@@ -1,7 +1,9 @@
 import React from "react";
+import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Star, Quote, Trophy } from "lucide-react";
 
 export default function Testimonials() {
@@ -168,12 +170,11 @@ export default function Testimonials() {
             <p className="text-xl mb-10 text-white/90 max-w-2xl mx-auto">
               Start your fitting journey today and discover equipment that's perfectly matched to your game.
             </p>
-            <a 
-              href="/fitting/new"
-              className="inline-flex items-center gap-2 bg-gold text-gold-foreground px-10 py-4 rounded-lg font-semibold hover:bg-gold/90 transition-all shadow-2xl text-lg"
-            >
-              Get Your Free Fitting
-            </a>
+            <Button size="lg" asChild className="text-lg px-10 py-4 bg-gold text-gold-foreground hover:bg-gold/90 shadow-2xl">
+              <Link href="/fitting/new">
+                Get Your Free Fitting
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
