@@ -14,12 +14,12 @@ import {
   User,
   Ruler,
   Target,
-  Settings,
+  Settings as SettingsIcon,
   Camera,
   Lock,
   Shield,
   Bell,
-  Database,
+  Database as DatabaseIcon,
   Trash2,
   Download,
   Eye,
@@ -79,6 +79,36 @@ export default function Settings() {
   );
 }
 
+function getMembershipBadgeColor(tier: string | null | undefined): string {
+  switch (tier) {
+    case "premium_plus":
+      return "bg-gold text-gold-foreground";
+    case "premium":
+      return "bg-accent text-white";
+    case "full_bag":
+      return "bg-blue-500 text-white";
+    case "single_club":
+      return "bg-gray-500 text-white";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+}
+
+function getMembershipLabel(tier: string | null | undefined): string {
+  switch (tier) {
+    case "premium_plus":
+      return "Premium Plus";
+    case "premium":
+      return "Premium";
+    case "full_bag":
+      return "Full Bag";
+    case "single_club":
+      return "Single Club";
+    default:
+      return "Free";
+  }
+}
+
 function SettingsContent() {
   const { toast } = useToast();
   const router = useRouter();
@@ -107,36 +137,6 @@ function SettingsContent() {
       console.error("Error fetching profile:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getMembershipBadgeColor = (tier: string | null | undefined): string => {
-    switch (tier) {
-      case "premium_plus":
-        return "bg-gold text-gold-foreground";
-      case "premium":
-        return "bg-accent text-white";
-      case "full_bag":
-        return "bg-blue-500 text-white";
-      case "single_club":
-        return "bg-gray-500 text-white";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
-
-  const getMembershipLabel = (tier: string | null | undefined): string => {
-    switch (tier) {
-      case "premium_plus":
-        return "Premium Plus";
-      case "premium":
-        return "Premium";
-      case "full_bag":
-        return "Full Bag";
-      case "single_club":
-        return "Single Club";
-      default:
-        return "Free";
     }
   };
 
@@ -256,7 +256,7 @@ function SettingsContent() {
                     </Link>
                     
                     <div className="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 bg-accent text-white">
-                      <Settings className="h-4 w-4" />
+                      <SettingsIcon className="h-4 w-4" />
                       <span className="font-medium">Settings</span>
                     </div>
                   </nav>
@@ -275,7 +275,7 @@ function SettingsContent() {
                 </Link>
               </Button>
               <Button variant="default" size="sm" className="bg-accent text-white">
-                <Settings className="h-4 w-4 mr-2" />
+                <SettingsIcon className="h-4 w-4 mr-2" />
                 Settings
               </Button>
             </div>
@@ -655,120 +655,122 @@ function PasswordSecuritySection({ user }: { user: any }) {
             </CollapsibleTrigger>
           </div>
 
-          <CollapsibleContent className="mt-4 space-y-4">
-            <div>
-              <Label htmlFor="current_password">Current Password</Label>
-              <div className="relative">
-                <Input
-                  id="current_password"
-                  type={showCurrentPassword ? "text" : "password"}
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="••••••••"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-2 top-1/2 -translate-y-1/2"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                >
-                  {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="new_password">New Password</Label>
-              <div className="relative">
-                <Input
-                  id="new_password"
-                  type={showNewPassword ? "text" : "password"}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="••••••••"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-2 top-1/2 -translate-y-1/2"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                >
-                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-              {newPassword && (
-                <div className="mt-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Password Strength</span>
-                    <span className={`text-sm font-semibold ${strength.color.replace('bg-', 'text-')}`}>
-                      {strength.strength}
-                    </span>
-                  </div>
-                  <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full ${strength.color} transition-all duration-300`}
-                      style={{ width: `${strength.percentage}%` }}
-                    />
-                  </div>
+          <CollapsibleContent>
+            <div className="mt-4 space-y-4">
+              <div>
+                <Label htmlFor="current_password">Current Password</Label>
+                <div className="relative">
+                  <Input
+                    id="current_password"
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="••••••••"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-2 top-1/2 -translate-y-1/2"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  >
+                    {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
                 </div>
-              )}
-            </div>
+              </div>
 
-            <div>
-              <Label htmlFor="confirm_password">Confirm New Password</Label>
-              <Input
-                id="confirm_password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-              />
-              {confirmPassword && (
-                <div className="mt-2 flex items-center gap-2">
-                  {passwordsMatch ? (
-                    <>
-                      <Check className="h-4 w-4 text-green-500" />
-                      <span className="text-sm text-green-500">Passwords match</span>
-                    </>
-                  ) : (
-                    <>
-                      <X className="h-4 w-4 text-red-500" />
-                      <span className="text-sm text-red-500">Passwords don't match</span>
-                    </>
-                  )}
+              <div>
+                <Label htmlFor="new_password">New Password</Label>
+                <div className="relative">
+                  <Input
+                    id="new_password"
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-2 top-1/2 -translate-y-1/2"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                  >
+                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
                 </div>
-              )}
-            </div>
-
-            {newPassword && (
-              <div className="p-4 bg-muted rounded-lg">
-                <p className="text-sm font-medium text-foreground mb-2">Requirements:</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {requirements.map((req, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm">
-                      {req.met ? (
-                        <Check className="h-3 w-3 text-green-500" />
-                      ) : (
-                        <X className="h-3 w-3 text-muted-foreground" />
-                      )}
-                      <span className={req.met ? "text-green-500" : "text-muted-foreground"}>
-                        {req.text}
+                {newPassword && (
+                  <div className="mt-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Password Strength</span>
+                      <span className={`text-sm font-semibold ${strength.color.replace('bg-', 'text-')}`}>
+                        {strength.strength}
                       </span>
                     </div>
-                  ))}
-                </div>
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${strength.color} transition-all duration-300`}
+                        style={{ width: `${strength.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
 
-            <Button
-              onClick={updatePassword}
-              disabled={saving || !passwordsMatch || requirements.some(req => !req.met)}
-              className="w-full bg-gold text-gold-foreground hover:bg-gold/90"
-            >
-              {saving ? "Updating..." : "Update Password"}
-            </Button>
+              <div>
+                <Label htmlFor="confirm_password">Confirm New Password</Label>
+                <Input
+                  id="confirm_password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                />
+                {confirmPassword && (
+                  <div className="mt-2 flex items-center gap-2">
+                    {passwordsMatch ? (
+                      <>
+                        <Check className="h-4 w-4 text-green-500" />
+                        <span className="text-sm text-green-500">Passwords match</span>
+                      </>
+                    ) : (
+                      <>
+                        <X className="h-4 w-4 text-red-500" />
+                        <span className="text-sm text-red-500">Passwords don't match</span>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {newPassword && (
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="text-sm font-medium text-foreground mb-2">Requirements:</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {requirements.map((req, i) => (
+                      <div key={i} className="flex items-center gap-2 text-sm">
+                        {req.met ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <X className="h-3 w-3 text-muted-foreground" />
+                        )}
+                        <span className={req.met ? "text-green-500" : "text-muted-foreground"}>
+                          {req.text}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <Button
+                onClick={updatePassword}
+                disabled={saving || !passwordsMatch || requirements.some(req => !req.met)}
+                className="w-full bg-gold text-gold-foreground hover:bg-gold/90"
+              >
+                {saving ? "Updating..." : "Update Password"}
+              </Button>
+            </div>
           </CollapsibleContent>
         </Collapsible>
 
@@ -839,7 +841,7 @@ function NotificationPreferencesSection({
   onUpdate: () => void;
 }) {
   const { toast } = useToast();
-  const [notifications, setNotifications] = useState({
+  const [notifications, setNotifications] = useState<Record<string, boolean>>({
     order_confirmations: true,
     fitting_report_ready: true,
     refitting_reminders: true,
@@ -1105,7 +1107,7 @@ function PrivacyDataSection({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5 text-accent" />
+            <DatabaseIcon className="h-5 w-5 text-accent" />
             Data & Privacy
           </CardTitle>
           <p className="text-sm text-muted-foreground">
