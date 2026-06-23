@@ -42,7 +42,7 @@ type SupportRequest = Database["public"]["Tables"]["support_requests"]["Row"];
 
 export default function SupportRequests() {
   return (
-    <ProtectedRoute requireAdmin>
+    <ProtectedRoute adminOnly>
       <SupportRequestsContent />
     </ProtectedRoute>
   );
