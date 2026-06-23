@@ -4,25 +4,27 @@
 Prime Swing Fits is a self-guided, static golf club fitting tool that empowers golfers to receive personalized club fitting recommendations without visiting a pro shop. Built for tablet-first use (768px primary), fully responsive for mobile and desktop.
 
 ## Design
-**Palette:** Deep navy (#0A1628) primary for trust and technical authority, forest green (#2E7D4F) accent representing the fairway, white backgrounds for clarity.
+**Palette:** Premium golf luxury — rich black (#0A0A0A) primary for sophistication, vibrant golf-course green (#22C55E) accent for energy and the game, luxe gold (#D4AF37) for premium touches.
 
 **shadcn tokens:**
---primary: 207 100% 10% (deep navy #0A1628)
+--primary: 0 0% 4% (rich black #0A0A0A)
 --primary-foreground: 0 0% 100% (white)
---accent: 152 47% 34% (forest green #2E7D4F)
+--accent: 142 71% 45% (vibrant green #22C55E)
 --accent-foreground: 0 0% 100% (white)
+--gold: 43 74% 53% (luxe gold #D4AF37)
+--gold-foreground: 0 0% 4% (black)
 --background: 0 0% 100% (white)
---foreground: 207 100% 10% (deep navy)
---muted: 210 17% 95% (light gray)
---muted-foreground: 210 15% 40% (dark gray)
+--foreground: 0 0% 4% (black)
+--muted: 0 0% 96% (light gray)
+--muted-foreground: 0 0% 45% (medium gray)
 --card: 0 0% 100% (white)
---border: 210 20% 88% (subtle gray)
+--border: 0 0% 90% (subtle gray)
 
 **Fonts:** 
-Heading: Inter (600, 700) — geometric confidence for technical precision
-Body: Inter (400, 500) — optimized for form readability
+Heading: Inter (600, 700) — clean, modern confidence
+Body: Inter (400, 500) — optimized readability
 
-**Style direction:** Clean, sports-oriented SaaS with professional equipment precision. Generous whitespace, card-based wizard steps, prominent progress indicators.
+**Style direction:** Premium golf luxury with high-end country club sophistication. Bold black foundations, vibrant green energy, gold premium accents. Golf imagery throughout — courses, clubs, precision equipment. Rich visual hierarchy with generous spacing.
 
 ## Features
 - 6-step guided fitting wizard with validation and progress tracking
