@@ -948,7 +948,7 @@ function NotificationPreferencesSection({
                   </TableCell>
                   <TableCell className="text-right">
                     <Switch
-                      checked={notifications[notification.key as keyof typeof notifications]}
+                      checked={notifications[notification.key] || false}
                       onCheckedChange={(checked) =>
                         setNotifications({ ...notifications, [notification.key]: checked })
                       }
