@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Support() {
   const { toast } = useToast();
@@ -56,9 +57,76 @@ export default function Support() {
     setIsSubmitting(true);
 
     try {
-      // TODO: Integrate with email service
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      // Format email HTML for admin
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #0A0A0A 0%, #22C55E 100%); padding: 30px; border-radius: 8px 8px 0 0; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">New Support Request</h1>
+          </div>
+          
+          <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px;">
+            <div style="background: white; padding: 25px; border-radius: 8px; border-left: 4px solid #22C55E;">
+              <h2 style="color: #0A0A0A; margin-top: 0; font-size: 20px;">Contact Information</h2>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-weight: 600; width: 140px;">Name:</td>
+                  <td style="padding: 10px 0; color: #0A0A0A;">${formData.name}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-weight: 600;">Email:</td>
+                  <td style="padding: 10px 0; color: #0A0A0A;"><a href="mailto:${formData.email}" style="color: #22C55E; text-decoration: none;">${formData.email}</a></td>
+                </tr>
+                ${formData.orderNumber ? `
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-weight: 600;">Order Number:</td>
+                  <td style="padding: 10px 0; color: #0A0A0A;">${formData.orderNumber}</td>
+                </tr>
+                ` : ''}
+                <tr>
+                  <td style="padding: 10px 0; color: #6b7280; font-weight: 600;">Subject:</td>
+                  <td style="padding: 10px 0;"><span style="background: #D4AF37; color: #0A0A0A; padding: 4px 12px; border-radius: 4px; font-weight: 600; font-size: 14px;">${formData.subject}</span></td>
+                </tr>
+              </table>
+            </div>
+
+            <div style="background: white; padding: 25px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #D4AF37;">
+              <h2 style="color: #0A0A0A; margin-top: 0; font-size: 20px;">Message</h2>
+              <p style="color: #374151; line-height: 1.6; white-space: pre-wrap;">${formData.message}</p>
+            </div>
+
+            <div style="margin-top: 30px; padding: 20px; background: #eff6ff; border-radius: 8px; text-align: center;">
+              <p style="color: #1e40af; margin: 0; font-size: 14px;">
+                📧 Reply directly to <a href="mailto:${formData.email}" style="color: #22C55E; text-decoration: none; font-weight: 600;">${formData.email}</a>
+              </p>
+            </div>
+
+            <div style="margin-top: 20px; text-align: center; color: #9ca3af; font-size: 12px;">
+              <p style="margin: 5px 0;">Prime Swing Fits Support System</p>
+              <p style="margin: 5px 0;">Northern Virginia, USA</p>
+              <p style="margin: 5px 0;">Submitted: ${new Date().toLocaleString('en-US', { 
+                dateStyle: 'full', 
+                timeStyle: 'short',
+                timeZone: 'America/New_York'
+              })}</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Call the send-email edge function
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: {
+          to: 'support@primeswingfits.com', // Admin email - update this to your actual admin email
+          subject: `[Support] ${formData.subject} - ${formData.name}`,
+          html: emailHtml
+        }
+      });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+
       toast({
         title: "Message Sent",
         description: "We'll respond within 24 business hours.",
@@ -66,9 +134,10 @@ export default function Support() {
       
       setFormData({ name: "", email: "", orderNumber: "", subject: "General", message: "" });
     } catch (error) {
+      console.error('Form submission error:', error);
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: "Failed to send message. Please try again or email support@primeswingfits.com directly.",
         variant: "destructive",
       });
     } finally {
