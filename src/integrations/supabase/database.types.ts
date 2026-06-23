@@ -610,6 +610,114 @@ export type Database = {
           },
         ]
       }
+      user_profiles: {
+        Row: {
+          attack_angle: string | null
+          ball_flight: string | null
+          city: string | null
+          club_budget: string | null
+          club_path: string | null
+          club_priorities: string[] | null
+          created_at: string | null
+          date_of_birth: string | null
+          dominant_hand: string | null
+          driver_distance: string | null
+          first_name: string | null
+          gender: string | null
+          glove_size: string | null
+          hand_size: string | null
+          handicap_index: number | null
+          height_ft: number | null
+          height_in: number | null
+          id: string
+          iron_7_distance: number | null
+          last_name: string | null
+          membership_tier: string | null
+          miss_direction: string | null
+          phone_number: string | null
+          physical_considerations: string[] | null
+          preferred_ball_height: string | null
+          preferred_brands: string[] | null
+          primary_goals: string[] | null
+          state: string | null
+          swing_speed_range: string | null
+          updated_at: string | null
+          user_id: string
+          wrist_to_floor: number | null
+          years_playing: string | null
+        }
+        Insert: {
+          attack_angle?: string | null
+          ball_flight?: string | null
+          city?: string | null
+          club_budget?: string | null
+          club_path?: string | null
+          club_priorities?: string[] | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          dominant_hand?: string | null
+          driver_distance?: string | null
+          first_name?: string | null
+          gender?: string | null
+          glove_size?: string | null
+          hand_size?: string | null
+          handicap_index?: number | null
+          height_ft?: number | null
+          height_in?: number | null
+          id?: string
+          iron_7_distance?: number | null
+          last_name?: string | null
+          membership_tier?: string | null
+          miss_direction?: string | null
+          phone_number?: string | null
+          physical_considerations?: string[] | null
+          preferred_ball_height?: string | null
+          preferred_brands?: string[] | null
+          primary_goals?: string[] | null
+          state?: string | null
+          swing_speed_range?: string | null
+          updated_at?: string | null
+          user_id: string
+          wrist_to_floor?: number | null
+          years_playing?: string | null
+        }
+        Update: {
+          attack_angle?: string | null
+          ball_flight?: string | null
+          city?: string | null
+          club_budget?: string | null
+          club_path?: string | null
+          club_priorities?: string[] | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          dominant_hand?: string | null
+          driver_distance?: string | null
+          first_name?: string | null
+          gender?: string | null
+          glove_size?: string | null
+          hand_size?: string | null
+          handicap_index?: number | null
+          height_ft?: number | null
+          height_in?: number | null
+          id?: string
+          iron_7_distance?: number | null
+          last_name?: string | null
+          membership_tier?: string | null
+          miss_direction?: string | null
+          phone_number?: string | null
+          physical_considerations?: string[] | null
+          preferred_ball_height?: string | null
+          preferred_brands?: string[] | null
+          primary_goals?: string[] | null
+          state?: string | null
+          swing_speed_range?: string | null
+          updated_at?: string | null
+          user_id?: string
+          wrist_to_floor?: number | null
+          years_playing?: string | null
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           created_at: string | null
