@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useRef } from "react";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Target, Trophy, FileText, TrendingUp, Zap, Award, Users, Clock } from "lucide-react";
+import { Target, Trophy, FileText, TrendingUp, Zap, Award, Users, Clock, ArrowRight, Star } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { useParallax } from "@/hooks/useParallax";
 
 function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const { elementRef, isVisible } = useScrollAnimation();
@@ -28,45 +29,123 @@ function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; d
 
 export default function Home() {
   const { user } = useAuth();
+  const heroRef = useRef<HTMLElement>(null);
+  
+  const backgroundOffset = useParallax({ speed: 0.5, direction: "up" });
+  const midgroundOffset = useParallax({ speed: 0.3, direction: "up" });
+  const foregroundOffset = useParallax({ speed: 0.15, direction: "up" });
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
 
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
+      <section ref={heroRef} className="relative h-screen overflow-hidden">
+        <div 
+          className="absolute inset-0 z-0"
+          style={{ transform: `translateY(${backgroundOffset}px)` }}
+        >
           <img 
-            src="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=2070&auto=format&fit=crop"
-            alt="Luxury golf course"
-            className="w-full h-full object-cover opacity-40"
+            src="https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=2400&auto=format&fit=crop"
+            alt="Pristine golf course fairway"
+            className="w-full h-[120%] object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-accent/90" />
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/85 to-accent/80" />
         </div>
-        <div className="container relative z-10 py-24 md:py-32">
-          <div className="max-w-4xl mx-auto text-center text-white">
-            <div className="flex justify-center mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <div className="bg-gold/20 p-6 rounded-full backdrop-blur-sm">
-                <Trophy className="h-16 w-16 text-gold" />
+
+        <div 
+          className="absolute inset-0 z-10"
+          style={{ transform: `translateY(${midgroundOffset}px)` }}
+        >
+          <div className="absolute inset-0 opacity-20">
+            <img 
+              src="https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2400&auto=format&fit=crop"
+              alt="Golf clubs detail"
+              className="w-full h-full object-cover mix-blend-overlay"
+            />
+          </div>
+        </div>
+
+        <div 
+          className="absolute bottom-0 left-0 right-0 h-32 z-20 bg-gradient-to-t from-primary/60 to-transparent"
+          style={{ transform: `translateY(${foregroundOffset}px)` }}
+        />
+
+        <div className="container relative z-30 h-full flex items-center justify-center">
+          <div className="max-w-5xl mx-auto text-center text-white">
+            <div className="flex justify-center mb-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gold/30 blur-2xl rounded-full" />
+                <div className="relative bg-gold/10 p-8 rounded-full backdrop-blur-md border border-gold/30">
+                  <Trophy className="h-20 w-20 text-gold drop-shadow-2xl" />
+                </div>
               </div>
             </div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
-              Perfect Your Game
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-              Professional golf club fitting at your fingertips. Get personalized recommendations in minutes.
+
+            <div className="space-y-2 mb-8 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-150">
+              <div className="inline-flex items-center gap-2 bg-gold/20 backdrop-blur-sm text-gold px-5 py-2.5 rounded-full mb-6 border border-gold/30">
+                <Star className="h-4 w-4 fill-gold" />
+                <span className="text-sm font-semibold tracking-wide">Professional Club Fitting Technology</span>
+              </div>
+              
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-6 tracking-tight leading-none">
+                Perfect Your
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-gold via-accent to-gold mt-3">
+                  Golf Game
+                </span>
+              </h1>
+            </div>
+
+            <p className="text-xl md:text-2xl lg:text-3xl mb-12 text-white/95 max-w-4xl mx-auto leading-relaxed font-light animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-300">
+              Get <span className="font-semibold text-gold">precision-engineered</span> club recommendations tailored to your swing. Professional fitting technology at your fingertips.
             </p>
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
-              <Button size="lg" asChild className="text-lg px-8 py-6 bg-gold text-gold-foreground hover:bg-gold/90 shadow-xl hover:scale-105 transition-transform">
-                <Link href={user ? "/fitting/new" : "/auth/register"}>
-                  Start Your Free Fitting
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-500">
+              <Button 
+                size="lg" 
+                asChild 
+                className="text-lg px-12 py-8 bg-gold text-gold-foreground hover:bg-gold/90 shadow-2xl hover:shadow-gold/40 hover:scale-105 transition-all duration-300 group"
+              >
+                <Link href={user ? "/fitting/new" : "/auth/register"} className="flex items-center gap-3">
+                  <span className="font-semibold">Start Your Fitting</span>
+                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
+              
+              <Button 
+                size="lg" 
+                variant="outline" 
+                asChild 
+                className="text-lg px-12 py-8 bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white/20 hover:border-white/50 shadow-xl transition-all duration-300"
+              >
+                <Link href="#how-it-works">Learn More</Link>
+              </Button>
             </div>
+
+            <div className="mt-16 grid grid-cols-3 gap-8 max-w-3xl mx-auto animate-in fade-in duration-1000 delay-700">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-gold mb-2">6</div>
+                <div className="text-sm text-white/80 uppercase tracking-wide">Step Process</div>
+              </div>
+              <div className="text-center border-x border-white/20">
+                <div className="text-4xl font-bold text-gold mb-2">100%</div>
+                <div className="text-sm text-white/80 uppercase tracking-wide">Personalized</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-gold mb-2">5 Min</div>
+                <div className="text-sm text-white/80 uppercase tracking-wide">To Complete</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 animate-bounce">
+          <div className="w-8 h-12 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
+            <div className="w-1.5 h-3 bg-white/60 rounded-full" />
           </div>
         </div>
       </section>
 
-      <section className="py-20 bg-muted/30">
+      <section id="how-it-works" className="py-20 bg-muted/30">
         <div className="container">
           <div className="max-w-6xl mx-auto">
             <AnimatedSection>
