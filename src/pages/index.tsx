@@ -6,6 +6,25 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Target, Trophy, FileText, TrendingUp, Zap, Award, Users, Clock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+
+function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const { elementRef, isVisible } = useScrollAnimation();
+  
+  return (
+    <div
+      ref={elementRef}
+      className="transition-all duration-700 ease-out"
+      style={{
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? "translateY(0)" : "translateY(30px)",
+        transitionDelay: `${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 export default function Home() {
   const { user } = useAuth();
@@ -25,22 +44,24 @@ export default function Home() {
         </div>
         <div className="container relative z-10 py-24 md:py-32">
           <div className="max-w-4xl mx-auto text-center text-white">
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-center mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <div className="bg-gold/20 p-6 rounded-full backdrop-blur-sm">
                 <Trophy className="h-16 w-16 text-gold" />
               </div>
             </div>
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
               Perfect Your Game
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto">
+            <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
               Professional golf club fitting at your fingertips. Get personalized recommendations in minutes.
             </p>
-            <Button size="lg" asChild className="text-lg px-8 py-6 bg-gold text-gold-foreground hover:bg-gold/90 shadow-xl">
-              <Link href={user ? "/fitting/new" : "/auth/register"}>
-                Start Your Free Fitting
-              </Link>
-            </Button>
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+              <Button size="lg" asChild className="text-lg px-8 py-6 bg-gold text-gold-foreground hover:bg-gold/90 shadow-xl hover:scale-105 transition-transform">
+                <Link href={user ? "/fitting/new" : "/auth/register"}>
+                  Start Your Free Fitting
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -48,63 +69,71 @@ export default function Home() {
       <section className="py-20 bg-muted/30">
         <div className="container">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full mb-4">
-                <Target className="h-4 w-4" />
-                <span className="text-sm font-semibold">Premium Fitting Experience</span>
+            <AnimatedSection>
+              <div className="text-center mb-16">
+                <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full mb-4">
+                  <Target className="h-4 w-4" />
+                  <span className="text-sm font-semibold">Premium Fitting Experience</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+                  How It Works
+                </h2>
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                  Three simple steps to unlock your perfect golf club setup
+                </p>
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-                How It Works
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Three simple steps to unlock your perfect golf club setup
-              </p>
-            </div>
+            </AnimatedSection>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <Card className="text-center hover:shadow-2xl transition-all duration-300 border-2 hover:border-accent/50 group">
-                <CardContent className="pt-10 pb-8">
-                  <div className="bg-gradient-to-br from-accent to-accent/70 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                    <Users className="h-10 w-10 text-white" />
-                  </div>
-                  <div className="bg-gold text-gold-foreground w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4 font-bold">
-                    1
-                  </div>
-                  <h3 className="text-2xl font-semibold mb-4">Answer Questions</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Complete our guided 6-step wizard about your playing profile, swing characteristics, and measurements.
-                  </p>
-                </CardContent>
-              </Card>
+              <AnimatedSection delay={0}>
+                <Card className="text-center hover:shadow-2xl transition-all duration-300 border-2 hover:border-accent/50 group h-full">
+                  <CardContent className="pt-10 pb-8">
+                    <div className="bg-gradient-to-br from-accent to-accent/70 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                      <Users className="h-10 w-10 text-white" />
+                    </div>
+                    <div className="bg-gold text-gold-foreground w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4 font-bold">
+                      1
+                    </div>
+                    <h3 className="text-2xl font-semibold mb-4">Answer Questions</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Complete our guided 6-step wizard about your playing profile, swing characteristics, and measurements.
+                    </p>
+                  </CardContent>
+                </Card>
+              </AnimatedSection>
 
-              <Card className="text-center hover:shadow-2xl transition-all duration-300 border-2 hover:border-accent/50 group">
-                <CardContent className="pt-10 pb-8">
-                  <div className="bg-gradient-to-br from-accent to-accent/70 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                    <TrendingUp className="h-10 w-10 text-white" />
-                  </div>
-                  <div className="bg-gold text-gold-foreground w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4 font-bold">
-                    2
-                  </div>
-                  <h3 className="text-2xl font-semibold mb-4">Get Recommendations</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Our expert algorithm analyzes your data and generates personalized club fitting recommendations.
-                  </p>
-                </CardContent>
-              </Card>
+              <AnimatedSection delay={150}>
+                <Card className="text-center hover:shadow-2xl transition-all duration-300 border-2 hover:border-accent/50 group h-full">
+                  <CardContent className="pt-10 pb-8">
+                    <div className="bg-gradient-to-br from-accent to-accent/70 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                      <TrendingUp className="h-10 w-10 text-white" />
+                    </div>
+                    <div className="bg-gold text-gold-foreground w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4 font-bold">
+                      2
+                    </div>
+                    <h3 className="text-2xl font-semibold mb-4">Get Recommendations</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Our expert algorithm analyzes your data and generates personalized club fitting recommendations.
+                    </p>
+                  </CardContent>
+                </Card>
+              </AnimatedSection>
 
-              <Card className="text-center hover:shadow-2xl transition-all duration-300 border-2 hover:border-accent/50 group">
-                <CardContent className="pt-10 pb-8">
-                  <div className="bg-gradient-to-br from-accent to-accent/70 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                    <Trophy className="h-10 w-10 text-white" />
-                  </div>
-                  <div className="bg-gold text-gold-foreground w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4 font-bold">
-                    3
-                  </div>
-                  <h3 className="text-2xl font-semibold mb-4">Play Better</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Download your detailed fitting report and find the perfect clubs to elevate your game.
-                  </p>
-                </CardContent>
-              </Card>
+              <AnimatedSection delay={300}>
+                <Card className="text-center hover:shadow-2xl transition-all duration-300 border-2 hover:border-accent/50 group h-full">
+                  <CardContent className="pt-10 pb-8">
+                    <div className="bg-gradient-to-br from-accent to-accent/70 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                      <Trophy className="h-10 w-10 text-white" />
+                    </div>
+                    <div className="bg-gold text-gold-foreground w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4 font-bold">
+                      3
+                    </div>
+                    <h3 className="text-2xl font-semibold mb-4">Play Better</h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Download your detailed fitting report and find the perfect clubs to elevate your game.
+                    </p>
+                  </CardContent>
+                </Card>
+              </AnimatedSection>
             </div>
           </div>
         </div>
@@ -120,82 +149,92 @@ export default function Home() {
         </div>
         <div className="container relative z-10">
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center gap-2 bg-gold/10 text-gold px-4 py-2 rounded-full mb-4">
-                <Award className="h-4 w-4" />
-                <span className="text-sm font-semibold">Premium Benefits</span>
+            <AnimatedSection>
+              <div className="text-center mb-16">
+                <div className="inline-flex items-center gap-2 bg-gold/10 text-gold px-4 py-2 rounded-full mb-4">
+                  <Award className="h-4 w-4" />
+                  <span className="text-sm font-semibold">Premium Benefits</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+                  Why Choose Prime Swing Fits?
+                </h2>
+                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                  Experience professional-grade fitting from anywhere
+                </p>
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-                Why Choose Prime Swing Fits?
-              </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Experience professional-grade fitting from anywhere
-              </p>
-            </div>
+            </AnimatedSection>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent">
-                <CardContent className="pt-8">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-accent/10 p-4 rounded-xl flex-shrink-0">
-                      <Zap className="h-7 w-7 text-accent" />
+              <AnimatedSection delay={0}>
+                <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent h-full">
+                  <CardContent className="pt-8">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-accent/10 p-4 rounded-xl flex-shrink-0">
+                        <Zap className="h-7 w-7 text-accent" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold mb-3">Guided Wizard</h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Step-by-step process with clear instructions and helpful tips at every stage of your fitting journey.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-3">Guided Wizard</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        Step-by-step process with clear instructions and helpful tips at every stage of your fitting journey.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </AnimatedSection>
 
-              <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-gold">
-                <CardContent className="pt-8">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-gold/10 p-4 rounded-xl flex-shrink-0">
-                      <Target className="h-7 w-7 text-gold" />
+              <AnimatedSection delay={150}>
+                <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-gold h-full">
+                  <CardContent className="pt-8">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-gold/10 p-4 rounded-xl flex-shrink-0">
+                        <Target className="h-7 w-7 text-gold" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold mb-3">Personalized Results</h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Recommendations tailored to your unique swing characteristics, playing style, and physical attributes.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-3">Personalized Results</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        Recommendations tailored to your unique swing characteristics, playing style, and physical attributes.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </AnimatedSection>
 
-              <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent">
-                <CardContent className="pt-8">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-accent/10 p-4 rounded-xl flex-shrink-0">
-                      <FileText className="h-7 w-7 text-accent" />
+              <AnimatedSection delay={300}>
+                <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent h-full">
+                  <CardContent className="pt-8">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-accent/10 p-4 rounded-xl flex-shrink-0">
+                        <FileText className="h-7 w-7 text-accent" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold mb-3">Downloadable Report</h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Get a professional PDF report you can take to any club fitter or pro shop for reference.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-3">Downloadable Report</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        Get a professional PDF report you can take to any club fitter or pro shop for reference.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </AnimatedSection>
 
-              <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-gold">
-                <CardContent className="pt-8">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-gold/10 p-4 rounded-xl flex-shrink-0">
-                      <Award className="h-7 w-7 text-gold" />
+              <AnimatedSection delay={450}>
+                <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-gold h-full">
+                  <CardContent className="pt-8">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-gold/10 p-4 rounded-xl flex-shrink-0">
+                        <Award className="h-7 w-7 text-gold" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold mb-3">Expert Science</h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Based on proven club fitting principles used by professional fitters and tour players worldwide.
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-xl font-semibold mb-3">Expert Science</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        Based on proven club fitting principles used by professional fitters and tour players worldwide.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </AnimatedSection>
             </div>
           </div>
         </div>
@@ -210,24 +249,26 @@ export default function Home() {
           />
         </div>
         <div className="container relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="flex justify-center mb-6">
-              <div className="bg-gold/20 p-4 rounded-full backdrop-blur-sm">
-                <Clock className="h-12 w-12 text-gold" />
+          <AnimatedSection>
+            <div className="max-w-4xl mx-auto text-center">
+              <div className="flex justify-center mb-6">
+                <div className="bg-gold/20 p-4 rounded-full backdrop-blur-sm">
+                  <Clock className="h-12 w-12 text-gold" />
+                </div>
               </div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6">
+                Ready to Perfect Your Setup?
+              </h2>
+              <p className="text-xl mb-10 text-white/90 max-w-2xl mx-auto">
+                Join thousands of golfers who have optimized their game with Prime Swing Fits. Start your personalized fitting journey today.
+              </p>
+              <Button size="lg" asChild className="text-lg px-10 py-7 bg-gold text-gold-foreground hover:bg-gold/90 shadow-2xl hover:shadow-gold/20 hover:scale-105 transition-all">
+                <Link href={user ? "/fitting/new" : "/auth/register"}>
+                  Get Started Now — It's Free
+                </Link>
+              </Button>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Ready to Perfect Your Setup?
-            </h2>
-            <p className="text-xl mb-10 text-white/90 max-w-2xl mx-auto">
-              Join thousands of golfers who have optimized their game with Prime Swing Fits. Start your personalized fitting journey today.
-            </p>
-            <Button size="lg" asChild className="text-lg px-10 py-7 bg-gold text-gold-foreground hover:bg-gold/90 shadow-2xl hover:shadow-gold/20 transition-all">
-              <Link href={user ? "/fitting/new" : "/auth/register"}>
-                Get Started Now — It's Free
-              </Link>
-            </Button>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
 
