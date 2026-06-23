@@ -1,6 +1,6 @@
 ---
 title: Marketing & Information Pages
-status: in_progress
+status: done
 priority: high
 type: feature
 tags: [frontend, marketing, public]
@@ -13,12 +13,12 @@ position: 8
 Create public marketing and information pages to build trust, educate users, and reduce support burden. All pages should use the premium golf aesthetic with green/gold/black branding.
 
 ## Checklist
-- [ ] /about - Company story, mission, team, credentials with golf imagery
-- [ ] /how-it-works - Detailed 6-step fitting process explanation with visuals
-- [ ] /faq - Frequently asked questions with accordion UI
-- [ ] /contact - Contact form with email integration
-- [ ] /testimonials - Customer success stories with ratings and photos
-- [ ] /blog - Blog landing page with featured articles grid
+- [x] /about - Company story, mission, team, credentials with golf imagery
+- [x] /how-it-works - Detailed 6-step fitting process explanation with visuals
+- [x] /faq - Frequently asked questions with accordion UI
+- [x] /contact - Contact form with email integration
+- [x] /testimonials - Customer success stories with ratings and photos
+- [x] /blog - Blog landing page with featured articles grid
 
 ## Acceptance
 - All pages accessible from navigation/footer

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -232,12 +233,12 @@ export default function Contact() {
                       <p className="text-muted-foreground mb-3">
                         Find quick answers to common questions.
                       </p>
-                      <a 
+                      <Link 
                         href="/faq"
                         className="text-accent hover:underline font-medium"
                       >
                         View FAQ →
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </CardContent>
