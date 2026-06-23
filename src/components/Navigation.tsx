@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Trophy, LayoutDashboard, Shield, LogOut } from "lucide-react";
+import { Trophy, LayoutDashboard, Shield, LogOut, GitCompare } from "lucide-react";
 
 export function Navigation() {
   const { user, isLoading, signOut } = useAuth();
@@ -19,6 +19,10 @@ export function Navigation() {
           </Link>
 
           <div className="flex items-center gap-4">
+            <Link href="/clubs/compare" className="text-muted-foreground hover:text-accent transition-colors font-medium flex items-center gap-2">
+              <GitCompare className="h-4 w-4" />
+              Compare
+            </Link>
             <Link href="/pricing" className="text-muted-foreground hover:text-accent transition-colors font-medium">
               Pricing
             </Link>
