@@ -462,7 +462,7 @@ function getComparisonSpecs(products: Product[]) {
 
   const specs: Array<{
     label: string;
-    values: (string | number | null)[];
+    values: any[];
     icon: React.ReactNode;
     isDifferent: (index: number) => boolean;
     highlight?: "best" | "worst";
