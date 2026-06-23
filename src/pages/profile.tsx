@@ -295,7 +295,6 @@ function ProfileContent() {
                 <CardContent className="pt-6 text-center">
                   <div className="relative inline-block mb-4">
                     <Avatar className="w-24 h-24">
-                      <AvatarImage src={profile.avatar_url || undefined} />
                       <AvatarFallback className="bg-accent text-white text-2xl">
                         {userInitials}
                       </AvatarFallback>
