@@ -850,7 +850,7 @@ function NotificationPreferencesSection({
     weekly_golf_tips: false,
     promotional_offers: false,
     blog_updates: false,
-  });
+  } as Record<string, boolean>);
   
   const [notifications, setNotifications] = useState<Record<string, boolean>>(getInitialNotifications());
   const [emailFrequency, setEmailFrequency] = useState("immediately");
