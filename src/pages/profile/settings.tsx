@@ -833,10 +833,6 @@ function PasswordSecuritySection({ user }: { user: any }) {
 }
 
 // SECTION 3: Notification Preferences
-interface NotificationPrefs {
-  [key: string]: boolean;
-}
-
 function NotificationPreferencesSection({
   profile,
   onUpdate,
@@ -846,7 +842,7 @@ function NotificationPreferencesSection({
 }) {
   const { toast } = useToast();
   
-  const [notifications, setNotifications] = useState<NotificationPrefs>({
+  const getInitialNotifications = (): Record<string, boolean> => ({
     order_confirmations: true,
     fitting_report_ready: true,
     refitting_reminders: true,
@@ -855,6 +851,8 @@ function NotificationPreferencesSection({
     promotional_offers: false,
     blog_updates: false,
   });
+  
+  const [notifications, setNotifications] = useState(getInitialNotifications());
   const [emailFrequency, setEmailFrequency] = useState("immediately");
   const [saving, setSaving] = useState(false);
 
