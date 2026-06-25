@@ -833,6 +833,16 @@ function PasswordSecuritySection({ user }: { user: any }) {
 }
 
 // SECTION 3: Notification Preferences
+interface NotificationSettings {
+  order_confirmations: boolean;
+  fitting_report_ready: boolean;
+  refitting_reminders: boolean;
+  club_database_updates: boolean;
+  weekly_golf_tips: boolean;
+  promotional_offers: boolean;
+  blog_updates: boolean;
+}
+
 function NotificationPreferencesSection({
   profile,
   onUpdate,
@@ -842,7 +852,7 @@ function NotificationPreferencesSection({
 }) {
   const { toast } = useToast();
   
-  const [notifications, setNotifications] = useState({
+  const [notifications, setNotifications] = useState<NotificationSettings>({
     order_confirmations: true,
     fitting_report_ready: true,
     refitting_reminders: true,
@@ -949,11 +959,11 @@ function NotificationPreferencesSection({
                   </TableCell>
                   <TableCell className="text-right">
                     <Switch
-                      checked={notifications[notification.key as keyof typeof notifications] || false}
+                      checked={notifications[notification.key as keyof NotificationSettings] || false}
                       onCheckedChange={(value) => {
                         setNotifications(prev => {
                           const updated = { ...prev };
-                          (updated as any)[notification.key] = Boolean(value);
+                          updated[notification.key as keyof NotificationSettings] = Boolean(value);
                           return updated;
                         });
                       }}
