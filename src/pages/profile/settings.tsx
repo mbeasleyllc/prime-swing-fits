@@ -955,7 +955,7 @@ function NotificationPreferencesSection({
                         setNotifications((prev) => {
                           const result: Record<string, boolean> = {};
                           Object.keys(prev).forEach(k => { result[k] = prev[k]; });
-                          result[notification.key] = boolValue;
+                          result[notification.key as string] = boolValue;
                           return result;
                         });
                       }}
