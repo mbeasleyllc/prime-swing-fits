@@ -954,7 +954,7 @@ function NotificationPreferencesSection({
                   <TableCell className="text-right">
                     <Switch
                       checked={notifications[notification.key] || false}
-                      onCheckedChange={(checked) => {
+                      onCheckedChange={(checked: boolean) => {
                         setNotifications((prev) => {
                           const result = { ...prev, [notification.key]: checked };
                           return result as NotificationPrefs;
