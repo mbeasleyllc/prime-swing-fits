@@ -1,11 +1,14 @@
 ---
 title: Legal & Support Pages
-status: todo
+status: done
 priority: medium
 type: feature
-tags: [frontend, legal, support]
+tags:
+- frontend
+- legal
+- support
 created_by: agent
-created_at: 2026-06-23T04:03:29Z
+created_at: 2026-06-23 04:03:29+00:00
 position: 10
 ---
 
@@ -13,9 +16,9 @@ position: 10
 Create legal compliance and support documentation pages. Simple, clean layouts focused on readability.
 
 ## Checklist
-- [ ] /privacy - Privacy policy with sections and table of contents
-- [ ] /terms - Terms of service with clear sections
-- [ ] /support - Help center with searchable documentation and categories
+- [x] /privacy - Privacy policy with sections and table of contents
+- [x] /terms - Terms of service with clear sections
+- [x] /support - Help center with searchable documentation and categories
 
 ## Acceptance
 - All legal pages accessible from footer

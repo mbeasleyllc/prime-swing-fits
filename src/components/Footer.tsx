@@ -46,26 +46,35 @@ export function Footer() {
             <h3 className="font-semibold text-white mb-4">Company</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/" className="text-sm text-white/70 hover:text-accent transition-colors">
+                <Link href="/about" className="text-sm text-white/70 hover:text-accent transition-colors">
                   About
                 </Link>
               </li>
               <li>
-                <Link href="/" className="text-sm text-white/70 hover:text-accent transition-colors">
+                <Link href="/contact" className="text-sm text-white/70 hover:text-accent transition-colors">
                   Contact
+                </Link>
+              </li>
+              <li>
+                <Link href="/support" className="text-sm text-white/70 hover:text-accent transition-colors">
+                  Support
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold text-white mb-4">Contact</h4>
-            <ul className="space-y-2 text-sm">
+            <h3 className="font-semibold text-white mb-4">Legal</h3>
+            <ul className="space-y-2">
               <li>
-                <a href="mailto:support@primeswingfits.app" className="text-white/70 hover:text-gold transition-colors flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  support@primeswingfits.app
-                </a>
+                <Link href="/privacy" className="text-sm text-white/70 hover:text-accent transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-sm text-white/70 hover:text-accent transition-colors">
+                  Terms of Service
+                </Link>
               </li>
             </ul>
           </div>
