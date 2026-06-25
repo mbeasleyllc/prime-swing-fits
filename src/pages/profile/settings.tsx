@@ -842,7 +842,7 @@ function NotificationPreferencesSection({
 }) {
   const { toast } = useToast();
   
-  const [notifications, setNotifications] = useState<Record<string, boolean>>({
+  const createInitialNotifications = (): Record<string, boolean> => ({
     order_confirmations: true,
     fitting_report_ready: true,
     refitting_reminders: true,
@@ -851,6 +851,8 @@ function NotificationPreferencesSection({
     promotional_offers: false,
     blog_updates: false,
   });
+  
+  const [notifications, setNotifications] = useState<Record<string, boolean>>(createInitialNotifications());
   const [emailFrequency, setEmailFrequency] = useState("immediately");
   const [saving, setSaving] = useState(false);
 
@@ -951,7 +953,7 @@ function NotificationPreferencesSection({
                     <Switch
                       checked={notifications[notification.key] || false}
                       onCheckedChange={(checked) => {
-                        setNotifications((prev): Record<string, boolean> => ({
+                        setNotifications((prev) => ({
                           ...prev,
                           [notification.key]: checked
                         }));
