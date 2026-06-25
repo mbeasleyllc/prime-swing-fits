@@ -950,7 +950,9 @@ function NotificationPreferencesSection({
                     <Switch
                       checked={notifications[notification.key] || false}
                       onCheckedChange={(checked) => {
-                        setNotifications({ ...notifications, [notification.key]: checked });
+                        const updated = { ...notifications };
+                        updated[notification.key] = checked;
+                        setNotifications(updated);
                       }}
                       disabled={notification.locked}
                     />
