@@ -1,11 +1,14 @@
 ---
 title: Product Catalog & Browse Pages
-status: todo
+status: in_progress
 priority: high
 type: feature
-tags: [frontend, catalog, products]
+tags:
+- frontend
+- catalog
+- products
 created_by: agent
-created_at: 2026-06-23T04:03:29Z
+created_at: 2026-06-23 04:03:29+00:00
 position: 9
 ---
 
@@ -13,10 +16,10 @@ position: 9
 Create club catalog browsing experience with filtering, search, and detailed product pages. Connect to existing products table in Supabase.
 
 ## Checklist
-- [ ] /clubs - Main catalog with category filters, search, grid layout
-- [ ] /clubs/[category] - Filter by drivers, irons, wedges, putters
-- [ ] /clubs/[id] - Individual club detail page with full specs, images, related clubs
-- [ ] /brands - Browse clubs by manufacturer with brand logos
+- [x] /clubs - Main catalog with category filters, search, grid layout
+- [x] /clubs/[category] - Filter by drivers, irons, wedges, putters
+- [x] /clubs/[id] - Individual club detail page with full specs, images, related clubs
+- [x] /brands - Browse clubs by manufacturer with brand logos
 
 ## Acceptance
 - Users can browse and search all clubs
