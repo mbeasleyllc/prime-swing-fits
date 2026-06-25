@@ -958,7 +958,7 @@ function NotificationPreferencesSection({
                         setNotifications((prev) => ({
                           ...prev,
                           [notification.key]: checked
-                        }));
+                        } as NotificationPrefs));
                       }}
                       disabled={notification.locked}
                     />
