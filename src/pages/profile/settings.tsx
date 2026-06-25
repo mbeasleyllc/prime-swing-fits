@@ -747,7 +747,11 @@ function NotificationPreferencesSection({
   const [saving, setSaving] = useState(false);
 
   const handleNotificationChange = (key: keyof NotificationSettings, value: boolean) => {
-    setNotifications(prev => ({ ...prev, [key]: value }) as any as NotificationSettings);
+    setNotifications(prev => {
+      const result = { ...prev };
+      result[key] = value;
+      return result;
+    });
   };
 
   const saveNotificationPreferences = async () => {
