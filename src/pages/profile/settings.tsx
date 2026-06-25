@@ -842,6 +842,10 @@ type NotificationKey =
   | 'promotional_offers'
   | 'blog_updates';
 
+type NotificationSettings = {
+  [K in NotificationKey]: boolean;
+};
+
 function NotificationPreferencesSection({
   profile,
   onUpdate,
@@ -850,7 +854,7 @@ function NotificationPreferencesSection({
   onUpdate: () => void;
 }) {
   const { toast } = useToast();
-  const [notifications, setNotifications] = useState<Record<NotificationKey, boolean>>({
+  const [notifications, setNotifications] = useState<NotificationSettings>({
     order_confirmations: true,
     fitting_report_ready: true,
     refitting_reminders: true,
