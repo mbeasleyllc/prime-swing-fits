@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -153,7 +152,6 @@ function SettingsContent() {
             <p className="text-muted-foreground">Loading settings...</p>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -292,8 +290,6 @@ function SettingsContent() {
           </main>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 }
@@ -966,10 +962,11 @@ function NotificationPreferencesSection({
                     <Switch
                       checked={notifications[notification.key] || false}
                       onCheckedChange={(value) => {
-                        setNotifications(prev => ({
-                          ...prev,
+                        const updatedSettings = {
+                          ...notifications,
                           [notification.key]: value
-                        } as any));
+                        };
+                        setNotifications(updatedSettings as NotificationSettings);
                       }}
                       disabled={notification.locked}
                     />
