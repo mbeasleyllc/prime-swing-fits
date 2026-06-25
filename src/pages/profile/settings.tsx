@@ -45,6 +45,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
+  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import {
@@ -956,7 +957,7 @@ function NotificationPreferencesSection({
                       checked={notifications[notification.key] || false}
                       onCheckedChange={(checked) => {
                         setNotifications((prev) => {
-                          const updated = Object.assign({}, prev, { [notification.key]: checked });
+                          const updated = Object.assign({}, prev, { [notification.key]: checked }) as NotificationPrefs;
                           return updated;
                         });
                       }}
