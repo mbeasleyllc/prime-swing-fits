@@ -956,7 +956,8 @@ function NotificationPreferencesSection({
                       checked={notifications[notification.key] || false}
                       onCheckedChange={(checked) => {
                         setNotifications((prev) => {
-                          return { ...prev, [notification.key]: checked } as NotificationPrefs;
+                          const result = { ...prev, [notification.key]: checked };
+                          return result as NotificationPrefs;
                         });
                       }}
                       disabled={notification.locked}
