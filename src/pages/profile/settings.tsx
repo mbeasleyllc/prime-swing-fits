@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Navigation } from "@/components/Navigation";
+import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -144,153 +144,39 @@ function SettingsContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="flex items-center justify-center h-[60vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Loading settings...</p>
+      <ProtectedRoute>
+        <AppLayout>
+          <div className="flex items-center justify-center h-[60vh]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading settings...</p>
+            </div>
           </div>
-        </div>
-      </div>
+        </AppLayout>
+      </ProtectedRoute>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-
-      <div className="container py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* LEFT SIDEBAR - Desktop */}
-          <aside className="hidden lg:block lg:w-80 flex-shrink-0">
-            <div className="sticky top-24 space-y-6">
-              {/* User Avatar & Info */}
-              <Card>
-                <CardContent className="pt-6 text-center">
-                  <div className="relative inline-block mb-4">
-                    <Avatar className="w-24 h-24">
-                      <AvatarFallback className="bg-accent text-white text-2xl">
-                        {userInitials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <Button
-                      size="icon"
-                      className="absolute bottom-0 right-0 rounded-full h-8 w-8 bg-gold text-gold-foreground hover:bg-gold/90"
-                    >
-                      <Camera className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  
-                  <h2 className="font-bold text-xl text-foreground mb-1">
-                    {profile.first_name && profile.last_name
-                      ? `${profile.first_name} ${profile.last_name}`
-                      : "Your Name"}
-                  </h2>
-                  <p className="text-sm text-muted-foreground mb-3 truncate">
-                    {user?.email}
-                  </p>
-                  
-                  <Badge className={getMembershipBadgeColor(profile.membership_tier)}>
-                    {getMembershipLabel(profile.membership_tier)}
-                  </Badge>
-                  
-                  {/* Profile Completion */}
-                  <div className="mt-6">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-foreground">Profile Completion</span>
-                      <span className="text-sm font-bold text-accent">{completion}%</span>
-                    </div>
-                    <Progress value={completion} className="h-2" />
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {completion}% Complete — A fuller profile means a more accurate AI fitting.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Navigation Links */}
-              <Card>
-                <CardContent className="p-4">
-                  <nav className="space-y-1">
-                    <Link
-                      href="/profile"
-                      className="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors hover:bg-muted text-foreground"
-                    >
-                      <User className="h-4 w-4" />
-                      <span className="font-medium">Personal Info</span>
-                    </Link>
-                    
-                    <Link
-                      href="/profile"
-                      className="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors hover:bg-muted text-foreground"
-                    >
-                      <Ruler className="h-4 w-4" />
-                      <span className="font-medium">Measurements</span>
-                    </Link>
-                    
-                    <Link
-                      href="/profile"
-                      className="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors hover:bg-muted text-foreground"
-                    >
-                      <Trophy className="h-4 w-4" />
-                      <span className="font-medium">Swing Profile</span>
-                    </Link>
-                    
-                    <Link
-                      href="/profile"
-                      className="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors hover:bg-muted text-foreground"
-                    >
-                      <Target className="h-4 w-4" />
-                      <span className="font-medium">Preferences</span>
-                    </Link>
-                    
-                    <Link
-                      href="/profile"
-                      className="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors hover:bg-muted text-foreground"
-                    >
-                      <BarChart className="h-4 w-4" />
-                      <span className="font-medium">Fitting History</span>
-                    </Link>
-                    
-                    <div className="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 bg-accent text-white">
-                      <SettingsIcon className="h-4 w-4" />
-                      <span className="font-medium">Settings</span>
-                    </div>
-                  </nav>
-                </CardContent>
-              </Card>
-            </div>
-          </aside>
-
-          {/* MOBILE TAB STRIP */}
-          <div className="lg:hidden mb-6 overflow-x-auto">
-            <div className="flex gap-2 min-w-max pb-2">
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/profile">
-                  <User className="h-4 w-4 mr-2" />
-                  Profile
-                </Link>
-              </Button>
-              <Button variant="default" size="sm" className="bg-accent text-white">
-                <SettingsIcon className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-            </div>
+    <ProtectedRoute>
+      <AppLayout>
+        <div className="max-w-6xl">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-foreground mb-2">Settings</h1>
+            <p className="text-muted-foreground">Manage your account settings and preferences</p>
           </div>
 
-          {/* RIGHT CONTENT */}
-          <main className="flex-1 space-y-8">
+          <div className="space-y-8">
             <AccountDetailsSection user={user!} profile={profile} onUpdate={fetchProfile} />
             <PasswordSecuritySection user={user!} />
             <NotificationPreferencesSection profile={profile} onUpdate={fetchProfile} />
             <PrivacyDataSection user={user!} profile={profile} onUpdate={fetchProfile} />
             <IntegrationsSection />
             <DangerZoneSection user={user!} />
-          </main>
+          </div>
         </div>
-      </div>
-    </div>
+      </AppLayout>
+    </ProtectedRoute>
   );
 }
 
@@ -861,9 +747,7 @@ function NotificationPreferencesSection({
   const [saving, setSaving] = useState(false);
 
   const handleNotificationChange = (key: keyof NotificationSettings, value: boolean) => {
-    setNotifications(prev => {
-      return { ...prev, [key]: value };
-    });
+    setNotifications(prev => ({ ...prev, [key]: value } as NotificationSettings));
   };
 
   const saveNotificationPreferences = async () => {
