@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
+import { AppLayout } from "@/components/AppLayout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -259,181 +259,120 @@ export default function ClubComparison() {
   const showSearchResults = searchQuery.length >= 2 || searchResults.length > 0;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-
-      <section className="py-16 bg-gradient-to-br from-primary via-primary to-accent text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <img 
-            src="https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop"
-            alt="Golf clubs"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="container relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="flex justify-center mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <div className="bg-gold/20 p-4 rounded-full backdrop-blur-sm">
-                <GitCompare className="h-12 w-12 text-gold" />
+    <ProtectedRoute>
+      <AppLayout>
+        <div className="space-y-8">
+          <div className="bg-gradient-to-br from-primary via-primary to-accent text-white rounded-lg p-8 relative overflow-hidden">
+            <div className="absolute inset-0 opacity-10">
+              <img 
+                src="https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop"
+                alt="Golf clubs"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="relative z-10 max-w-4xl mx-auto text-center">
+              <div className="flex justify-center mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="bg-gold/20 p-4 rounded-full backdrop-blur-sm">
+                  <GitCompare className="h-12 w-12 text-gold" />
+                </div>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
+                Compare Clubs. Make the Right Call.
+              </h1>
+              <p className="text-lg text-white/90 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+                Side-by-side specs, performance ratings, and fitting insights for 30+ clubs across all categories.
+              </p>
+              <div className="flex flex-wrap justify-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+                <Badge className="bg-white/10 backdrop-blur-sm text-white border-white/20 px-4 py-2 text-sm">
+                  <Package className="h-4 w-4 mr-2" />
+                  30+ Clubs
+                </Badge>
+                <Badge className="bg-white/10 backdrop-blur-sm text-white border-white/20 px-4 py-2 text-sm">
+                  <Trophy className="h-4 w-4 mr-2" />
+                  6 Categories
+                </Badge>
+                <Badge className="bg-white/10 backdrop-blur-sm text-white border-white/20 px-4 py-2 text-sm">
+                  <Zap className="h-4 w-4 mr-2" />
+                  Instant Spec Compare
+                </Badge>
               </div>
             </div>
-            <h1 className="text-5xl md:text-6xl font-bold mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
-              Compare Clubs. Make the Right Call.
-            </h1>
-            <p className="text-xl text-white/90 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-              Side-by-side specs, performance ratings, and fitting insights for 30+ clubs across all categories.
-            </p>
-            <div className="flex flex-wrap justify-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
-              <Badge className="bg-white/10 backdrop-blur-sm text-white border-white/20 px-4 py-2 text-sm">
-                <Package className="h-4 w-4 mr-2" />
-                30+ Clubs
-              </Badge>
-              <Badge className="bg-white/10 backdrop-blur-sm text-white border-white/20 px-4 py-2 text-sm">
-                <Trophy className="h-4 w-4 mr-2" />
-                6 Categories
-              </Badge>
-              <Badge className="bg-white/10 backdrop-blur-sm text-white border-white/20 px-4 py-2 text-sm">
-                <Zap className="h-4 w-4 mr-2" />
-                Instant Spec Compare
-              </Badge>
-            </div>
           </div>
-        </div>
-      </section>
 
-      <section className="py-12">
-        <div className="container">
           <AnimatedSection>
-            <div className="max-w-7xl mx-auto">
-              <div className="flex flex-col lg:flex-row gap-8">
-                <div className="lg:w-1/3 order-2 lg:order-1">
-                  <Card className="lg:sticky lg:top-4">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Search className="h-5 w-5 text-accent" />
-                        Search Clubs
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex flex-wrap gap-2 border-b pb-4">
-                        {CATEGORIES.map((category) => (
-                          <Button
-                            key={category}
-                            variant={selectedCategory === category ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setSelectedCategory(category)}
-                            className={selectedCategory === category ? "bg-accent text-white hover:bg-accent/90" : ""}
-                          >
-                            {category}
-                            {category !== "All" && (
-                              <Badge variant="secondary" className="ml-2 text-xs">
-                                {getCategoryCount(category)}
-                              </Badge>
-                            )}
-                          </Button>
+            <div className="flex flex-col lg:flex-row gap-8">
+              <div className="lg:w-1/3 order-2 lg:order-1">
+                <Card className="lg:sticky lg:top-4">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Search className="h-5 w-5 text-accent" />
+                      Search Clubs
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex flex-wrap gap-2 border-b pb-4">
+                      {CATEGORIES.map((category) => (
+                        <Button
+                          key={category}
+                          variant={selectedCategory === category ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSelectedCategory(category)}
+                          className={selectedCategory === category ? "bg-accent text-white hover:bg-accent/90" : ""}
+                        >
+                          {category}
+                          {category !== "All" && (
+                            <Badge variant="secondary" className="ml-2 text-xs">
+                              {getCategoryCount(category)}
+                            </Badge>
+                          )}
+                        </Button>
+                      ))}
+                    </div>
+
+                    <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select brand" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {BRANDS.map((brand) => (
+                          <SelectItem key={brand} value={brand}>
+                            {brand}
+                          </SelectItem>
                         ))}
-                      </div>
+                      </SelectContent>
+                    </Select>
 
-                      <Select value={selectedBrand} onValueChange={setSelectedBrand}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select brand" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {BRANDS.map((brand) => (
-                            <SelectItem key={brand} value={brand}>
-                              {brand}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      <div className="relative">
-                        <Input
-                          placeholder="Search by brand or model..."
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          className="pr-10"
-                        />
-                        {isSearching && (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-                          </div>
-                        )}
-                      </div>
-
-                      {searchQuery.length > 0 && searchQuery.length < 2 && (
-                        <p className="text-sm text-muted-foreground">
-                          Type at least 2 characters to search
-                        </p>
-                      )}
-
-                      {showFeaturedClubs && filteredFeaturedClubs.length > 0 && (
-                        <div className="space-y-4">
-                          <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
-                            <Trophy className="h-4 w-4 text-gold" />
-                            {selectedCategory !== "All" || selectedBrand !== "All Brands" ? "Filtered Clubs" : "Featured Clubs"}
-                          </h3>
-                          <div className="grid grid-cols-2 gap-3">
-                            {filteredFeaturedClubs.map((product) => (
-                              <Card 
-                                key={product.id}
-                                className="cursor-pointer hover:shadow-lg transition-all border hover:border-accent/50"
-                                onClick={() => {
-                                  if (!activeSlot) {
-                                    const emptySlot = comparisonSlots.find(s => !s.product);
-                                    if (emptySlot) {
-                                      addProductToSlot(product, emptySlot.id);
-                                    } else {
-                                      toast({
-                                        title: "All Slots Full",
-                                        description: "Remove a club to add this one",
-                                        variant: "destructive",
-                                      });
-                                    }
-                                    return;
-                                  }
-                                  addProductToSlot(product, activeSlot);
-                                }}
-                              >
-                                <CardContent className="p-3">
-                                  <div className="space-y-2">
-                                    <h4 className="font-semibold text-xs truncate text-foreground">
-                                      {product.brand}
-                                    </h4>
-                                    <p className="text-xs text-muted-foreground truncate">
-                                      {product.model_name}
-                                    </p>
-                                    {product.price_usd && (
-                                      <p className="text-sm font-bold text-gold">
-                                        ${product.price_usd}
-                                      </p>
-                                    )}
-                                    <Button size="sm" className="w-full bg-gold text-gold-foreground hover:bg-gold/90 h-7 text-xs">
-                                      <Plus className="h-3 w-3 mr-1" />
-                                      Add
-                                    </Button>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
+                    <div className="relative">
+                      <Input
+                        placeholder="Search by brand or model..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pr-10"
+                      />
+                      {isSearching && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
                         </div>
                       )}
+                    </div>
 
-                      {showFeaturedClubs && filteredFeaturedClubs.length === 0 && (selectedCategory !== "All" || selectedBrand !== "All Brands") && (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p className="font-medium mb-1">No clubs found</p>
-                          <p className="text-sm">Try different filters</p>
-                        </div>
-                      )}
+                    {searchQuery.length > 0 && searchQuery.length < 2 && (
+                      <p className="text-sm text-muted-foreground">
+                        Type at least 2 characters to search
+                      </p>
+                    )}
 
-                      {showSearchResults && searchResults.length > 0 && (
-                        <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                          {searchResults.map((product) => (
+                    {showFeaturedClubs && filteredFeaturedClubs.length > 0 && (
+                      <div className="space-y-4">
+                        <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
+                          <Trophy className="h-4 w-4 text-gold" />
+                          {selectedCategory !== "All" || selectedBrand !== "All Brands" ? "Filtered Clubs" : "Featured Clubs"}
+                        </h3>
+                        <div className="grid grid-cols-2 gap-3">
+                          {filteredFeaturedClubs.map((product) => (
                             <Card 
                               key={product.id}
-                              className="cursor-pointer hover:shadow-lg transition-all border-2 hover:border-accent/50"
+                              className="cursor-pointer hover:shadow-lg transition-all border hover:border-accent/50"
                               onClick={() => {
                                 if (!activeSlot) {
                                   const emptySlot = comparisonSlots.find(s => !s.product);
@@ -442,7 +381,7 @@ export default function ClubComparison() {
                                   } else {
                                     toast({
                                       title: "All Slots Full",
-                                      description: "Remove a club first",
+                                      description: "Remove a club to add this one",
                                       variant: "destructive",
                                     });
                                   }
@@ -451,289 +390,342 @@ export default function ClubComparison() {
                                 addProductToSlot(product, activeSlot);
                               }}
                             >
-                              <CardContent className="p-4">
-                                <div className="flex items-start gap-3">
-                                  {product.image_url && (
-                                    <img 
-                                      src={product.image_url} 
-                                      alt={product.model_name ?? "Club"}
-                                      className="w-16 h-16 object-cover rounded"
-                                    />
-                                  )}
-                                  <div className="flex-1 min-w-0">
-                                    <h4 className="font-semibold truncate text-foreground">
-                                      {product.brand}
-                                    </h4>
-                                    <p className="text-sm text-muted-foreground truncate">
-                                      {product.model_name}
+                              <CardContent className="p-3">
+                                <div className="space-y-2">
+                                  <h4 className="font-semibold text-xs truncate text-foreground">
+                                    {product.brand}
+                                  </h4>
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {product.model_name}
+                                  </p>
+                                  {product.price_usd && (
+                                    <p className="text-sm font-bold text-gold">
+                                      ${product.price_usd}
                                     </p>
-                                    <div className="flex items-center gap-2 mt-2">
-                                      <Badge variant="outline" className="text-xs">
-                                        {product.category}
-                                      </Badge>
-                                      {product.price_usd && (
-                                        <span className="text-sm font-semibold text-gold">
-                                          ${product.price_usd}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
+                                  )}
+                                  <Button size="sm" className="w-full bg-gold text-gold-foreground hover:bg-gold/90 h-7 text-xs">
+                                    <Plus className="h-3 w-3 mr-1" />
+                                    Add
+                                  </Button>
                                 </div>
                               </CardContent>
                             </Card>
                           ))}
                         </div>
-                      )}
+                      </div>
+                    )}
 
-                      {showSearchResults && searchResults.length === 0 && searchQuery.length >= 2 && !isSearching && (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p>No clubs found</p>
+                    {showFeaturedClubs && filteredFeaturedClubs.length === 0 && (selectedCategory !== "All" || selectedBrand !== "All Brands") && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="font-medium mb-1">No clubs found</p>
+                        <p className="text-sm">Try different filters</p>
+                      </div>
+                    )}
+
+                    {showSearchResults && searchResults.length > 0 && (
+                      <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                        {searchResults.map((product) => (
+                          <Card 
+                            key={product.id}
+                            className="cursor-pointer hover:shadow-lg transition-all border-2 hover:border-accent/50"
+                            onClick={() => {
+                              if (!activeSlot) {
+                                const emptySlot = comparisonSlots.find(s => !s.product);
+                                if (emptySlot) {
+                                  addProductToSlot(product, emptySlot.id);
+                                } else {
+                                  toast({
+                                    title: "All Slots Full",
+                                    description: "Remove a club first",
+                                    variant: "destructive",
+                                  });
+                                }
+                                return;
+                              }
+                              addProductToSlot(product, activeSlot);
+                            }}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-start gap-3">
+                                {product.image_url && (
+                                  <img 
+                                    src={product.image_url} 
+                                    alt={product.model_name ?? "Club"}
+                                    className="w-16 h-16 object-cover rounded"
+                                  />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-semibold truncate text-foreground">
+                                    {product.brand}
+                                  </h4>
+                                  <p className="text-sm text-muted-foreground truncate">
+                                    {product.model_name}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-2">
+                                    <Badge variant="outline" className="text-xs">
+                                      {product.category}
+                                    </Badge>
+                                    {product.price_usd && (
+                                      <span className="text-sm font-semibold text-gold">
+                                        ${product.price_usd}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+
+                    {showSearchResults && searchResults.length === 0 && searchQuery.length >= 2 && !isSearching && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>No clubs found</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="lg:w-2/3 order-1 lg:order-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                  <h2 className="text-2xl font-bold text-foreground">Comparison</h2>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={addComparisonSlot}
+                      disabled={comparisonSlots.length >= 4}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Slot
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={shareComparison}
+                      disabled={selectedProducts.length === 0}
+                    >
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={exportComparison}
+                      disabled={selectedProducts.length === 0}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Export
+                    </Button>
+                  </div>
+                </div>
+
+                {filledSlotsCount < 2 && (
+                  <Card className="mb-6 border-accent/50 bg-accent/5">
+                    <CardContent className="py-3 px-4">
+                      <div className="flex items-start gap-3">
+                        <Lightbulb className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+                        <div className="text-sm">
+                          <p className="text-foreground font-medium">
+                            Select 2–4 clubs to unlock the full spec comparison.
+                          </p>
+                          <p className="text-muted-foreground mt-1">
+                            Compare same-category clubs for the best insights.
+                          </p>
                         </div>
-                      )}
+                      </div>
                     </CardContent>
                   </Card>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 md:overflow-x-auto md:flex md:flex-nowrap lg:grid">
+                  {comparisonSlots.map((slot, index) => (
+                    <AnimatedSection key={slot.id} delay={index * 100}>
+                      <Card 
+                        className={`h-full cursor-pointer transition-all min-w-[250px] md:min-w-0 ${
+                          activeSlot === slot.id 
+                            ? "border-2 border-accent shadow-lg ring-2 ring-accent/20" 
+                            : "border-2 border-dashed hover:border-accent/50"
+                        }`}
+                        onClick={() => !slot.product && setActiveSlot(slot.id)}
+                      >
+                        <CardContent className="p-6">
+                          {slot.product ? (
+                            <div className="space-y-4">
+                              <div className="relative">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute -top-2 -right-2 h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground z-10"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeProductFromSlot(slot.id);
+                                  }}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                                {slot.product.image_url && (
+                                  <img 
+                                    src={slot.product.image_url} 
+                                    alt={slot.product.model_name ?? "Club"}
+                                    className="w-full h-32 object-cover rounded"
+                                  />
+                                )}
+                              </div>
+                              <div>
+                                <h3 className="font-bold text-lg text-foreground truncate">
+                                  {slot.product.brand}
+                                </h3>
+                                <p className="text-sm text-muted-foreground truncate">
+                                  {slot.product.model_name}
+                                </p>
+                                <Badge variant="outline" className="mt-2">
+                                  {slot.product.category}
+                                </Badge>
+                                {slot.product.price_usd && (
+                                  <p className="text-xl font-bold text-gold mt-2">
+                                    ${slot.product.price_usd}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="h-full flex flex-col items-center justify-center py-12 text-muted-foreground">
+                              <Plus className="h-12 w-12 mb-2 opacity-50" />
+                              <p className="text-sm">Click to add club</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </AnimatedSection>
+                  ))}
                 </div>
 
-                <div className="lg:w-2/3 order-1 lg:order-2">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                    <h2 className="text-2xl font-bold text-foreground">Comparison</h2>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={addComparisonSlot}
-                        disabled={comparisonSlots.length >= 4}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Slot
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={shareComparison}
-                        disabled={selectedProducts.length === 0}
-                      >
-                        <Share2 className="h-4 w-4 mr-2" />
-                        Share
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={exportComparison}
-                        disabled={selectedProducts.length === 0}
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Export
-                      </Button>
-                    </div>
-                  </div>
+                {selectedProducts.length > 0 && (
+                  <FittingMatchIndicator products={selectedProducts} />
+                )}
 
-                  {filledSlotsCount < 2 && (
-                    <Card className="mb-6 border-accent/50 bg-accent/5">
-                      <CardContent className="py-3 px-4">
-                        <div className="flex items-start gap-3">
-                          <Lightbulb className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
-                          <div className="text-sm">
-                            <p className="text-foreground font-medium">
-                              Select 2–4 clubs to unlock the full spec comparison.
-                            </p>
-                            <p className="text-muted-foreground mt-1">
-                              Compare same-category clubs for the best insights.
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 md:overflow-x-auto md:flex md:flex-nowrap lg:grid">
-                    {comparisonSlots.map((slot, index) => (
-                      <AnimatedSection key={slot.id} delay={index * 100}>
-                        <Card 
-                          className={`h-full cursor-pointer transition-all min-w-[250px] md:min-w-0 ${
-                            activeSlot === slot.id 
-                              ? "border-2 border-accent shadow-lg ring-2 ring-accent/20" 
-                              : "border-2 border-dashed hover:border-accent/50"
-                          }`}
-                          onClick={() => !slot.product && setActiveSlot(slot.id)}
-                        >
-                          <CardContent className="p-6">
-                            {slot.product ? (
-                              <div className="space-y-4">
-                                <div className="relative">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="absolute -top-2 -right-2 h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground z-10"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      removeProductFromSlot(slot.id);
-                                    }}
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </Button>
-                                  {slot.product.image_url && (
-                                    <img 
-                                      src={slot.product.image_url} 
-                                      alt={slot.product.model_name ?? "Club"}
-                                      className="w-full h-32 object-cover rounded"
-                                    />
-                                  )}
-                                </div>
-                                <div>
-                                  <h3 className="font-bold text-lg text-foreground truncate">
-                                    {slot.product.brand}
-                                  </h3>
-                                  <p className="text-sm text-muted-foreground truncate">
-                                    {slot.product.model_name}
-                                  </p>
-                                  <Badge variant="outline" className="mt-2">
-                                    {slot.product.category}
-                                  </Badge>
-                                  {slot.product.price_usd && (
-                                    <p className="text-xl font-bold text-gold mt-2">
-                                      ${slot.product.price_usd}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="h-full flex flex-col items-center justify-center py-12 text-muted-foreground">
-                                <Plus className="h-12 w-12 mb-2 opacity-50" />
-                                <p className="text-sm">Click to add club</p>
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      </AnimatedSection>
-                    ))}
-                  </div>
-
-                  {selectedProducts.length > 0 && (
-                    <FittingMatchIndicator products={selectedProducts} />
-                  )}
-
-                  {selectedProducts.length > 1 && (
-                    <>
-                      <Card className="mb-6">
-                        <CardHeader>
-                          <CardTitle>Specifications Comparison</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="overflow-x-auto">
-                            <table className="w-full min-w-[600px]">
-                              <thead>
-                                <tr className="border-b">
-                                  <th className="py-3 px-4 text-left font-semibold text-foreground sticky left-0 bg-background">
-                                    Specification
+                {selectedProducts.length > 1 && (
+                  <>
+                    <Card className="mb-6">
+                      <CardHeader>
+                        <CardTitle>Specifications Comparison</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="overflow-x-auto">
+                          <table className="w-full min-w-[600px]">
+                            <thead>
+                              <tr className="border-b">
+                                <th className="py-3 px-4 text-left font-semibold text-foreground sticky left-0 bg-background">
+                                  Specification
+                                </th>
+                                {selectedProducts.map((product, index) => (
+                                  <th key={index} className="py-3 px-4 text-left font-semibold text-foreground min-w-[150px]">
+                                    <div className="truncate">{product.brand}</div>
                                   </th>
-                                  {selectedProducts.map((product, index) => (
-                                    <th key={index} className="py-3 px-4 text-left font-semibold text-foreground min-w-[150px]">
-                                      <div className="truncate">{product.brand}</div>
-                                    </th>
-                                  ))}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {specs.map((spec, index) => (
-                                  <tr key={index} className="border-b hover:bg-muted/50">
-                                    <td className="py-3 px-4 font-medium text-muted-foreground sticky left-0 bg-background">
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {specs.map((spec, index) => (
+                                <tr key={index} className="border-b hover:bg-muted/50">
+                                  <td className="py-3 px-4 font-medium text-muted-foreground sticky left-0 bg-background">
+                                    <div className="flex items-center gap-2">
+                                      {spec.icon}
+                                      {spec.label}
+                                    </div>
+                                  </td>
+                                  {spec.values.map((value, i) => (
+                                    <td key={i} className="py-3 px-4">
                                       <div className="flex items-center gap-2">
-                                        {spec.icon}
-                                        {spec.label}
+                                        <span className={spec.isDifferent(i) ? "text-foreground font-semibold" : "text-muted-foreground"}>
+                                          {value}
+                                        </span>
+                                        {spec.highlight === "best" && spec.isBest && spec.isBest(i) && (
+                                          <CheckCircle2 className="h-4 w-4 text-accent flex-shrink-0" />
+                                        )}
                                       </div>
                                     </td>
-                                    {spec.values.map((value, i) => (
-                                      <td key={i} className="py-3 px-4">
-                                        <div className="flex items-center gap-2">
-                                          <span className={spec.isDifferent(i) ? "text-foreground font-semibold" : "text-muted-foreground"}>
-                                            {value}
-                                          </span>
-                                          {spec.highlight === "best" && spec.isBest && spec.isBest(i) && (
-                                            <CheckCircle2 className="h-4 w-4 text-accent flex-shrink-0" />
-                                          )}
-                                        </div>
-                                      </td>
-                                    ))}
-                                  </tr>
-                                ))}
-                                <tr className="border-b bg-muted/30">
-                                  <td className="py-3 px-4 font-semibold text-foreground sticky left-0 bg-muted/30">
-                                    Buy Now
-                                  </td>
-                                  {selectedProducts.map((product, i) => (
-                                    <td key={i} className="py-3 px-4">
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="border-gold text-gold hover:bg-gold hover:text-gold-foreground"
-                                        asChild
-                                      >
-                                        <a
-                                          href={product.buy_url || `https://www.google.com/search?q=${encodeURIComponent(`${product.brand} ${product.model_name} buy`)}`}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                        >
-                                          Shop <ExternalLink className="h-3 w-3 ml-1" />
-                                        </a>
-                                      </Button>
-                                    </td>
                                   ))}
                                 </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Performance Summary</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {selectedProducts.map((product, index) => (
-                              <PerformanceCard key={index} product={product} allProducts={selectedProducts} />
-                            ))}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </>
-                  )}
-
-                  {selectedProducts.length === 1 && (
-                    <Card className="border-dashed">
-                      <CardContent className="py-12">
-                        <div className="text-center text-muted-foreground">
-                          <GitCompare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                          <h3 className="text-lg font-semibold mb-2">Add More Clubs</h3>
-                          <p>Add at least one more club to see the comparison</p>
+                              ))}
+                              <tr className="border-b bg-muted/30">
+                                <td className="py-3 px-4 font-semibold text-foreground sticky left-0 bg-muted/30">
+                                  Buy Now
+                                </td>
+                                {selectedProducts.map((product, i) => (
+                                  <td key={i} className="py-3 px-4">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-gold text-gold hover:bg-gold hover:text-gold-foreground"
+                                      asChild
+                                    >
+                                      <a
+                                        href={product.buy_url || `https://www.google.com/search?q=${encodeURIComponent(`${product.brand} ${product.model_name} buy`)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
+                                        Shop <ExternalLink className="h-3 w-3 ml-1" />
+                                      </a>
+                                    </Button>
+                                  </td>
+                                ))}
+                              </tr>
+                            </tbody>
+                          </table>
                         </div>
                       </CardContent>
                     </Card>
-                  )}
 
-                  {selectedProducts.length === 0 && (
-                    <Card className="border-dashed">
-                      <CardContent className="py-16">
-                        <div className="text-center text-muted-foreground">
-                          <GitCompare className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                          <h3 className="text-lg font-semibold mb-2">No Clubs Selected</h3>
-                          <p>Add clubs to comparison slots to see detailed specifications</p>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Performance Summary</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {selectedProducts.map((product, index) => (
+                            <PerformanceCard key={index} product={product} allProducts={selectedProducts} />
+                          ))}
                         </div>
                       </CardContent>
                     </Card>
-                  )}
-                </div>
+                  </>
+                )}
+
+                {selectedProducts.length === 1 && (
+                  <Card className="border-dashed">
+                    <CardContent className="py-12">
+                      <div className="text-center text-muted-foreground">
+                        <GitCompare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <h3 className="text-lg font-semibold mb-2">Add More Clubs</h3>
+                        <p>Add at least one more club to see the comparison</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {selectedProducts.length === 0 && (
+                  <Card className="border-dashed">
+                    <CardContent className="py-16">
+                      <div className="text-center text-muted-foreground">
+                        <GitCompare className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                        <h3 className="text-lg font-semibold mb-2">No Clubs Selected</h3>
+                        <p>Add clubs to comparison slots to see detailed specifications</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             </div>
           </AnimatedSection>
         </div>
-      </section>
-
-      <Footer />
-    </div>
+      </AppLayout>
+    </ProtectedRoute>
   );
 }
 
