@@ -748,9 +748,24 @@ function NotificationPreferencesSection({
 
   const handleNotificationChange = (key: keyof NotificationSettings, value: boolean) => {
     setNotifications(prev => {
-      const updated = { ...prev };
-      (updated as any)[key] = value;
-      return updated;
+      switch (key) {
+        case 'order_confirmations':
+          return { ...prev, order_confirmations: value };
+        case 'fitting_report_ready':
+          return { ...prev, fitting_report_ready: value };
+        case 'refitting_reminders':
+          return { ...prev, refitting_reminders: value };
+        case 'club_database_updates':
+          return { ...prev, club_database_updates: value };
+        case 'weekly_golf_tips':
+          return { ...prev, weekly_golf_tips: value };
+        case 'promotional_offers':
+          return { ...prev, promotional_offers: value };
+        case 'blog_updates':
+          return { ...prev, blog_updates: value };
+        default:
+          return prev;
+      }
     });
   };
 
