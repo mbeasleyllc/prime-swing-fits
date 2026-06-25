@@ -842,7 +842,7 @@ function NotificationPreferencesSection({
 }) {
   const { toast } = useToast();
   
-  const initialNotifications = {
+  const [notifications, setNotifications] = useState<{[key: string]: boolean}>({
     order_confirmations: true,
     fitting_report_ready: true,
     refitting_reminders: true,
@@ -850,9 +850,7 @@ function NotificationPreferencesSection({
     weekly_golf_tips: false,
     promotional_offers: false,
     blog_updates: false,
-  };
-  
-  const [notifications, setNotifications] = useState(initialNotifications);
+  });
   const [emailFrequency, setEmailFrequency] = useState("immediately");
   const [saving, setSaving] = useState(false);
 
