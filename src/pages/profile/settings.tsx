@@ -951,7 +951,7 @@ function NotificationPreferencesSection({
                       checked={notifications[notification.key] || false}
                       onCheckedChange={(checked) => {
                         setNotifications((prev) => 
-                          Object.assign({}, prev, { [notification.key]: checked })
+                          Object.assign({}, prev, { [notification.key]: checked }) as Record<string, boolean>
                         );
                       }}
                       disabled={notification.locked}
