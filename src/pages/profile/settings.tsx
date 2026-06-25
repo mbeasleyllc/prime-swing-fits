@@ -45,6 +45,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
+  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import {
@@ -968,10 +969,11 @@ function NotificationPreferencesSection({
                     <Switch
                       checked={notifications[notification.key] || false}
                       onCheckedChange={(checked) => {
-                        setNotifications({
-                          ...notifications,
-                          [notification.key]: checked
-                        } as NotificationSettings);
+                        const key = notification.key as keyof NotificationSettings;
+                        setNotifications(prev => ({
+                          ...prev,
+                          [key]: checked
+                        }));
                       }}
                       disabled={notification.locked}
                     />
