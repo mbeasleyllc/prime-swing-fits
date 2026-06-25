@@ -862,9 +862,9 @@ function NotificationPreferencesSection({
 
   const handleNotificationChange = (key: keyof NotificationSettings, value: boolean) => {
     setNotifications(prev => {
-      const updated: NotificationSettings = { ...prev };
+      const updated = { ...prev } as Record<keyof NotificationSettings, boolean>;
       updated[key] = value;
-      return updated;
+      return updated as NotificationSettings;
     });
   };
 
