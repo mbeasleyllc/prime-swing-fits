@@ -63,17 +63,39 @@ export default function Step3() {
     const sessionId = Array.isArray(id) ? id[0] : id;
     setIsSaving(true);
 
-    const { error: conditionsError } = await supabase
+    // Check if course conditions exist
+    const { data: existingConditions } = await supabase
       .from("course_conditions")
-      .upsert({
-        session_id: sessionId,
-        user_id: user.id,
-        turf_type: turfType,
-        typical_weather: typicalWeather,
-        ball_used: ballUsed,
-      }, {
-        onConflict: "session_id",
-      });
+      .select("id")
+      .eq("session_id", sessionId)
+      .maybeSingle();
+
+    let conditionsError;
+    
+    if (existingConditions) {
+      // Update existing conditions
+      const { error } = await supabase
+        .from("course_conditions")
+        .update({
+          turf_type: turfType,
+          typical_weather: typicalWeather,
+          ball_used: ballUsed,
+        })
+        .eq("session_id", sessionId);
+      conditionsError = error;
+    } else {
+      // Insert new conditions
+      const { error } = await supabase
+        .from("course_conditions")
+        .insert({
+          session_id: sessionId,
+          user_id: user.id,
+          turf_type: turfType,
+          typical_weather: typicalWeather,
+          ball_used: ballUsed,
+        });
+      conditionsError = error;
+    }
 
     if (conditionsError) {
       toast({

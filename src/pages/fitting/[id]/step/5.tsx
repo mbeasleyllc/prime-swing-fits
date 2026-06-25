@@ -72,20 +72,45 @@ export default function Step5() {
     const sessionId = Array.isArray(id) ? id[0] : id;
     setIsSaving(true);
 
-    const { error: equipmentError } = await supabase
+    // Check if current equipment exists
+    const { data: existingEquipment } = await supabase
       .from("current_equipment")
-      .upsert({
-        session_id: sessionId,
-        user_id: user.id,
-        club_brand: clubBrand || null,
-        club_length: clubLength,
-        shaft_flex: shaftFlex,
-        grip_size: gripSize,
-        satisfaction,
-        pain_points: painPoints || null,
-      }, {
-        onConflict: "session_id",
-      });
+      .select("id")
+      .eq("session_id", sessionId)
+      .maybeSingle();
+
+    let equipmentError;
+    
+    if (existingEquipment) {
+      // Update existing equipment
+      const { error } = await supabase
+        .from("current_equipment")
+        .update({
+          club_brand: clubBrand || null,
+          club_length: clubLength,
+          shaft_flex: shaftFlex,
+          grip_size: gripSize,
+          satisfaction,
+          pain_points: painPoints || null,
+        })
+        .eq("session_id", sessionId);
+      equipmentError = error;
+    } else {
+      // Insert new equipment
+      const { error } = await supabase
+        .from("current_equipment")
+        .insert({
+          session_id: sessionId,
+          user_id: user.id,
+          club_brand: clubBrand || null,
+          club_length: clubLength,
+          shaft_flex: shaftFlex,
+          grip_size: gripSize,
+          satisfaction,
+          pain_points: painPoints || null,
+        });
+      equipmentError = error;
+    }
 
     if (equipmentError) {
       toast({

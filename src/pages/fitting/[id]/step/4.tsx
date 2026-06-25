@@ -87,20 +87,45 @@ export default function Step4() {
     const sessionId = Array.isArray(id) ? id[0] : id;
     setIsSaving(true);
 
-    const { error: profileError } = await supabase
+    // Check if physical profile exists
+    const { data: existingProfile } = await supabase
       .from("physical_profile")
-      .upsert({
-        session_id: sessionId,
-        user_id: user.id,
-        height_ft: parseInt(heightFt),
-        height_in: parseInt(heightIn),
-        wrist_to_floor: parseFloat(wristToFloor),
-        hand_size: handSize,
-        injuries,
-        mobility_limit: mobilityLimit,
-      }, {
-        onConflict: "session_id",
-      });
+      .select("id")
+      .eq("session_id", sessionId)
+      .maybeSingle();
+
+    let profileError;
+    
+    if (existingProfile) {
+      // Update existing profile
+      const { error } = await supabase
+        .from("physical_profile")
+        .update({
+          height_ft: parseInt(heightFt),
+          height_in: parseInt(heightIn),
+          wrist_to_floor: parseFloat(wristToFloor),
+          hand_size: handSize,
+          injuries,
+          mobility_limit: mobilityLimit,
+        })
+        .eq("session_id", sessionId);
+      profileError = error;
+    } else {
+      // Insert new profile
+      const { error } = await supabase
+        .from("physical_profile")
+        .insert({
+          session_id: sessionId,
+          user_id: user.id,
+          height_ft: parseInt(heightFt),
+          height_in: parseInt(heightIn),
+          wrist_to_floor: parseFloat(wristToFloor),
+          hand_size: handSize,
+          injuries,
+          mobility_limit: mobilityLimit,
+        });
+      profileError = error;
+    }
 
     if (profileError) {
       toast({

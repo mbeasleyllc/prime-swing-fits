@@ -67,19 +67,43 @@ export default function Step2() {
     const sessionId = Array.isArray(id) ? id[0] : id;
     setIsSaving(true);
 
-    const { error: profileError } = await supabase
+    // Check if swing profile exists
+    const { data: existingProfile } = await supabase
       .from("swing_profile")
-      .upsert({
-        session_id: sessionId,
-        user_id: user.id,
-        typical_shot: typicalShot,
-        miss_tendency: missTendency,
-        ball_flight: ballFlight,
-        swing_tempo: swingTempo,
-        swing_strength: swingStrength,
-      }, {
-        onConflict: "session_id",
-      });
+      .select("id")
+      .eq("session_id", sessionId)
+      .maybeSingle();
+
+    let profileError;
+    
+    if (existingProfile) {
+      // Update existing profile
+      const { error } = await supabase
+        .from("swing_profile")
+        .update({
+          typical_shot: typicalShot,
+          miss_tendency: missTendency,
+          ball_flight: ballFlight,
+          swing_tempo: swingTempo,
+          swing_strength: swingStrength,
+        })
+        .eq("session_id", sessionId);
+      profileError = error;
+    } else {
+      // Insert new profile
+      const { error } = await supabase
+        .from("swing_profile")
+        .insert({
+          session_id: sessionId,
+          user_id: user.id,
+          typical_shot: typicalShot,
+          miss_tendency: missTendency,
+          ball_flight: ballFlight,
+          swing_tempo: swingTempo,
+          swing_strength: swingStrength,
+        });
+      profileError = error;
+    }
 
     if (profileError) {
       toast({
