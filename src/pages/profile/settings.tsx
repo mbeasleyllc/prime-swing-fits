@@ -852,7 +852,7 @@ function NotificationPreferencesSection({
     blog_updates: false,
   });
   
-  const [notifications, setNotifications] = useState(getInitialNotifications());
+  const [notifications, setNotifications] = useState<Record<string, boolean>>(getInitialNotifications());
   const [emailFrequency, setEmailFrequency] = useState("immediately");
   const [saving, setSaving] = useState(false);
 
