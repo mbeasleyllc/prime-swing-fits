@@ -71,6 +71,17 @@ import { useRouter } from "next/router";
 
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
+type NotificationSettings = {
+  order_confirmations: boolean;
+  fitting_report_ready: boolean;
+  refitting_reminders: boolean;
+  club_database_updates: boolean;
+  weekly_golf_tips: boolean;
+  promotional_offers: boolean;
+  blog_updates: boolean;
+  [key: string]: boolean;
+};
+
 export default function Settings() {
   return (
     <ProtectedRoute>
@@ -842,7 +853,7 @@ function NotificationPreferencesSection({
 }) {
   const { toast } = useToast();
   
-  const [notifications, setNotifications] = useState<{[key: string]: boolean}>({
+  const [notifications, setNotifications] = useState<NotificationSettings>({
     order_confirmations: true,
     fitting_report_ready: true,
     refitting_reminders: true,
