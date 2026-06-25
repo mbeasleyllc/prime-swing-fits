@@ -950,11 +950,11 @@ function NotificationPreferencesSection({
                   <TableCell className="text-right">
                     <Switch
                       checked={notifications[notification.key] || false}
-                      onCheckedChange={(checked) => {
-                        setNotifications({
-                          ...notifications,
-                          [notification.key]: checked
-                        } as Record<string, boolean>);
+                      onCheckedChange={(value) => {
+                        const checked = Boolean(value);
+                        const updated = { ...notifications };
+                        updated[notification.key] = checked;
+                        setNotifications(updated as Record<string, boolean>);
                       }}
                       disabled={notification.locked}
                     />
