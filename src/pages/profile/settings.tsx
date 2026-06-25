@@ -748,7 +748,7 @@ function NotificationPreferencesSection({
 
   const handleNotificationChange = (key: keyof NotificationSettings, value: boolean) => {
     setNotifications(prev => {
-      const updated = { ...prev };
+      const updated: any = { ...prev };
       if (key === 'order_confirmations') updated.order_confirmations = value;
       else if (key === 'fitting_report_ready') updated.fitting_report_ready = value;
       else if (key === 'refitting_reminders') updated.refitting_reminders = value;
@@ -756,7 +756,7 @@ function NotificationPreferencesSection({
       else if (key === 'weekly_golf_tips') updated.weekly_golf_tips = value;
       else if (key === 'promotional_offers') updated.promotional_offers = value;
       else if (key === 'blog_updates') updated.blog_updates = value;
-      return updated;
+      return updated as NotificationSettings;
     });
   };
 
