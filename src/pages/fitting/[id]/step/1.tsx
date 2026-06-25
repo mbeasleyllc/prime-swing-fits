@@ -67,21 +67,47 @@ export default function Step1() {
     const sessionId = Array.isArray(id) ? id[0] : id;
     setIsSaving(true);
 
-    const { error: profileError } = await supabase
+    // First check if profile exists
+    const { data: existingProfile } = await supabase
       .from("player_profile")
-      .upsert({
-        session_id: sessionId,
-        user_id: user.id,
-        full_name: fullName,
-        age: parseInt(age),
-        dominant_hand: dominantHand,
-        experience,
-        handicap,
-        primary_goal: primaryGoal,
-        budget_range: budgetRange,
-      }, {
-        onConflict: "session_id",
-      });
+      .select("id")
+      .eq("session_id", sessionId)
+      .maybeSingle();
+
+    let profileError;
+    
+    if (existingProfile) {
+      // Update existing profile
+      const { error } = await supabase
+        .from("player_profile")
+        .update({
+          full_name: fullName,
+          age: parseInt(age),
+          dominant_hand: dominantHand,
+          experience,
+          handicap,
+          primary_goal: primaryGoal,
+          budget_range: budgetRange,
+        })
+        .eq("session_id", sessionId);
+      profileError = error;
+    } else {
+      // Insert new profile
+      const { error } = await supabase
+        .from("player_profile")
+        .insert({
+          session_id: sessionId,
+          user_id: user.id,
+          full_name: fullName,
+          age: parseInt(age),
+          dominant_hand: dominantHand,
+          experience,
+          handicap,
+          primary_goal: primaryGoal,
+          budget_range: budgetRange,
+        });
+      profileError = error;
+    }
 
     if (profileError) {
       toast({
