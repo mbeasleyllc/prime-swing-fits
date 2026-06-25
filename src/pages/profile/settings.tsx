@@ -854,7 +854,7 @@ function NotificationPreferencesSection({
   onUpdate: () => void;
 }) {
   const { toast } = useToast();
-  const [notifications, setNotifications] = useState<NotificationSettings>({
+  const [notifications, setNotifications] = useState<Record<string, boolean>>({
     order_confirmations: true,
     fitting_report_ready: true,
     refitting_reminders: true,
@@ -968,11 +968,10 @@ function NotificationPreferencesSection({
                     <Switch
                       checked={notifications[notification.key] || false}
                       onCheckedChange={(checked: boolean) => {
-                        setNotifications((prev) => {
-                          const next: Record<string, boolean> = { ...prev };
-                          next[notification.key] = checked;
-                          return next as NotificationSettings;
-                        });
+                        setNotifications((prev) => ({
+                          ...prev,
+                          [notification.key]: checked
+                        }));
                       }}
                       disabled={notification.locked}
                     />
