@@ -883,7 +883,12 @@ function NotificationPreferencesSection({
     }
   };
 
-  const notificationsList = [
+  const notificationsList: Array<{
+    key: keyof NotificationSettings;
+    label: string;
+    description: string;
+    locked: boolean;
+  }> = [
     {
       key: "order_confirmations",
       label: "Order Confirmations",
@@ -959,7 +964,7 @@ function NotificationPreferencesSection({
                   </TableCell>
                   <TableCell className="text-right">
                     <Switch
-                      checked={notifications[notification.key as keyof NotificationSettings] || false}
+                      checked={notifications[notification.key] || false}
                       onCheckedChange={(value) => {
                         setNotifications(prev => ({
                           ...prev,
