@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,7 +55,6 @@ export default function Dashboard() {
             <Skeleton className="h-10 w-64 mb-6" />
             <Skeleton className="h-64 mb-4" />
           </div>
-          <Footer />
         </div>
       </ProtectedRoute>
     );
@@ -272,8 +270,6 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
-
-            <Footer />
           </main>
         </div>
       </SidebarProvider>

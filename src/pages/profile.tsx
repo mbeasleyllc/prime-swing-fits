@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -276,7 +275,6 @@ function ProfileContent() {
             <p className="text-muted-foreground">Loading profile...</p>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -508,22 +506,7 @@ function ProfileContent() {
             )}
           </main>
         </div>
-
-        {/* BOTTOM CTA BANNER */}
-        <div className="mt-12 bg-gradient-to-r from-gold to-amber-500 rounded-lg p-8 text-center">
-          <h3 className="text-2xl font-bold text-gold-foreground mb-3">
-            Profile updated? Get a fresh AI fitting →
-          </h3>
-          <Button asChild size="lg" className="bg-accent text-white hover:bg-accent/90">
-            <Link href="/fitting/new">
-              <TrendingUp className="h-5 w-5 mr-2" />
-              Start Fitting
-            </Link>
-          </Button>
-        </div>
       </div>
-
-      <Footer />
     </div>
   );
 }
