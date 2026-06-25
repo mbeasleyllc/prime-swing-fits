@@ -969,7 +969,7 @@ function NotificationPreferencesSection({
                         setNotifications(prev => ({
                           ...prev,
                           [notification.key]: Boolean(value)
-                        }));
+                        } as NotificationSettings));
                       }}
                       disabled={notification.locked}
                     />
