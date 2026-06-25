@@ -1,6 +1,6 @@
 ---
 title: Product Catalog & Browse Pages
-status: in_progress
+status: done
 priority: high
 type: feature
 tags:
