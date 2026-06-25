@@ -854,7 +854,7 @@ function NotificationPreferencesSection({
     weekly_golf_tips: false,
     promotional_offers: false,
     blog_updates: false,
-  } as NotificationPrefs);
+  });
   const [emailFrequency, setEmailFrequency] = useState("immediately");
   const [saving, setSaving] = useState(false);
 
