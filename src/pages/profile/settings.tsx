@@ -860,6 +860,14 @@ function NotificationPreferencesSection({
   const [emailFrequency, setEmailFrequency] = useState("immediately");
   const [saving, setSaving] = useState(false);
 
+  const handleNotificationChange = (key: keyof NotificationSettings, value: boolean) => {
+    setNotifications(prev => {
+      const updated = { ...prev };
+      updated[key] = value;
+      return updated;
+    });
+  };
+
   const saveNotificationPreferences = async () => {
     setSaving(true);
     try {
@@ -961,12 +969,7 @@ function NotificationPreferencesSection({
                   <TableCell className="text-right">
                     <Switch
                       checked={notifications[notification.key] || false}
-                      onCheckedChange={(value) => {
-                        setNotifications(prev => {
-                          const key = notification.key;
-                          return { ...prev, [key]: value };
-                        });
-                      }}
+                      onCheckedChange={(value) => handleNotificationChange(notification.key, value)}
                       disabled={notification.locked}
                     />
                   </TableCell>
