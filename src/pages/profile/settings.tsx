@@ -129,9 +129,9 @@ function SettingsContent() {
         .from("user_profiles")
         .select("*")
         .eq("user_id", user!.id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== "PGRST116") throw error;
+      if (error) throw error;
       setProfile(data || {});
     } catch (error) {
       console.error("Error fetching profile:", error);
