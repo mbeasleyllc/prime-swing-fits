@@ -17,7 +17,6 @@ export function Navigation() {
   const navLinks = [
     { href: "/about", label: "About" },
     { href: "/how-it-works", label: "How It Works" },
-    { href: "/clubs/compare", label: "Compare Clubs" },
     { href: "/pricing", label: "Pricing" },
     { href: "/faq", label: "FAQ" },
     { href: "/contact", label: "Contact" },
