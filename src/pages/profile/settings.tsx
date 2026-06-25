@@ -833,19 +833,6 @@ function PasswordSecuritySection({ user }: { user: any }) {
 }
 
 // SECTION 3: Notification Preferences
-type NotificationKey = 
-  | 'order_confirmations'
-  | 'fitting_report_ready'
-  | 'refitting_reminders'
-  | 'club_database_updates'
-  | 'weekly_golf_tips'
-  | 'promotional_offers'
-  | 'blog_updates';
-
-type NotificationSettings = {
-  [K in NotificationKey]: boolean;
-};
-
 function NotificationPreferencesSection({
   profile,
   onUpdate,
@@ -885,12 +872,7 @@ function NotificationPreferencesSection({
     }
   };
 
-  const notificationsList: Array<{
-    key: NotificationKey;
-    label: string;
-    description: string;
-    locked: boolean;
-  }> = [
+  const notificationsList = [
     {
       key: "order_confirmations",
       label: "Order Confirmations",
