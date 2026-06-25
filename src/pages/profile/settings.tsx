@@ -952,7 +952,7 @@ function NotificationPreferencesSection({
                       checked={notifications[notification.key] || false}
                       onCheckedChange={(value) => {
                         setNotifications((prev) => {
-                          const updated = Object.assign({}, prev, { [notification.key]: Boolean(value) });
+                          const updated = Object.assign({}, prev, { [notification.key]: Boolean(value) }) as Record<string, boolean>;
                           return updated;
                         });
                       }}
