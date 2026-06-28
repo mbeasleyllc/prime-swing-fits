@@ -612,6 +612,7 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          ai_training_opt_out: boolean | null
           attack_angle: string | null
           ball_flight: string | null
           city: string | null
@@ -647,6 +648,7 @@ export type Database = {
           years_playing: string | null
         }
         Insert: {
+          ai_training_opt_out?: boolean | null
           attack_angle?: string | null
           ball_flight?: string | null
           city?: string | null
@@ -682,6 +684,7 @@ export type Database = {
           years_playing?: string | null
         }
         Update: {
+          ai_training_opt_out?: boolean | null
           attack_angle?: string | null
           ball_flight?: string | null
           city?: string | null
