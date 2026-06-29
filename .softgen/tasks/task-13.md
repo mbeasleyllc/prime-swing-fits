@@ -1,6 +1,6 @@
 ---
 title: Analytics Dashboard
-status: in_progress
+status: done
 ---
 
 ## Notes
