@@ -170,6 +170,7 @@ function SettingsContent() {
             <AccountDetailsSection user={user!} profile={profile} onUpdate={fetchProfile} />
             <PasswordSecuritySection user={user!} />
             <NotificationPreferencesSection profile={profile} onUpdate={fetchProfile} />
+            <SwingAnalyticsSubscriptionSection user={user!} />
             <PrivacyDataSection user={user!} profile={profile} onUpdate={fetchProfile} />
             <IntegrationsSection />
             <DangerZoneSection user={user!} />
@@ -1176,7 +1177,253 @@ function PrivacyDataSection({
   );
 }
 
-// SECTION 5: Integrations
+// SECTION 5: Swing Analytics Subscription
+function SwingAnalyticsSubscriptionSection({ user }: { user: any }) {
+  const { toast } = useToast();
+  const router = useRouter();
+  const [subscription, setSubscription] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [managing, setManaging] = useState(false);
+
+  useEffect(() => {
+    fetchSubscription();
+  }, [user]);
+
+  const fetchSubscription = async () => {
+    try {
+      const { data } = await supabase
+        .from("user_swing_subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      setSubscription(data);
+    } catch (error) {
+      console.error("Error fetching subscription:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubscriptionAction = async (action: "cancel" | "reactivate") => {
+    setManaging(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch("/api/manage-swing-subscription", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ action }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to manage subscription");
+      }
+
+      toast({
+        title: action === "cancel" ? "Subscription Canceled" : "Subscription Reactivated",
+        description: result.message,
+      });
+
+      fetchSubscription();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setManaging(false);
+    }
+  };
+
+  const startTrial = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch("/api/create-swing-checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
+
+      const { url } = await response.json();
+      if (url) {
+        window.location.href = url;
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to start checkout",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <BarChart className="h-5 w-5 text-accent" />
+          Swing Analytics Subscription
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {subscription ? (
+          <>
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h4 className="font-medium text-foreground flex items-center gap-2">
+                    Active Subscription
+                    <Badge className="bg-green-500 text-white">Active</Badge>
+                  </h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {subscription.tier === "core_addon" ? "Core Add-on" : "Premium"} • {subscription.data_retention_months} months data retention
+                  </p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <p className="text-xs text-muted-foreground">Next Payment</p>
+                  <p className="font-medium">{new Date(subscription.next_payment_date).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Last Payment</p>
+                  <p className="font-medium">{new Date(subscription.last_payment_date).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleSubscriptionAction("cancel")}
+                  disabled={managing}
+                  className="border-red-500 text-red-500 hover:bg-red-50"
+                >
+                  Cancel Subscription
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="border-accent text-accent hover:bg-accent/10"
+                >
+                  <a href="/pricing">Upgrade to Premium</a>
+                </Button>
+              </div>
+            </div>
+
+            <div className="p-4 border rounded-lg">
+              <h4 className="font-medium mb-2">What You Get</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-accent" />
+                  Unlimited swing data tracking
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-accent" />
+                  CSV import from launch monitors
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-accent" />
+                  Progress charts & Swing DNA radar
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-accent" />
+                  Goal tracking & badges
+                </li>
+              </ul>
+            </div>
+          </>
+        ) : (
+          <>
+            <Alert>
+              <AlertCircle className="w-4 h-4" />
+              <AlertDescription>
+                You don't have an active Swing Analytics subscription. Add it for $12.99/month with a 7-day free trial.
+              </AlertDescription>
+            </Alert>
+
+            <div className="p-4 border-2 border-accent rounded-lg">
+              <div className="mb-3">
+                <h4 className="font-bold text-lg">Swing Analytics Add-on</h4>
+                <div className="flex items-baseline gap-1 mt-1">
+                  <span className="text-2xl font-bold text-accent">$12.99</span>
+                  <span className="text-muted-foreground">/month</span>
+                  <Badge variant="outline" className="ml-2">7-Day Free Trial</Badge>
+                </div>
+              </div>
+
+              <ul className="space-y-2 mb-4 text-sm">
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-accent" />
+                  Unlimited swing data tracking
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-accent" />
+                  3-month data retention
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-accent" />
+                  CSV import from launch monitors
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-accent" />
+                  Progress charts & Swing DNA radar
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-accent" />
+                  Goal tracking & badges
+                </li>
+              </ul>
+
+              <Button
+                onClick={startTrial}
+                className="w-full bg-accent hover:bg-accent/90"
+              >
+                Start Free Trial
+              </Button>
+            </div>
+
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-2">
+                Want more? Upgrade to Premium for 12-month retention + priority support
+              </p>
+              <Button variant="outline" asChild>
+                <a href="/pricing">View All Plans</a>
+              </Button>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// SECTION 6: Integrations
 function IntegrationsSection() {
   const integrations = [
     { name: "Garmin Connect", icon: Monitor },
@@ -1228,7 +1475,7 @@ function IntegrationsSection() {
   );
 }
 
-// SECTION 6: Danger Zone
+// SECTION 7: Danger Zone
 function DangerZoneSection({ user }: { user: any }) {
   const { toast } = useToast();
   const router = useRouter();

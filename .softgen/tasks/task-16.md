@@ -15,18 +15,18 @@ Implement tier-based access control and Stripe subscription for Core add-on ($12
 ## Checklist
 ### Tier Gating Middleware
 - [x] Create `checkSwingAnalyticsAccess()` middleware function
-- [ ] Check user tier before rendering analytics pages
-- [ ] Show upgrade modal for Entry tier users
-- [ ] Enforce data history limits by tier
-- [ ] Block CSV import for unpaid users
+- [x] Check user tier before rendering analytics pages
+- [x] Show upgrade modal for Entry tier users
+- [x] Enforce data history limits by tier
+- [x] Block CSV import for unpaid users
 
 ### Stripe Product Setup
 - [ ] Create "Swing Analytics Add-on" product in Stripe Dashboard
 - [ ] Set recurring price: $12.99/month
 - [x] Create Stripe Checkout session endpoint
-- [ ] Build subscription management page in settings
-- [ ] Add "Cancel Subscription" button
-- [ ] Implement reactivation flow
+- [x] Build subscription management page in settings
+- [x] Add "Cancel Subscription" button
+- [x] Implement reactivation flow
 
 ### Webhook Handler
 - [x] Create `/api/webhooks/stripe-swing-analytics` endpoint

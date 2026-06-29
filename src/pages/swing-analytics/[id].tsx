@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ArrowLeft, TrendingUp, TrendingDown, Target } from "lucide-react";
 import type { Database } from "@/integrations/supabase/database.types";
+import { checkSwingAnalyticsAccess } from "@/lib/subscriptionMiddleware";
+import { UpgradeModal } from "@/components/swing-analytics/UpgradeModal";
 
 type SwingSession = Database["public"]["Tables"]["swing_sessions"]["Row"];
 type SwingMetric = Database["public"]["Tables"]["swing_metrics"]["Row"];
@@ -25,21 +27,54 @@ export default function SessionDetailPage() {
   const [session, setSession] = useState<SwingSession | null>(null);
   const [shots, setShots] = useState<SwingMetric[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [accessBlocked, setAccessBlocked] = useState(false);
+  const [userTier, setUserTier] = useState<"entry" | "core" | "premium">("core");
   const [bestShot, setBestShot] = useState<SwingMetric | null>(null);
   const [worstShot, setWorstShot] = useState<SwingMetric | null>(null);
 
   useEffect(() => {
-    if (id) {
-      fetchSessionData();
-    }
-  }, [id]);
+    checkAccess();
+  }, []);
 
   useEffect(() => {
-    if (shots.length > 0) {
-      findBestWorstShots();
-      drawDispersionPattern();
+    if (id && !accessBlocked) {
+      fetchSessionData();
     }
-  }, [shots]);
+  }, [id, accessBlocked]);
+
+  const checkAccess = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push("/auth/login");
+        return;
+      }
+
+      const access = await checkSwingAnalyticsAccess(user.id);
+      
+      if (!access.hasAccess) {
+        setAccessBlocked(true);
+        
+        const { data: userData } = await supabase
+          .from("users")
+          .select("subscription_tier")
+          .eq("id", user.id)
+          .single();
+        
+        setUserTier(userData?.subscription_tier || "core");
+        setShowUpgradeModal(true);
+        setLoading(false);
+        return;
+      }
+      
+      setAccessBlocked(false);
+    } catch (error) {
+      console.error("Access check error:", error);
+      setAccessBlocked(true);
+      setShowUpgradeModal(true);
+    }
+  };
 
   const fetchSessionData = async () => {
     try {
@@ -216,194 +251,212 @@ export default function SessionDetailPage() {
   return (
     <AppLayout>
       <SEO
-        title={`Session Details - ${formatDate(session.session_date)} - Prime Swing Fits`}
+        title={`Session Details - ${session ? formatDate(session.session_date) : "Loading"} - Prime Swing Fits`}
         description="Detailed swing session analysis"
       />
 
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
-        <div className="mb-8">
-          <Button variant="ghost" asChild className="mb-4">
-            <Link href="/swing-analytics">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Analytics
-            </Link>
-          </Button>
-          <h1 className="text-3xl font-bold">{formatDate(session.session_date)}</h1>
-          <div className="flex flex-wrap gap-2 mt-2">
-            <Badge variant="outline">{session.session_name || "Session"}</Badge>
-            <Badge variant="secondary">{session.device_type}</Badge>
-            <Badge>{session.total_shots} shots</Badge>
-          </div>
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => {
+          setShowUpgradeModal(false);
+          if (accessBlocked) {
+            router.push("/dashboard");
+          }
+        }}
+        currentTier={userTier}
+        blockReason="Upgrade to access detailed session analytics"
+      />
+
+      {accessBlocked ? (
+        <div className="container mx-auto px-4 py-8">
+          <p className="text-center text-muted-foreground">Access restricted. Please upgrade to view session details.</p>
         </div>
-
-        {/* Summary Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Avg Club Speed</CardDescription>
-              <CardTitle className="text-2xl">
-                {session.avg_club_speed?.toFixed(1) ?? "-"} mph
-              </CardTitle>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Avg Carry Distance</CardDescription>
-              <CardTitle className="text-2xl">
-                {session.avg_carry_distance?.toFixed(0) ?? "-"} yds
-              </CardTitle>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Avg Launch Angle</CardDescription>
-              <CardTitle className="text-2xl">
-                {session.avg_launch_angle?.toFixed(1) ?? "-"}°
-              </CardTitle>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>Avg Spin Rate</CardDescription>
-              <CardTitle className="text-2xl">
-                {session.avg_spin_rate?.toFixed(0) ?? "-"} rpm
-              </CardTitle>
-            </CardHeader>
-          </Card>
-        </div>
-
-        {/* Best/Worst Shots */}
-        {(bestShot || worstShot) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {bestShot && (
-              <Card className="border-green-200 bg-green-50">
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-green-600" />
-                    <CardTitle>Best Shot</CardTitle>
-                  </div>
-                  <CardDescription>Shot #{bestShot.shot_number}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Carry Distance</span>
-                    <span className="font-semibold">{bestShot.carry_distance?.toFixed(0)} yds</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Club Speed</span>
-                    <span className="font-semibold">{bestShot.club_speed?.toFixed(1)} mph</span>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {worstShot && (
-              <Card className="border-red-200 bg-red-50">
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <TrendingDown className="w-5 h-5 text-red-600" />
-                    <CardTitle>Needs Work</CardTitle>
-                  </div>
-                  <CardDescription>Shot #{worstShot.shot_number}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Carry Distance</span>
-                    <span className="font-semibold">{worstShot.carry_distance?.toFixed(0)} yds</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Club Speed</span>
-                    <span className="font-semibold">{worstShot.club_speed?.toFixed(1)} mph</span>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+      ) : (
+        <div className="container mx-auto px-4 py-8 max-w-7xl">
+          {/* Header */}
+          <div className="mb-8">
+            <Button variant="ghost" asChild className="mb-4">
+              <Link href="/swing-analytics">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Analytics
+              </Link>
+            </Button>
+            <h1 className="text-3xl font-bold">{formatDate(session.session_date)}</h1>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <Badge variant="outline">{session.session_name || "Session"}</Badge>
+              <Badge variant="secondary">{session.device_type}</Badge>
+              <Badge>{session.total_shots} shots</Badge>
+            </div>
           </div>
-        )}
 
-        {/* Shot Dispersion Pattern */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Shot Dispersion Pattern</CardTitle>
-            <CardDescription>Visual representation of shot accuracy</CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center">
-            <canvas ref={dispersionCanvasRef} className="max-w-full" />
-          </CardContent>
-        </Card>
+          {/* Summary Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Club Speed</CardDescription>
+                <CardTitle className="text-2xl">
+                  {session.avg_club_speed?.toFixed(1) ?? "-"} mph
+                </CardTitle>
+              </CardHeader>
+            </Card>
 
-        {/* Session Notes */}
-        {session.notes && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Carry Distance</CardDescription>
+                <CardTitle className="text-2xl">
+                  {session.avg_carry_distance?.toFixed(0) ?? "-"} yds
+                </CardTitle>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Launch Angle</CardDescription>
+                <CardTitle className="text-2xl">
+                  {session.avg_launch_angle?.toFixed(1) ?? "-"}°
+                </CardTitle>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Avg Spin Rate</CardDescription>
+                <CardTitle className="text-2xl">
+                  {session.avg_spin_rate?.toFixed(0) ?? "-"} rpm
+                </CardTitle>
+              </CardHeader>
+            </Card>
+          </div>
+
+          {/* Best/Worst Shots */}
+          {(bestShot || worstShot) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              {bestShot && (
+                <Card className="border-green-200 bg-green-50">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-green-600" />
+                      <CardTitle>Best Shot</CardTitle>
+                    </div>
+                    <CardDescription>Shot #{bestShot.shot_number}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Carry Distance</span>
+                      <span className="font-semibold">{bestShot.carry_distance?.toFixed(0)} yds</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Club Speed</span>
+                      <span className="font-semibold">{bestShot.club_speed?.toFixed(1)} mph</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {worstShot && (
+                <Card className="border-red-200 bg-red-50">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <TrendingDown className="w-5 h-5 text-red-600" />
+                      <CardTitle>Needs Work</CardTitle>
+                    </div>
+                    <CardDescription>Shot #{worstShot.shot_number}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Carry Distance</span>
+                      <span className="font-semibold">{worstShot.carry_distance?.toFixed(0)} yds</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Club Speed</span>
+                      <span className="font-semibold">{worstShot.club_speed?.toFixed(1)} mph</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* Shot Dispersion Pattern */}
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Session Notes</CardTitle>
+              <CardTitle>Shot Dispersion Pattern</CardTitle>
+              <CardDescription>Visual representation of shot accuracy</CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="whitespace-pre-wrap">{session.notes}</p>
+            <CardContent className="flex justify-center">
+              <canvas ref={dispersionCanvasRef} className="max-w-full" />
             </CardContent>
           </Card>
-        )}
 
-        {/* Shot-by-Shot Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Shot-by-Shot Details</CardTitle>
-            <CardDescription>Complete breakdown of every shot</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>#</TableHead>
-                    <TableHead className="text-right">Speed</TableHead>
-                    <TableHead className="text-right">Ball Speed</TableHead>
-                    <TableHead className="text-right">Carry</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead className="text-right">Launch</TableHead>
-                    <TableHead className="text-right">Spin</TableHead>
-                    <TableHead className="text-right">Offline</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {shots.map((shot) => (
-                    <TableRow key={shot.id}>
-                      <TableCell className="font-medium">{shot.shot_number}</TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {shot.club_speed?.toFixed(1) ?? "-"} mph
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {shot.ball_speed?.toFixed(1) ?? "-"} mph
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {shot.carry_distance?.toFixed(0) ?? "-"} yds
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {shot.total_distance?.toFixed(0) ?? "-"} yds
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {shot.launch_angle?.toFixed(1) ?? "-"}°
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {shot.spin_rate?.toFixed(0) ?? "-"} rpm
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        {shot.launch_direction !== null
-                          ? `${shot.launch_direction > 0 ? "R" : "L"}${Math.abs(shot.launch_direction).toFixed(1)}°`
-                          : "-"}
-                      </TableCell>
+          {/* Session Notes */}
+          {session.notes && (
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle>Session Notes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="whitespace-pre-wrap">{session.notes}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Shot-by-Shot Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Shot-by-Shot Details</CardTitle>
+              <CardDescription>Complete breakdown of every shot</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>#</TableHead>
+                      <TableHead className="text-right">Speed</TableHead>
+                      <TableHead className="text-right">Ball Speed</TableHead>
+                      <TableHead className="text-right">Carry</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                      <TableHead className="text-right">Launch</TableHead>
+                      <TableHead className="text-right">Spin</TableHead>
+                      <TableHead className="text-right">Offline</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                  </TableHeader>
+                  <TableBody>
+                    {shots.map((shot) => (
+                      <TableRow key={shot.id}>
+                        <TableCell className="font-medium">{shot.shot_number}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {shot.club_speed?.toFixed(1) ?? "-"} mph
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {shot.ball_speed?.toFixed(1) ?? "-"} mph
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {shot.carry_distance?.toFixed(0) ?? "-"} yds
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {shot.total_distance?.toFixed(0) ?? "-"} yds
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {shot.launch_angle?.toFixed(1) ?? "-"}°
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {shot.spin_rate?.toFixed(0) ?? "-"} rpm
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {shot.launch_direction !== null
+                            ? `${shot.launch_direction > 0 ? "R" : "L"}${Math.abs(shot.launch_direction).toFixed(1)}°`
+                            : "-"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </AppLayout>
   );
 }

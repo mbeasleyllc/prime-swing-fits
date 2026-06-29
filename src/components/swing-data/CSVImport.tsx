@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import Papa from "papaparse";
 import { Upload, FileText, AlertCircle, CheckCircle2, X } from "lucide-react";
@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { validateBatch, VALID_CLUBS, VALID_DEVICE_TYPES } from "@/lib/swingDataValidation";
+import { checkCSVImportAccess } from "@/lib/subscriptionMiddleware";
 import { supabase } from "@/integrations/supabase/client";
 
 interface CSVImportProps {
@@ -35,8 +36,28 @@ export function CSVImport({ onImportComplete, userId }: CSVImportProps) {
   const [validationResult, setValidationResult] = useState<any>(null);
   const [importing, setImporting] = useState(false);
   const [sessionName, setSessionName] = useState("");
+  const [hasAccess, setHasAccess] = useState(true);
+  const [checkingAccess, setCheckingAccess] = useState(true);
+
+  useEffect(() => {
+    checkImportAccess();
+  }, [userId]);
+
+  const checkImportAccess = async () => {
+    setCheckingAccess(true);
+    try {
+      const access = await checkCSVImportAccess(userId);
+      setHasAccess(access);
+    } catch (error) {
+      console.error("Access check error:", error);
+      setHasAccess(false);
+    } finally {
+      setCheckingAccess(false);
+    }
+  };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (!hasAccess) return;
     const csvFile = acceptedFiles[0];
     if (!csvFile) return;
 
@@ -141,6 +162,38 @@ export function CSVImport({ onImportComplete, userId }: CSVImportProps) {
     setValidationResult(null);
     setSessionName("");
   };
+
+  if (checkingAccess) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center">
+          <p className="text-muted-foreground">Checking access...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>CSV Import</CardTitle>
+          <CardDescription>Upgrade required to import CSV data</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertCircle className="w-4 h-4" />
+            <AlertDescription>
+              CSV import is available with Swing Analytics subscription. Upgrade to import data from your launch monitor.
+            </AlertDescription>
+          </Alert>
+          <Button className="w-full mt-4 bg-accent hover:bg-accent/90" asChild>
+            <a href="/pricing">View Upgrade Options</a>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (!file) {
     return (
