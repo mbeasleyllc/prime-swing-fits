@@ -361,14 +361,13 @@ export default function SwingAnalyticsPage() {
                   onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
                 />
                 <Select
-                  value={filters.club}
+                  value={filters.club || undefined}
                   onValueChange={(value) => setFilters({ ...filters, club: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All Clubs" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Clubs</SelectItem>
                     <SelectItem value="Driver">Driver</SelectItem>
                     <SelectItem value="3-Wood">3-Wood</SelectItem>
                     <SelectItem value="5-Wood">5-Wood</SelectItem>
@@ -378,14 +377,13 @@ export default function SwingAnalyticsPage() {
                   </SelectContent>
                 </Select>
                 <Select
-                  value={filters.device}
+                  value={filters.device || undefined}
                   onValueChange={(value) => setFilters({ ...filters, device: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="All Devices" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Devices</SelectItem>
                     <SelectItem value="golf_daddy">Golf Daddy</SelectItem>
                     <SelectItem value="trackman">TrackMan</SelectItem>
                     <SelectItem value="flightscope">FlightScope</SelectItem>
