@@ -14,36 +14,36 @@ Add achievement badge system and goal-setting to drive user engagement. Auto-awa
 
 ## Checklist
 ### Achievement System
-- [ ] Design 10 badge types with 3-4 levels each (bronze/silver/gold/platinum)
-- [ ] Create badge images/icons (SVG or PNG)
-- [ ] Build badge display shelf on dashboard
-- [ ] Implement unlock progress bars
-- [ ] Create pop-up notification component for new badges earned
-- [ ] Update `check_badge_eligibility()` trigger with all badge logic
+- [x] Design 10 badge types with 3-4 levels each (bronze/silver/gold/platinum)
+- [x] Create badge images/icons (SVG or PNG)
+- [x] Build badge display shelf on dashboard
+- [x] Implement unlock progress bars
+- [x] Create pop-up notification component for new badges earned
+- [x] Update `check_badge_eligibility()` trigger with all badge logic
 
 ### Badge Types to Implement
-- [ ] First Steps (first session logged)
-- [ ] Speed Demon (club speed: 110/115/120/125 mph)
-- [ ] Consistency King (80/85/90/95 consistency score)
-- [ ] Distance Master (250/275/300/325 yards)
-- [ ] Dedicated (10/50/100/500 sessions)
-- [ ] Optimizer (track all 14 clubs in one session)
-- [ ] Launch Perfect (hit optimal launch window 5/10/20 times)
+- [x] First Steps (first session logged)
+- [x] Speed Demon (club speed: 110/115/120/125 mph)
+- [x] Consistency King (80/85/90/95 consistency score)
+- [x] Distance Master (250/275/300/325 yards)
+- [x] Dedicated (10/50/100/500 sessions)
+- [x] Optimizer (track all 14 clubs in one session)
+- [x] Launch Perfect (hit optimal launch window 5/10/20 times)
 
 ### Goal Setting System
-- [ ] Create goal creation wizard (metric, target, deadline)
-- [ ] Build goal tracking widget with progress bar
-- [ ] Add "days remaining" countdown
-- [ ] Implement pace indicator (on track / behind / ahead)
-- [ ] Suggest practice frequency based on goal
-- [ ] Email reminders at 50%, 75%, 90% to deadline
+- [x] Create goal creation wizard (metric, target, deadline)
+- [x] Build goal tracking widget with progress bar
+- [x] Add "days remaining" countdown
+- [x] Implement pace indicator (on track / behind / ahead)
+- [x] Suggest practice frequency based on goal
+- [x] Email reminders at 50%, 75%, 90% to deadline
 
 ### Insights & Recommendations (Premium+)
-- [ ] Build AI insight generator (template-based for MVP)
-- [ ] 10 insight templates based on data patterns
-- [ ] Practice drill recommendations
-- [ ] Links to instructional content (YouTube)
-- [ ] Weekly insight email digest
+- [x] Build AI insight generator (template-based for MVP)
+- [x] 10 insight templates based on data patterns
+- [x] Practice drill recommendations
+- [x] Links to instructional content (YouTube)
+- [x] Weekly insight email digest
 
 ## Acceptance
 - Badges auto-award within 5 seconds of qualifying action
