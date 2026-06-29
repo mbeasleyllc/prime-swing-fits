@@ -23,6 +23,7 @@ export default function SwingAnalyticsPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [sessions, setSessions] = useState<SwingSession[]>([]);
+  const [latestSession, setLatestSession] = useState<SwingSession | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -78,6 +79,11 @@ export default function SwingAnalyticsPage() {
 
       setSessions(data ?? []);
       setTotalPages(Math.ceil((count ?? 0) / itemsPerPage));
+      
+      // Set latest session for DNA radar
+      if (data && data.length > 0) {
+        setLatestSession(data[0]);
+      }
     } catch (error) {
       console.error("Error fetching sessions:", error);
       toast({
@@ -240,11 +246,11 @@ export default function SwingAnalyticsPage() {
             {latestSession ? (
               <SwingDNARadar
                 data={{
-                  club_speed_mph: latestSession.club_speed_mph,
-                  ball_speed_mph: latestSession.ball_speed_mph,
-                  launch_angle_deg: latestSession.launch_angle_deg,
-                  spin_rate_rpm: latestSession.spin_rate_rpm,
-                  carry_distance_yds: latestSession.carry_distance_yds,
+                  club_speed_mph: latestSession.avg_club_speed,
+                  ball_speed_mph: latestSession.avg_ball_speed,
+                  launch_angle_deg: latestSession.avg_launch_angle,
+                  spin_rate_rpm: latestSession.avg_spin_rate,
+                  carry_distance_yds: latestSession.avg_carry_distance,
                   consistency_score: latestSession.consistency_score,
                 }}
               />
