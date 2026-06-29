@@ -19,7 +19,7 @@ ON swing_goals(user_id, status);
 
 -- Index for user's badges queries
 CREATE INDEX IF NOT EXISTS idx_achievement_badges_user 
-ON achievement_badges(user_id, earned_at DESC);
+ON achievement_badges(user_id, earned_date DESC);
 
 -- Index for subscription queries
 CREATE INDEX IF NOT EXISTS idx_user_swing_subscriptions_user 
