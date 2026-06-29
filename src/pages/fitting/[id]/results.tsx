@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, Download, Printer, ArrowLeft, Play, TrendingUp } from "lucide-react";
+import { AlertCircle, Download, Printer, ArrowLeft, Play, TrendingUp, Circle } from "lucide-react";
+import { getRecommendedBalls, type GolfBall } from "@/data/golfBallDatabase";
 
 export default function FittingResults() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export default function FittingResults() {
   const [currentEquipment, setCurrentEquipment] = useState<any>(null);
   const [session, setSession] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
+  const [recommendedBalls, setRecommendedBalls] = useState<GolfBall[]>([]);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -51,7 +53,7 @@ export default function FittingResults() {
       if (equipmentRes.data) setCurrentEquipment(equipmentRes.data);
       if (sessionRes.data) setSession(sessionRes.data);
 
-      if (recRes.data) {
+      if (recRes.data && playerRes.data && swingRes.data) {
         const { data: productsData } = await supabase
           .from("products")
           .select("*")
@@ -59,6 +61,20 @@ export default function FittingResults() {
           .limit(3);
         
         if (productsData) setProducts(productsData);
+
+        const balls = getRecommendedBalls({
+          swingSpeed: swingRes.data.swing_strength === "powerful" ? "high" : 
+                     swingRes.data.swing_strength === "moderate" ? "medium" : "low",
+          skillLevel: playerRes.data.experience === "beginner" ? "beginner" :
+                     playerRes.data.experience === "intermediate" ? "intermediate" : "advanced",
+          shotShape: swingRes.data.typical_shot || "straight",
+          primaryGoal: playerRes.data.primary_goal || "distance",
+          handicap: playerRes.data.handicap || 20,
+          weather: "moderate",
+          budget: playerRes.data.budget_range === "budget_conscious" ? "budget" :
+                 playerRes.data.budget_range === "mid_range" ? "mid" : "premium"
+        });
+        setRecommendedBalls(balls);
       }
 
       setIsLoading(false);
@@ -342,7 +358,7 @@ export default function FittingResults() {
           )}
 
           {/* Matched Products */}
-          <div>
+          <div className="mb-8">
             <h2 className="text-2xl font-bold mb-4">Recommended Products for Your Profile</h2>
             {products.length === 0 ? (
               <Card>
@@ -377,6 +393,125 @@ export default function FittingResults() {
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Recommended Golf Balls */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-4">Recommended Golf Balls for Your Game</h2>
+            <p className="text-muted-foreground mb-6">
+              Based on your swing profile, skill level, and playing conditions, these golf balls are optimized for your game.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recommendedBalls.map((ball, index) => (
+                <Card key={ball.id} className="hover:shadow-lg transition-shadow">
+                  <CardContent className="pt-6">
+                    <div className="mb-4">
+                      {index === 0 && (
+                        <Badge className="mb-2 bg-gold text-gold-foreground">Top Match</Badge>
+                      )}
+                      {index === 1 && (
+                        <Badge className="mb-2 bg-accent text-accent-foreground">Excellent Match</Badge>
+                      )}
+                      <h3 className="font-bold text-lg">{ball.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-2">{ball.manufacturer}</p>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="flex">
+                          {[...Array(5)].map((_, i) => (
+                            <Circle
+                              key={i}
+                              className={`h-4 w-4 ${
+                                i < Math.round(ball.overall_rating) ? "fill-accent text-accent" : "text-muted"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-sm font-medium">{ball.overall_rating.toFixed(1)}/5</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 mb-4 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Construction:</span>
+                        <span className="font-medium">{ball.construction}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Compression:</span>
+                        <span className="font-medium">{ball.compression}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Swing Speed:</span>
+                        <span className="font-medium capitalize">{ball.swing_speed_range.join(", ")}</span>
+                      </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <p className="text-xs font-semibold mb-2 text-muted-foreground">Performance Profile:</p>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span>Distance</span>
+                            <span>{ball.distance}/10</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-1.5">
+                            <div className="bg-accent h-1.5 rounded-full" style={{ width: `${ball.distance * 10}%` }} />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span>Control</span>
+                            <span>{ball.control}/10</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-1.5">
+                            <div className="bg-accent h-1.5 rounded-full" style={{ width: `${ball.control * 10}%` }} />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span>Spin</span>
+                            <span>{ball.spin}/10</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-1.5">
+                            <div className="bg-accent h-1.5 rounded-full" style={{ width: `${ball.spin * 10}%` }} />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span>Feel</span>
+                            <span>{ball.feel}/10</span>
+                          </div>
+                          <div className="w-full bg-muted rounded-full h-1.5">
+                            <div className="bg-accent h-1.5 rounded-full" style={{ width: `${ball.feel * 10}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <p className="text-xs font-semibold text-muted-foreground mb-1">Best For:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {ball.best_for.slice(0, 3).map((feature, idx) => (
+                          <Badge key={idx} variant="outline" className="text-xs">
+                            {feature}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Price per dozen:</span>
+                        <span className="text-xl font-bold text-accent">${ball.price_per_dozen}</span>
+                      </div>
+                      <Button className="w-full" variant="outline" asChild>
+                        <Link href={`/clubs/compare?balls=${ball.id}`}>
+                          Compare & Learn More
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
 
           <Card className="mb-6">
