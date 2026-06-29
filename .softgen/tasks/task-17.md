@@ -17,7 +17,7 @@ Comprehensive testing, performance optimization, and mobile responsiveness polis
 ### Data Validation Testing
 - [x] Test CSV import with 10 different formats (Excel, Google Sheets, TrackMan, etc.)
 - [x] Validate metric ranges catch all impossible values
-- [ ] Test missing data scenarios (partial metrics)
+- [x] Test missing data scenarios (partial metrics)
 - [x] Verify graceful error messages for corrupt files
 - [ ] Test concurrent imports (race conditions)
 
