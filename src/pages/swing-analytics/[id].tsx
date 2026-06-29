@@ -62,7 +62,8 @@ export default function SessionDetailPage() {
           .eq("id", user.id)
           .single();
         
-        setUserTier(userData?.subscription_tier || "core");
+        const tier = userData?.subscription_tier as "entry" | "core" | "premium" || "core";
+        setUserTier(tier);
         setShowUpgradeModal(true);
         setLoading(false);
         return;
