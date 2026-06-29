@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import Papa from "papaparse";
+import Link from "next/link";
 import { Upload, FileText, AlertCircle, CheckCircle2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -187,9 +188,7 @@ export function CSVImport({ onImportComplete, userId }: CSVImportProps) {
               CSV import is available with Swing Analytics subscription. Upgrade to import data from your launch monitor.
             </AlertDescription>
           </Alert>
-          <Button className="w-full mt-4 bg-accent hover:bg-accent/90" asChild>
-            <a href="/pricing">View Upgrade Options</a>
-          </Button>
+          <Link href="/pricing" className="w-full mt-4 bg-accent hover:bg-accent/90 block text-center">View Upgrade Options</Link>
         </CardContent>
       </Card>
     );

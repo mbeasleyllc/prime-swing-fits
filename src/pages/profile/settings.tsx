@@ -1333,7 +1333,7 @@ function SwingAnalyticsSubscriptionSection({ user }: { user: any }) {
                   asChild
                   className="border-accent text-accent hover:bg-accent/10"
                 >
-                  <a href="/pricing">Upgrade to Premium</a>
+                  <Link href="/pricing">Upgrade to Premium</Link>
                 </Button>
               </div>
             </div>
@@ -1415,7 +1415,7 @@ function SwingAnalyticsSubscriptionSection({ user }: { user: any }) {
                 Want more? Upgrade to Premium for 12-month retention + priority support
               </p>
               <Button variant="outline" asChild>
-                <a href="/pricing">View All Plans</a>
+                <Link href="/pricing">View All Plans</Link>
               </Button>
             </div>
           </>

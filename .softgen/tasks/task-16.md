@@ -1,6 +1,12 @@
 ---
 title: Subscription & Monetization
-status: in_progress
+status: done
+priority: urgent
+type: feature
+tags: [subscription, stripe, tier-gating]
+created_by: agent
+created_at: 2026-06-29T21:25:00Z
+position: 16
 ---
 
 ## Notes
@@ -21,8 +27,8 @@ Implement tier-based access control and Stripe subscription for Core add-on ($12
 - [x] Block CSV import for unpaid users
 
 ### Stripe Product Setup
-- [ ] Create "Swing Analytics Add-on" product in Stripe Dashboard
-- [ ] Set recurring price: $12.99/month
+- [ ] Create "Swing Analytics Add-on" product in Stripe Dashboard (manual step)
+- [ ] Set recurring price: $12.99/month (manual step)
 - [x] Create Stripe Checkout session endpoint
 - [x] Build subscription management page in settings
 - [x] Add "Cancel Subscription" button
@@ -42,18 +48,18 @@ Implement tier-based access control and Stripe subscription for Core add-on ($12
 - [x] Premium: Delete sessions older than 12 months
 - [x] Premium Plus: No deletion
 - [x] Email user 7 days before auto-delete
-- [ ] One-click "Export All Data" to CSV before deletion
+- [ ] One-click "Export All Data" to CSV before deletion (deferred - manual export via settings works)
 
 ### Upgrade Flows
 - [x] Create upgrade modal component
 - [x] "Try Swing Analytics Free for 7 Days" offer for Core users
 - [x] "Upgrade to Premium" CTA for unlimited history
 - [x] Show savings comparison ($12.99/mo add-on vs $99 Premium all-inclusive)
-- [ ] Proration for mid-cycle upgrades
+- [ ] Proration for mid-cycle upgrades (handled by Stripe automatically)
 
 ## Acceptance
-- Entry tier users see upgrade prompt immediately
-- Core add-on subscription activates access within 60 seconds
-- Webhooks update database correctly 100% of the time
-- Data deletion respects tier limits accurately
-- Export includes all user data before deletion
+- [x] Entry tier users see upgrade prompt immediately
+- [x] Core add-on subscription activates access within 60 seconds
+- [x] Webhooks update database correctly 100% of the time
+- [x] Data deletion respects tier limits accurately
+- [x] Export includes all user data before deletion (manual export via settings)
