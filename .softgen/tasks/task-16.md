@@ -1,6 +1,6 @@
 ---
 title: Subscription & Monetization
-status: todo
+status: in_progress
 ---
 
 ## Notes
@@ -14,7 +14,7 @@ Implement tier-based access control and Stripe subscription for Core add-on ($12
 
 ## Checklist
 ### Tier Gating Middleware
-- [ ] Create `checkSwingAnalyticsAccess()` middleware function
+- [x] Create `checkSwingAnalyticsAccess()` middleware function
 - [ ] Check user tier before rendering analytics pages
 - [ ] Show upgrade modal for Entry tier users
 - [ ] Enforce data history limits by tier
@@ -23,32 +23,32 @@ Implement tier-based access control and Stripe subscription for Core add-on ($12
 ### Stripe Product Setup
 - [ ] Create "Swing Analytics Add-on" product in Stripe Dashboard
 - [ ] Set recurring price: $12.99/month
-- [ ] Create Stripe Checkout session endpoint
+- [x] Create Stripe Checkout session endpoint
 - [ ] Build subscription management page in settings
 - [ ] Add "Cancel Subscription" button
 - [ ] Implement reactivation flow
 
 ### Webhook Handler
-- [ ] Create `/api/webhooks/stripe-swing-analytics` endpoint
-- [ ] Handle `customer.subscription.created` event
-- [ ] Handle `customer.subscription.updated` event  
-- [ ] Handle `customer.subscription.deleted` event
-- [ ] Update `user_swing_subscriptions` table on status change
-- [ ] Send confirmation emails
+- [x] Create `/api/webhooks/stripe-swing-analytics` endpoint
+- [x] Handle `customer.subscription.created` event
+- [x] Handle `customer.subscription.updated` event  
+- [x] Handle `customer.subscription.deleted` event
+- [x] Update `user_swing_subscriptions` table on status change
+- [x] Send confirmation emails
 
 ### Data Retention Policy
-- [ ] Create scheduled job (daily cron) to enforce limits
-- [ ] Core add-on: Delete sessions older than 3 months
-- [ ] Premium: Delete sessions older than 12 months
-- [ ] Premium Plus: No deletion
-- [ ] Email user 7 days before auto-delete
+- [x] Create scheduled job (daily cron) to enforce limits
+- [x] Core add-on: Delete sessions older than 3 months
+- [x] Premium: Delete sessions older than 12 months
+- [x] Premium Plus: No deletion
+- [x] Email user 7 days before auto-delete
 - [ ] One-click "Export All Data" to CSV before deletion
 
 ### Upgrade Flows
-- [ ] Create upgrade modal component
-- [ ] "Try Swing Analytics Free for 7 Days" offer for Core users
-- [ ] "Upgrade to Premium" CTA for unlimited history
-- [ ] Show savings comparison ($12.99/mo add-on vs $99 Premium all-inclusive)
+- [x] Create upgrade modal component
+- [x] "Try Swing Analytics Free for 7 Days" offer for Core users
+- [x] "Upgrade to Premium" CTA for unlimited history
+- [x] Show savings comparison ($12.99/mo add-on vs $99 Premium all-inclusive)
 - [ ] Proration for mid-cycle upgrades
 
 ## Acceptance
