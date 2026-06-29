@@ -1,6 +1,6 @@
 ---
 title: Analytics Dashboard
-status: todo
+status: in_progress
 ---
 
 ## Notes
@@ -15,32 +15,32 @@ Build comprehensive analytics dashboard at `/swing-analytics` with session histo
 
 ## Checklist
 ### Main Dashboard Page
-- [ ] Create `/swing-analytics` page with protected route
-- [ ] Build session history table with filters (date, club, device)
-- [ ] Add pagination (20 sessions per page)
-- [ ] Create 4 KPI cards: Consistency Score, 30-Day Trend, Best Metrics, Total Sessions
-- [ ] Quick action buttons: Import CSV, Manual Entry, Connect Device, View Goals
+- [x] Create `/swing-analytics` page with protected route
+- [x] Build session history table with filters (date, club, device)
+- [x] Add pagination (20 sessions per page)
+- [x] Create 4 KPI cards: Consistency Score, 30-Day Trend, Best Metrics, Total Sessions
+- [x] Quick action buttons: Import CSV, Manual Entry, Connect Device, View Goals
 
 ### Swing DNA Profile
-- [ ] Create radar chart component (Chart.js)
-- [ ] Calculate 6 DNA attributes: Power, Consistency, Efficiency, Launch, Spin Control, Accuracy
-- [ ] Add benchmark comparison (PGA Tour average, same handicap peers)
-- [ ] Color coding: green (above avg), yellow (avg), red (needs work)
-- [ ] Generate shareable image export
+- [x] Create radar chart component (Chart.js)
+- [x] Calculate 6 DNA attributes: Power, Consistency, Efficiency, Launch, Spin Control, Accuracy
+- [x] Add benchmark comparison (PGA Tour average, same handicap peers)
+- [x] Color coding: green (above avg), yellow (avg), red (needs work)
+- [x] Generate shareable image export
 
 ### Progress Charts
-- [ ] Club Speed Over Time line chart with trend line
-- [ ] Distance Progression chart (carry vs total)
-- [ ] Consistency Tracker showing variance over time
-- [ ] Launch Conditions Matrix scatter plot (launch angle vs spin rate)
-- [ ] All charts responsive and touch-friendly
+- [x] Club Speed Over Time line chart with trend line
+- [x] Distance Progression chart (carry vs total)
+- [x] Consistency Tracker showing variance over time
+- [x] Launch Conditions Matrix scatter plot (launch angle vs spin rate)
+- [x] All charts responsive and touch-friendly
 
 ### Detailed Session View
-- [ ] Individual session drill-down page
-- [ ] Shot-by-shot table with all metrics
-- [ ] Best/worst shot highlights
-- [ ] Session notes display
-- [ ] Shot dispersion pattern visualization
+- [x] Individual session drill-down page
+- [x] Shot-by-shot table with all metrics
+- [x] Best/worst shot highlights
+- [x] Session notes display
+- [x] Shot dispersion pattern visualization
 
 ## Acceptance
 - Dashboard loads in <2 seconds with 100+ sessions
