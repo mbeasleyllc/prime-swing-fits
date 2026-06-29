@@ -15,7 +15,18 @@ interface SwingDNAProfile {
   accuracy_score: number;
 }
 
-export function SwingDNARadar() {
+interface SwingDNARadarProps {
+  data: {
+    club_speed_mph: number | null;
+    ball_speed_mph: number | null;
+    launch_angle_deg: number | null;
+    spin_rate_rpm: number | null;
+    carry_distance_yds: number | null;
+    consistency_score: number | null;
+  };
+}
+
+export function SwingDNARadar({ data }: SwingDNARadarProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { toast } = useToast();
   const [profile, setProfile] = useState<SwingDNAProfile | null>(null);

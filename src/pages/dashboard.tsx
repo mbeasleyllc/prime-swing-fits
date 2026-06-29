@@ -47,7 +47,7 @@ export default function Dashboard() {
           .eq("user_id", user.id),
         supabase
           .from("swing_sessions")
-          .select("session_date, club_speed_mph, consistency_score", { count: "exact" })
+          .select("session_date, consistency_score", { count: "exact" })
           .eq("user_id", user.id)
           .order("session_date", { ascending: false })
           .limit(1)
@@ -74,7 +74,7 @@ export default function Dashboard() {
         insights: insightsRes.count || 0,
       });
 
-      if (swingSessionsRes.data) {
+      if (swingSessionsRes.data && !swingSessionsRes.error) {
         setSwingStats({
           lastSession: swingSessionsRes.data.session_date,
           consistencyScore: swingSessionsRes.data.consistency_score || null,

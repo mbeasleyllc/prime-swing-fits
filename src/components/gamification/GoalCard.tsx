@@ -6,6 +6,7 @@ import { Calendar, TrendingUp, AlertCircle, CheckCircle2 } from "lucide-react";
 import { differenceInDays, format } from "date-fns";
 
 interface GoalCardProps {
+  id: string;
   goalName: string;
   metricName: string;
   targetValue: number;
@@ -14,10 +15,12 @@ interface GoalCardProps {
   progressPercent: number;
   targetDate: string;
   status: string;
-  completedDate?: string | null;
+  completedDate: string | null;
+  onUpdate: () => Promise<void>;
 }
 
 export function GoalCard({
+  id,
   goalName,
   metricName,
   targetValue,

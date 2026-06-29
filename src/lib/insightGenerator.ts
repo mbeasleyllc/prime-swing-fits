@@ -136,7 +136,6 @@ export async function generateInsightsForUser(userId: string): Promise<void> {
           title: insight.title,
           description: insight.description,
           recommendation: insight.recommendation,
-          drill_link: insight.drillLink,
           priority: insight.priority,
         });
       }

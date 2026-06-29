@@ -144,8 +144,14 @@ export async function checkAndSendGoalReminders(): Promise<void> {
 
     for (const goal of goals) {
       const targetDate = new Date(goal.target_date);
-      const totalDays = Math.ceil((targetDate.getTime() - new Date(goal.created_at || now).getTime()) / (1000 * 60 * 60 * 24));
-      const daysElapsed = Math.ceil((now.getTime() - new Date(goal.created_at || now).getTime()) / (1000 * 60 * 60 * 24));
+      const daysRemaining = Math.ceil((targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Estimate creation date as 30 days before target if not available
+      const estimatedCreation = new Date(targetDate);
+      estimatedCreation.setDate(estimatedCreation.getDate() - 30);
+      
+      const totalDays = 30; // Assume 30-day goal duration
+      const daysElapsed = 30 - daysRemaining;
       const timelinePercent = (daysElapsed / totalDays) * 100;
 
       const milestones = [50, 75, 90];
@@ -154,8 +160,6 @@ export async function checkAndSendGoalReminders(): Promise<void> {
 
       for (const milestone of milestones) {
         if (timelinePercent >= milestone && timelinePercent < milestone + 5 && hoursSinceLastReminder > 24) {
-          const daysRemaining = Math.ceil((targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
           await sendGoalReminder(
             {
               userId: goal.user_id,

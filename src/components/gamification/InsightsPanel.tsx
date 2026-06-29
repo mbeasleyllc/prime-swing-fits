@@ -12,10 +12,11 @@ interface Insight {
   insight_type: string;
   title: string;
   description: string;
-  recommendation: string;
+  recommendation: string | null;
   drill_link: string | null;
   priority: string;
   created_at: string;
+  dismissed_at: string | null;
 }
 
 interface InsightsPanelProps {
