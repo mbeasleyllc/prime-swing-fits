@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Search, 
   X, 
@@ -27,10 +28,12 @@ import {
   ShoppingCart,
   ExternalLink,
   Lightbulb,
-  ChevronDown
+  ChevronDown,
+  Circle
 } from "lucide-react";
 import { searchProducts } from "@/services/productService";
 import { CLUB_DATABASE } from "@/data/clubDatabase";
+import { GOLF_BALL_DATABASE, type GolfBall } from "@/data/golfBallDatabase";
 import type { Database } from "@/integrations/supabase/database.types";
 import { useToast } from "@/hooks/use-toast";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -46,7 +49,8 @@ type Product = Database["public"]["Tables"]["products"]["Row"];
 
 interface ComparisonSlot {
   id: string;
-  product: Product | null;
+  product: Product | GolfBall | null;
+  type: "club" | "ball";
 }
 
 interface ExtendedProduct extends Product {
@@ -66,7 +70,8 @@ interface ExtendedProduct extends Product {
   buy_url?: string;
 }
 
-const CATEGORIES = ["All", "Driver", "Fairway Wood", "Hybrid", "Irons", "Wedge", "Putter"];
+const CLUB_CATEGORIES = ["All", "Driver", "Fairway Wood", "Hybrid", "Irons", "Wedge", "Putter"];
+const BALL_FILTERS = ["All Balls", "Tour Performance", "Distance", "Soft Feel", "Value"];
 const BRANDS = [
   "All Brands",
   "TaylorMade",
@@ -78,7 +83,11 @@ const BRANDS = [
   "Srixon",
   "Odyssey",
   "Scotty Cameron",
-  "Wilson"
+  "Wilson",
+  "Bridgestone",
+  "Vice",
+  "Snell",
+  "Mizuno"
 ];
 
 const FEATURED_CLUBS_IDS = [
@@ -88,6 +97,15 @@ const FEATURED_CLUBS_IDS = [
   "irons-ping-g430",
   "wedge-cleveland-rtx6-56",
   "putter-odyssey-white-hot"
+];
+
+const FEATURED_BALLS_IDS = [
+  "ball-titleist-prov1",
+  "ball-taylormade-tp5",
+  "ball-callaway-chrome-soft",
+  "ball-srixon-z-star",
+  "ball-titleist-tour-soft",
+  "ball-callaway-supersoft"
 ];
 
 function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
@@ -108,35 +126,68 @@ function AnimatedSection({ children, delay = 0 }: { children: React.ReactNode; d
   );
 }
 
-export default function ClubComparison() {
+export default function EquipmentComparison() {
+  const [activeTab, setActiveTab] = useState<"clubs" | "balls">("clubs");
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [searchResults, setSearchResults] = useState<(Product | GolfBall)[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedBrand, setSelectedBrand] = useState("All Brands");
+  const [selectedBallFilter, setSelectedBallFilter] = useState("All Balls");
   const [comparisonSlots, setComparisonSlots] = useState<ComparisonSlot[]>([
-    { id: "slot-1", product: null },
-    { id: "slot-2", product: null },
-    { id: "slot-3", product: null },
+    { id: "slot-1", product: null, type: "club" },
+    { id: "slot-2", product: null, type: "club" },
+    { id: "slot-3", product: null, type: "club" },
   ]);
   const [activeSlot, setActiveSlot] = useState<string | null>(null);
   const { toast } = useToast();
 
   const featuredClubs = CLUB_DATABASE.filter(club => FEATURED_CLUBS_IDS.includes(club.id));
+  const featuredBalls = GOLF_BALL_DATABASE.filter(ball => FEATURED_BALLS_IDS.includes(ball.id));
 
   useEffect(() => {
     const debounceTimer = setTimeout(async () => {
       if (searchQuery.length >= 2) {
         setIsSearching(true);
         try {
-          let results = await searchProducts(searchQuery);
+          let results: (Product | GolfBall)[] = [];
           
-          if (selectedCategory !== "All") {
-            results = results.filter(p => p.category === selectedCategory);
-          }
-          
-          if (selectedBrand !== "All Brands") {
-            results = results.filter(p => p.brand === selectedBrand);
+          if (activeTab === "clubs") {
+            results = await searchProducts(searchQuery);
+            
+            if (selectedCategory !== "All") {
+              results = results.filter(p => p.category === selectedCategory);
+            }
+            
+            if (selectedBrand !== "All Brands") {
+              results = results.filter(p => p.brand === selectedBrand);
+            }
+          } else {
+            results = GOLF_BALL_DATABASE.filter(ball =>
+              ball.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              ball.model_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              ball.best_for.some(bf => bf.toLowerCase().includes(searchQuery.toLowerCase()))
+            );
+            
+            if (selectedBrand !== "All Brands") {
+              results = results.filter(p => p.brand === selectedBrand);
+            }
+            
+            if (selectedBallFilter !== "All Balls") {
+              results = results.filter(ball => {
+                const golfBall = ball as GolfBall;
+                if (selectedBallFilter === "Tour Performance") {
+                  return golfBall.price_usd && golfBall.price_usd >= 45 && golfBall.cover_material === "Urethane";
+                } else if (selectedBallFilter === "Distance") {
+                  return golfBall.distance_rating >= 9;
+                } else if (selectedBallFilter === "Soft Feel") {
+                  return golfBall.compression <= 70;
+                } else if (selectedBallFilter === "Value") {
+                  return golfBall.price_usd && golfBall.price_usd <= 35;
+                }
+                return true;
+              });
+            }
           }
           
           setSearchResults(results);
@@ -149,16 +200,41 @@ export default function ClubComparison() {
         } finally {
           setIsSearching(false);
         }
-      } else if (selectedCategory !== "All" || selectedBrand !== "All Brands") {
-        // Show filtered catalog when filters are active but no search query
-        let filtered = [...CLUB_DATABASE];
+      } else if (selectedCategory !== "All" || selectedBrand !== "All Brands" || selectedBallFilter !== "All Balls") {
+        let filtered: (Product | GolfBall)[] = [];
         
-        if (selectedCategory !== "All") {
-          filtered = filtered.filter(p => p.category === selectedCategory);
-        }
-        
-        if (selectedBrand !== "All Brands") {
-          filtered = filtered.filter(p => p.brand === selectedBrand);
+        if (activeTab === "clubs") {
+          filtered = [...CLUB_DATABASE];
+          
+          if (selectedCategory !== "All") {
+            filtered = filtered.filter(p => p.category === selectedCategory);
+          }
+          
+          if (selectedBrand !== "All Brands") {
+            filtered = filtered.filter(p => p.brand === selectedBrand);
+          }
+        } else {
+          filtered = [...GOLF_BALL_DATABASE];
+          
+          if (selectedBrand !== "All Brands") {
+            filtered = filtered.filter(p => p.brand === selectedBrand);
+          }
+          
+          if (selectedBallFilter !== "All Balls") {
+            filtered = filtered.filter(ball => {
+              const golfBall = ball as GolfBall;
+              if (selectedBallFilter === "Tour Performance") {
+                return golfBall.price_usd && golfBall.price_usd >= 45 && golfBall.cover_material === "Urethane";
+              } else if (selectedBallFilter === "Distance") {
+                return golfBall.distance_rating >= 9;
+              } else if (selectedBallFilter === "Soft Feel") {
+                return golfBall.compression <= 70;
+              } else if (selectedBallFilter === "Value") {
+                return golfBall.price_usd && golfBall.price_usd <= 35;
+              }
+              return true;
+            });
+          }
         }
         
         setSearchResults(filtered);
@@ -168,12 +244,13 @@ export default function ClubComparison() {
     }, 300);
 
     return () => clearTimeout(debounceTimer);
-  }, [searchQuery, selectedCategory, selectedBrand, toast]);
+  }, [searchQuery, selectedCategory, selectedBrand, selectedBallFilter, activeTab, toast]);
 
-  const addProductToSlot = (product: Product, slotId: string) => {
+  const addProductToSlot = (product: Product | GolfBall, slotId: string) => {
+    const type = "compression" in product ? "ball" : "club";
     setComparisonSlots(slots =>
       slots.map(slot =>
-        slot.id === slotId ? { ...slot, product } : slot
+        slot.id === slotId ? { ...slot, product, type } : slot
       )
     );
     setActiveSlot(null);
@@ -184,7 +261,7 @@ export default function ClubComparison() {
   const removeProductFromSlot = (slotId: string) => {
     setComparisonSlots(slots =>
       slots.map(slot =>
-        slot.id === slotId ? { ...slot, product: null } : slot
+        slot.id === slotId ? { ...slot, product: null, type: "club" } : slot
       )
     );
   };
@@ -193,14 +270,14 @@ export default function ClubComparison() {
     if (comparisonSlots.length >= 4) {
       toast({
         title: "Maximum Reached",
-        description: "You can compare up to 4 clubs at once",
+        description: "You can compare up to 4 items at once",
         variant: "destructive",
       });
       return;
     }
     setComparisonSlots([
       ...comparisonSlots,
-      { id: `slot-${comparisonSlots.length + 1}`, product: null },
+      { id: `slot-${comparisonSlots.length + 1}`, product: null, type: "club" },
     ]);
   };
 
@@ -228,7 +305,7 @@ export default function ClubComparison() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "club-comparison.json";
+    a.download = "equipment-comparison.json";
     a.click();
     URL.revokeObjectURL(url);
     
@@ -238,8 +315,7 @@ export default function ClubComparison() {
     });
   };
 
-  const selectedProducts = comparisonSlots.filter(slot => slot.product).map(slot => slot.product!) as ExtendedProduct[];
-  const specs = getExpandedComparisonSpecs(selectedProducts);
+  const selectedProducts = comparisonSlots.filter(slot => slot.product).map(slot => ({ product: slot.product!, type: slot.type }));
   const filledSlotsCount = comparisonSlots.filter(slot => slot.product).length;
 
   const getCategoryCount = (category: string) => {
@@ -247,15 +323,30 @@ export default function ClubComparison() {
     return CLUB_DATABASE.filter(club => club.category === category).length;
   };
 
-  // Apply both category and brand filters to featured clubs
   const filteredFeaturedClubs = featuredClubs.filter(club => {
     const categoryMatch = selectedCategory === "All" || club.category === selectedCategory;
     const brandMatch = selectedBrand === "All Brands" || club.brand === selectedBrand;
     return categoryMatch && brandMatch;
   });
 
-  // Determine if we should show featured clubs or search results
-  const showFeaturedClubs = searchQuery.length === 0 && searchResults.length === 0;
+  const filteredFeaturedBalls = featuredBalls.filter(ball => {
+    const brandMatch = selectedBrand === "All Brands" || ball.brand === selectedBrand;
+    let filterMatch = true;
+    
+    if (selectedBallFilter === "Tour Performance") {
+      filterMatch = ball.price_usd! >= 45 && ball.cover_material === "Urethane";
+    } else if (selectedBallFilter === "Distance") {
+      filterMatch = ball.distance_rating >= 9;
+    } else if (selectedBallFilter === "Soft Feel") {
+      filterMatch = ball.compression <= 70;
+    } else if (selectedBallFilter === "Value") {
+      filterMatch = ball.price_usd! <= 35;
+    }
+    
+    return brandMatch && filterMatch;
+  });
+
+  const showFeaturedItems = searchQuery.length === 0 && searchResults.length === 0;
   const showSearchResults = searchQuery.length >= 2 || searchResults.length > 0;
 
   return (
@@ -266,7 +357,7 @@ export default function ClubComparison() {
             <div className="absolute inset-0 opacity-10">
               <img 
                 src="https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop"
-                alt="Golf clubs"
+                alt="Golf equipment"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -277,19 +368,19 @@ export default function ClubComparison() {
                 </div>
               </div>
               <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150">
-                Compare Clubs. Make the Right Call.
+                Compare Equipment. Make the Right Call.
               </h1>
               <p className="text-lg text-white/90 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-                Side-by-side specs, performance ratings, and fitting insights for 30+ clubs across all categories.
+                Side-by-side specs, performance ratings, and fitting insights for clubs and golf balls.
               </p>
               <div className="flex flex-wrap justify-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
                 <Badge className="bg-white/10 backdrop-blur-sm text-white border-white/20 px-4 py-2 text-sm">
                   <Package className="h-4 w-4 mr-2" />
-                  30+ Clubs
+                  50+ Products
                 </Badge>
                 <Badge className="bg-white/10 backdrop-blur-sm text-white border-white/20 px-4 py-2 text-sm">
-                  <Trophy className="h-4 w-4 mr-2" />
-                  6 Categories
+                  <Circle className="h-4 w-4 mr-2" />
+                  20 Golf Balls
                 </Badge>
                 <Badge className="bg-white/10 backdrop-blur-sm text-white border-white/20 px-4 py-2 text-sm">
                   <Zap className="h-4 w-4 mr-2" />
@@ -306,28 +397,51 @@ export default function ClubComparison() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Search className="h-5 w-5 text-accent" />
-                      Search Clubs
+                      Search Equipment
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex flex-wrap gap-2 border-b pb-4">
-                      {CATEGORIES.map((category) => (
-                        <Button
-                          key={category}
-                          variant={selectedCategory === category ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setSelectedCategory(category)}
-                          className={selectedCategory === category ? "bg-accent text-white hover:bg-accent/90" : ""}
-                        >
-                          {category}
-                          {category !== "All" && (
-                            <Badge variant="secondary" className="ml-2 text-xs">
-                              {getCategoryCount(category)}
-                            </Badge>
-                          )}
-                        </Button>
-                      ))}
-                    </div>
+                    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "clubs" | "balls")}>
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="clubs">Clubs</TabsTrigger>
+                        <TabsTrigger value="balls">Golf Balls</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+
+                    {activeTab === "clubs" ? (
+                      <div className="flex flex-wrap gap-2 border-b pb-4">
+                        {CLUB_CATEGORIES.map((category) => (
+                          <Button
+                            key={category}
+                            variant={selectedCategory === category ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSelectedCategory(category)}
+                            className={selectedCategory === category ? "bg-accent text-white hover:bg-accent/90" : ""}
+                          >
+                            {category}
+                            {category !== "All" && (
+                              <Badge variant="secondary" className="ml-2 text-xs">
+                                {getCategoryCount(category)}
+                              </Badge>
+                            )}
+                          </Button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2 border-b pb-4">
+                        {BALL_FILTERS.map((filter) => (
+                          <Button
+                            key={filter}
+                            variant={selectedBallFilter === filter ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setSelectedBallFilter(filter)}
+                            className={selectedBallFilter === filter ? "bg-accent text-white hover:bg-accent/90" : ""}
+                          >
+                            {filter}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
 
                     <Select value={selectedBrand} onValueChange={setSelectedBrand}>
                       <SelectTrigger>
@@ -344,7 +458,7 @@ export default function ClubComparison() {
 
                     <div className="relative">
                       <Input
-                        placeholder="Search by brand or model..."
+                        placeholder={`Search ${activeTab}...`}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pr-10"
@@ -362,63 +476,48 @@ export default function ClubComparison() {
                       </p>
                     )}
 
-                    {showFeaturedClubs && filteredFeaturedClubs.length > 0 && (
+                    {showFeaturedItems && (
                       <div className="space-y-4">
                         <h3 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
                           <Trophy className="h-4 w-4 text-gold" />
-                          {selectedCategory !== "All" || selectedBrand !== "All Brands" ? "Filtered Clubs" : "Featured Clubs"}
+                          {activeTab === "clubs" && (selectedCategory !== "All" || selectedBrand !== "All Brands") ? "Filtered Clubs" : 
+                           activeTab === "balls" && (selectedBrand !== "All Brands" || selectedBallFilter !== "All Balls") ? "Filtered Balls" :
+                           `Featured ${activeTab === "clubs" ? "Clubs" : "Golf Balls"}`}
                         </h3>
                         <div className="grid grid-cols-2 gap-3">
-                          {filteredFeaturedClubs.map((product) => (
-                            <Card 
-                              key={product.id}
-                              className="cursor-pointer hover:shadow-lg transition-all border hover:border-accent/50"
-                              onClick={() => {
-                                if (!activeSlot) {
-                                  const emptySlot = comparisonSlots.find(s => !s.product);
-                                  if (emptySlot) {
-                                    addProductToSlot(product, emptySlot.id);
-                                  } else {
-                                    toast({
-                                      title: "All Slots Full",
-                                      description: "Remove a club to add this one",
-                                      variant: "destructive",
-                                    });
-                                  }
-                                  return;
-                                }
-                                addProductToSlot(product, activeSlot);
-                              }}
-                            >
-                              <CardContent className="p-3">
-                                <div className="space-y-2">
-                                  <h4 className="font-semibold text-xs truncate text-foreground">
-                                    {product.brand}
-                                  </h4>
-                                  <p className="text-xs text-muted-foreground truncate">
-                                    {product.model_name}
-                                  </p>
-                                  {product.price_usd && (
-                                    <p className="text-sm font-bold text-gold">
-                                      ${product.price_usd}
-                                    </p>
-                                  )}
-                                  <Button size="sm" className="w-full bg-gold text-gold-foreground hover:bg-gold/90 h-7 text-xs">
-                                    <Plus className="h-3 w-3 mr-1" />
-                                    Add
-                                  </Button>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
+                          {activeTab === "clubs" ? (
+                            filteredFeaturedClubs.map((product) => (
+                              <ProductCard
+                                key={product.id}
+                                product={product}
+                                activeSlot={activeSlot}
+                                comparisonSlots={comparisonSlots}
+                                addProductToSlot={addProductToSlot}
+                                toast={toast}
+                              />
+                            ))
+                          ) : (
+                            filteredFeaturedBalls.map((ball) => (
+                              <BallCard
+                                key={ball.id}
+                                ball={ball}
+                                activeSlot={activeSlot}
+                                comparisonSlots={comparisonSlots}
+                                addProductToSlot={addProductToSlot}
+                                toast={toast}
+                              />
+                            ))
+                          )}
                         </div>
                       </div>
                     )}
 
-                    {showFeaturedClubs && filteredFeaturedClubs.length === 0 && (selectedCategory !== "All" || selectedBrand !== "All Brands") && (
+                    {showFeaturedItems && 
+                     ((activeTab === "clubs" && filteredFeaturedClubs.length === 0) ||
+                      (activeTab === "balls" && filteredFeaturedBalls.length === 0)) && (
                       <div className="text-center py-8 text-muted-foreground">
                         <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p className="font-medium mb-1">No clubs found</p>
+                        <p className="font-medium mb-1">No items found</p>
                         <p className="text-sm">Try different filters</p>
                       </div>
                     )}
@@ -426,56 +525,25 @@ export default function ClubComparison() {
                     {showSearchResults && searchResults.length > 0 && (
                       <div className="space-y-2 max-h-[600px] overflow-y-auto">
                         {searchResults.map((product) => (
-                          <Card 
-                            key={product.id}
-                            className="cursor-pointer hover:shadow-lg transition-all border-2 hover:border-accent/50"
-                            onClick={() => {
-                              if (!activeSlot) {
-                                const emptySlot = comparisonSlots.find(s => !s.product);
-                                if (emptySlot) {
-                                  addProductToSlot(product, emptySlot.id);
-                                } else {
-                                  toast({
-                                    title: "All Slots Full",
-                                    description: "Remove a club first",
-                                    variant: "destructive",
-                                  });
-                                }
-                                return;
-                              }
-                              addProductToSlot(product, activeSlot);
-                            }}
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-start gap-3">
-                                {product.image_url && (
-                                  <img 
-                                    src={product.image_url} 
-                                    alt={product.model_name ?? "Club"}
-                                    className="w-16 h-16 object-cover rounded"
-                                  />
-                                )}
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-semibold truncate text-foreground">
-                                    {product.brand}
-                                  </h4>
-                                  <p className="text-sm text-muted-foreground truncate">
-                                    {product.model_name}
-                                  </p>
-                                  <div className="flex items-center gap-2 mt-2">
-                                    <Badge variant="outline" className="text-xs">
-                                      {product.category}
-                                    </Badge>
-                                    {product.price_usd && (
-                                      <span className="text-sm font-semibold text-gold">
-                                        ${product.price_usd}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
+                          "compression" in product ? (
+                            <BallSearchCard
+                              key={product.id}
+                              ball={product as GolfBall}
+                              activeSlot={activeSlot}
+                              comparisonSlots={comparisonSlots}
+                              addProductToSlot={addProductToSlot}
+                              toast={toast}
+                            />
+                          ) : (
+                            <ClubSearchCard
+                              key={product.id}
+                              product={product}
+                              activeSlot={activeSlot}
+                              comparisonSlots={comparisonSlots}
+                              addProductToSlot={addProductToSlot}
+                              toast={toast}
+                            />
+                          )
                         ))}
                       </div>
                     )}
@@ -483,7 +551,7 @@ export default function ClubComparison() {
                     {showSearchResults && searchResults.length === 0 && searchQuery.length >= 2 && !isSearching && (
                       <div className="text-center py-8 text-muted-foreground">
                         <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p>No clubs found</p>
+                        <p>No {activeTab} found</p>
                       </div>
                     )}
                   </CardContent>
@@ -531,10 +599,10 @@ export default function ClubComparison() {
                         <Lightbulb className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
                         <div className="text-sm">
                           <p className="text-foreground font-medium">
-                            Select 2–4 clubs to unlock the full spec comparison.
+                            Select 2–4 items to unlock the full comparison.
                           </p>
                           <p className="text-muted-foreground mt-1">
-                            Compare same-category clubs for the best insights.
+                            Compare same-type items (clubs with clubs, balls with balls) for the best insights.
                           </p>
                         </div>
                       </div>
@@ -545,156 +613,36 @@ export default function ClubComparison() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 md:overflow-x-auto md:flex md:flex-nowrap lg:grid">
                   {comparisonSlots.map((slot, index) => (
                     <AnimatedSection key={slot.id} delay={index * 100}>
-                      <Card 
-                        className={`h-full cursor-pointer transition-all min-w-[250px] md:min-w-0 ${
-                          activeSlot === slot.id 
-                            ? "border-2 border-accent shadow-lg ring-2 ring-accent/20" 
-                            : "border-2 border-dashed hover:border-accent/50"
-                        }`}
-                        onClick={() => !slot.product && setActiveSlot(slot.id)}
-                      >
-                        <CardContent className="p-6">
-                          {slot.product ? (
-                            <div className="space-y-4">
-                              <div className="relative">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="absolute -top-2 -right-2 h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground z-10"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    removeProductFromSlot(slot.id);
-                                  }}
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
-                                {slot.product.image_url && (
-                                  <img 
-                                    src={slot.product.image_url} 
-                                    alt={slot.product.model_name ?? "Club"}
-                                    className="w-full h-32 object-cover rounded"
-                                  />
-                                )}
-                              </div>
-                              <div>
-                                <h3 className="font-bold text-lg text-foreground truncate">
-                                  {slot.product.brand}
-                                </h3>
-                                <p className="text-sm text-muted-foreground truncate">
-                                  {slot.product.model_name}
-                                </p>
-                                <Badge variant="outline" className="mt-2">
-                                  {slot.product.category}
-                                </Badge>
-                                {slot.product.price_usd && (
-                                  <p className="text-xl font-bold text-gold mt-2">
-                                    ${slot.product.price_usd}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="h-full flex flex-col items-center justify-center py-12 text-muted-foreground">
-                              <Plus className="h-12 w-12 mb-2 opacity-50" />
-                              <p className="text-sm">Click to add club</p>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
+                      <ComparisonSlotCard
+                        slot={slot}
+                        activeSlot={activeSlot}
+                        setActiveSlot={setActiveSlot}
+                        removeProductFromSlot={removeProductFromSlot}
+                      />
                     </AnimatedSection>
                   ))}
                 </div>
 
-                {selectedProducts.length > 0 && (
-                  <FittingMatchIndicator products={selectedProducts} />
+                {selectedProducts.length > 0 && <FittingMatchIndicator products={selectedProducts} />}
+
+                {selectedProducts.length > 1 && selectedProducts.every(p => p.type === selectedProducts[0].type) && (
+                  selectedProducts[0].type === "club" ? (
+                    <ClubComparison products={selectedProducts.map(p => p.product as ExtendedProduct)} />
+                  ) : (
+                    <BallComparison balls={selectedProducts.map(p => p.product as GolfBall)} />
+                  )
                 )}
 
-                {selectedProducts.length > 1 && (
-                  <>
-                    <Card className="mb-6">
-                      <CardHeader>
-                        <CardTitle>Specifications Comparison</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="overflow-x-auto">
-                          <table className="w-full min-w-[600px]">
-                            <thead>
-                              <tr className="border-b">
-                                <th className="py-3 px-4 text-left font-semibold text-foreground sticky left-0 bg-background">
-                                  Specification
-                                </th>
-                                {selectedProducts.map((product, index) => (
-                                  <th key={index} className="py-3 px-4 text-left font-semibold text-foreground min-w-[150px]">
-                                    <div className="truncate">{product.brand}</div>
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {specs.map((spec, index) => (
-                                <tr key={index} className="border-b hover:bg-muted/50">
-                                  <td className="py-3 px-4 font-medium text-muted-foreground sticky left-0 bg-background">
-                                    <div className="flex items-center gap-2">
-                                      {spec.icon}
-                                      {spec.label}
-                                    </div>
-                                  </td>
-                                  {spec.values.map((value, i) => (
-                                    <td key={i} className="py-3 px-4">
-                                      <div className="flex items-center gap-2">
-                                        <span className={spec.isDifferent(i) ? "text-foreground font-semibold" : "text-muted-foreground"}>
-                                          {value}
-                                        </span>
-                                        {spec.highlight === "best" && spec.isBest && spec.isBest(i) && (
-                                          <CheckCircle2 className="h-4 w-4 text-accent flex-shrink-0" />
-                                        )}
-                                      </div>
-                                    </td>
-                                  ))}
-                                </tr>
-                              ))}
-                              <tr className="border-b bg-muted/30">
-                                <td className="py-3 px-4 font-semibold text-foreground sticky left-0 bg-muted/30">
-                                  Buy Now
-                                </td>
-                                {selectedProducts.map((product, i) => (
-                                  <td key={i} className="py-3 px-4">
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="border-gold text-gold hover:bg-gold hover:text-gold-foreground"
-                                      asChild
-                                    >
-                                      <a
-                                        href={product.buy_url || `https://www.google.com/search?q=${encodeURIComponent(`${product.brand} ${product.model_name} buy`)}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                      >
-                                        Shop <ExternalLink className="h-3 w-3 ml-1" />
-                                      </a>
-                                    </Button>
-                                  </td>
-                                ))}
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Performance Summary</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                          {selectedProducts.map((product, index) => (
-                            <PerformanceCard key={index} product={product} allProducts={selectedProducts} />
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </>
+                {selectedProducts.length > 1 && !selectedProducts.every(p => p.type === selectedProducts[0].type) && (
+                  <Card className="border-yellow-500 bg-yellow-50">
+                    <CardContent className="py-8 text-center">
+                      <AlertCircle className="h-12 w-12 mx-auto mb-4 text-yellow-600" />
+                      <h3 className="text-lg font-semibold mb-2 text-yellow-900">Mixed Product Types</h3>
+                      <p className="text-yellow-800">
+                        Compare clubs with clubs or balls with balls for meaningful insights.
+                      </p>
+                    </CardContent>
+                  </Card>
                 )}
 
                 {selectedProducts.length === 1 && (
@@ -702,8 +650,8 @@ export default function ClubComparison() {
                     <CardContent className="py-12">
                       <div className="text-center text-muted-foreground">
                         <GitCompare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <h3 className="text-lg font-semibold mb-2">Add More Clubs</h3>
-                        <p>Add at least one more club to see the comparison</p>
+                        <h3 className="text-lg font-semibold mb-2">Add More Items</h3>
+                        <p>Add at least one more item to see the comparison</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -714,8 +662,8 @@ export default function ClubComparison() {
                     <CardContent className="py-16">
                       <div className="text-center text-muted-foreground">
                         <GitCompare className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                        <h3 className="text-lg font-semibold mb-2">No Clubs Selected</h3>
-                        <p>Add clubs to comparison slots to see detailed specifications</p>
+                        <h3 className="text-lg font-semibold mb-2">No Items Selected</h3>
+                        <p>Add items to comparison slots to see detailed specifications</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -729,7 +677,260 @@ export default function ClubComparison() {
   );
 }
 
-function FittingMatchIndicator({ products }: { products: ExtendedProduct[] }) {
+function ProductCard({ product, activeSlot, comparisonSlots, addProductToSlot, toast }: any) {
+  return (
+    <Card 
+      className="cursor-pointer hover:shadow-lg transition-all border hover:border-accent/50"
+      onClick={() => {
+        if (!activeSlot) {
+          const emptySlot = comparisonSlots.find((s: any) => !s.product);
+          if (emptySlot) {
+            addProductToSlot(product, emptySlot.id);
+          } else {
+            toast({
+              title: "All Slots Full",
+              description: "Remove an item to add this one",
+              variant: "destructive",
+            });
+          }
+          return;
+        }
+        addProductToSlot(product, activeSlot);
+      }}
+    >
+      <CardContent className="p-3">
+        <div className="space-y-2">
+          <h4 className="font-semibold text-xs truncate text-foreground">
+            {product.brand}
+          </h4>
+          <p className="text-xs text-muted-foreground truncate">
+            {product.model_name}
+          </p>
+          {product.price_usd && (
+            <p className="text-sm font-bold text-gold">
+              ${product.price_usd}
+            </p>
+          )}
+          <Button size="sm" className="w-full bg-gold text-gold-foreground hover:bg-gold/90 h-7 text-xs">
+            <Plus className="h-3 w-3 mr-1" />
+            Add
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BallCard({ ball, activeSlot, comparisonSlots, addProductToSlot, toast }: any) {
+  return (
+    <Card 
+      className="cursor-pointer hover:shadow-lg transition-all border hover:border-accent/50"
+      onClick={() => {
+        if (!activeSlot) {
+          const emptySlot = comparisonSlots.find((s: any) => !s.product);
+          if (emptySlot) {
+            addProductToSlot(ball, emptySlot.id);
+          } else {
+            toast({
+              title: "All Slots Full",
+              description: "Remove an item to add this one",
+              variant: "destructive",
+            });
+          }
+          return;
+        }
+        addProductToSlot(ball, activeSlot);
+      }}
+    >
+      <CardContent className="p-3">
+        <div className="space-y-2">
+          <h4 className="font-semibold text-xs truncate text-foreground">
+            {ball.brand}
+          </h4>
+          <p className="text-xs text-muted-foreground truncate">
+            {ball.model_name}
+          </p>
+          <Badge variant="outline" className="text-xs">
+            {ball.compression} Compression
+          </Badge>
+          {ball.price_usd && (
+            <p className="text-sm font-bold text-gold">
+              ${ball.price_usd}/dozen
+            </p>
+          )}
+          <Button size="sm" className="w-full bg-gold text-gold-foreground hover:bg-gold/90 h-7 text-xs">
+            <Plus className="h-3 w-3 mr-1" />
+            Add
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ClubSearchCard({ product, activeSlot, comparisonSlots, addProductToSlot, toast }: any) {
+  return (
+    <Card 
+      className="cursor-pointer hover:shadow-lg transition-all border-2 hover:border-accent/50"
+      onClick={() => {
+        if (!activeSlot) {
+          const emptySlot = comparisonSlots.find((s: any) => !s.product);
+          if (emptySlot) {
+            addProductToSlot(product, emptySlot.id);
+          } else {
+            toast({
+              title: "All Slots Full",
+              description: "Remove an item first",
+              variant: "destructive",
+            });
+          }
+          return;
+        }
+        addProductToSlot(product, activeSlot);
+      }}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          {product.image_url && (
+            <img 
+              src={product.image_url} 
+              alt={product.model_name ?? "Club"}
+              className="w-16 h-16 object-cover rounded"
+            />
+          )}
+          <div className="flex-1 min-w-0">
+            <h4 className="font-semibold truncate text-foreground">
+              {product.brand}
+            </h4>
+            <p className="text-sm text-muted-foreground truncate">
+              {product.model_name}
+            </p>
+            <div className="flex items-center gap-2 mt-2">
+              <Badge variant="outline" className="text-xs">
+                {product.category}
+              </Badge>
+              {product.price_usd && (
+                <span className="text-sm font-semibold text-gold">
+                  ${product.price_usd}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BallSearchCard({ ball, activeSlot, comparisonSlots, addProductToSlot, toast }: any) {
+  return (
+    <Card 
+      className="cursor-pointer hover:shadow-lg transition-all border-2 hover:border-accent/50"
+      onClick={() => {
+        if (!activeSlot) {
+          const emptySlot = comparisonSlots.find((s: any) => !s.product);
+          if (emptySlot) {
+            addProductToSlot(ball, emptySlot.id);
+          } else {
+            toast({
+              title: "All Slots Full",
+              description: "Remove an item first",
+              variant: "destructive",
+            });
+          }
+          return;
+        }
+        addProductToSlot(ball, activeSlot);
+      }}
+    >
+      <CardContent className="p-4">
+        <div>
+          <h4 className="font-semibold text-foreground">
+            {ball.brand} {ball.model_name}
+          </h4>
+          <div className="flex items-center gap-2 mt-2">
+            <Badge variant="outline" className="text-xs">
+              {ball.compression} Comp
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              {ball.cover_material}
+            </Badge>
+            {ball.price_usd && (
+              <span className="text-sm font-semibold text-gold">
+                ${ball.price_usd}
+              </span>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ComparisonSlotCard({ slot, activeSlot, setActiveSlot, removeProductFromSlot }: any) {
+  const isBall = slot.product && "compression" in slot.product;
+  
+  return (
+    <Card 
+      className={`h-full cursor-pointer transition-all min-w-[250px] md:min-w-0 ${
+        activeSlot === slot.id 
+          ? "border-2 border-accent shadow-lg ring-2 ring-accent/20" 
+          : "border-2 border-dashed hover:border-accent/50"
+      }`}
+      onClick={() => !slot.product && setActiveSlot(slot.id)}
+    >
+      <CardContent className="p-6">
+        {slot.product ? (
+          <div className="space-y-4">
+            <div className="relative">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute -top-2 -right-2 h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground z-10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  removeProductFromSlot(slot.id);
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              {slot.product.image_url && (
+                <img 
+                  src={slot.product.image_url} 
+                  alt={slot.product.model_name ?? "Product"}
+                  className="w-full h-32 object-cover rounded"
+                />
+              )}
+            </div>
+            <div>
+              <h3 className="font-bold text-lg text-foreground truncate">
+                {slot.product.brand}
+              </h3>
+              <p className="text-sm text-muted-foreground truncate">
+                {slot.product.model_name}
+              </p>
+              <Badge variant="outline" className="mt-2">
+                {isBall ? "Golf Ball" : slot.product.category}
+              </Badge>
+              {slot.product.price_usd && (
+                <p className="text-xl font-bold text-gold mt-2">
+                  ${slot.product.price_usd}{isBall && "/dozen"}
+                </p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center py-12 text-muted-foreground">
+            <Plus className="h-12 w-12 mb-2 opacity-50" />
+            <p className="text-sm">Click to add item</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function FittingMatchIndicator({ products }: { products: { product: Product | GolfBall; type: string }[] }) {
   const [profile, setProfile] = useState<{ swingSpeed: number; handicap: number; flex: string } | null>(null);
 
   useEffect(() => {
@@ -743,26 +944,6 @@ function FittingMatchIndicator({ products }: { products: ExtendedProduct[] }) {
     }
   }, []);
 
-  const getMatchStatus = (product: ExtendedProduct) => {
-    if (!profile) return null;
-
-    const swingMatch = product.swing_speed_range 
-      ? checkSwingSpeedMatch(product.swing_speed_range, profile.swingSpeed)
-      : null;
-    
-    const handicapMatch = product.handicap_range
-      ? checkHandicapMatch(product.handicap_range, profile.handicap)
-      : null;
-
-    if (swingMatch === true && handicapMatch === true) {
-      return { status: "good", label: "Good Fit", color: "text-accent" };
-    } else if (swingMatch === false || handicapMatch === false) {
-      return { status: "poor", label: "Poor Fit", color: "text-destructive" };
-    } else {
-      return { status: "check", label: "Check Fit", color: "text-yellow-600" };
-    }
-  };
-
   if (!profile) {
     return (
       <Card className="mb-6 border-accent/50 bg-accent/5">
@@ -771,7 +952,7 @@ function FittingMatchIndicator({ products }: { products: ExtendedProduct[] }) {
             <div className="flex items-center gap-3">
               <Lightbulb className="h-5 w-5 text-accent" />
               <p className="text-sm font-medium">
-                Take the fitting quiz to see which clubs match your swing
+                Take the fitting quiz to see which equipment matches your profile
               </p>
             </div>
             <Button size="sm" asChild className="bg-accent text-accent-foreground hover:bg-accent/90 flex-shrink-0">
@@ -790,8 +971,35 @@ function FittingMatchIndicator({ products }: { products: ExtendedProduct[] }) {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {products.map((product, index) => {
-            const match = getMatchStatus(product);
+          {products.map((item, index) => {
+            const product = item.product;
+            let match: { status: string; label: string; color: string } | null = null;
+
+            if (item.type === "ball") {
+              const ball = product as GolfBall;
+              const swingMatch = checkSwingSpeedMatch(ball.swing_speed_range, profile.swingSpeed);
+              if (swingMatch) {
+                match = { status: "good", label: "Good Fit", color: "text-accent" };
+              }
+            } else {
+              const club = product as ExtendedProduct;
+              const swingMatch = club.swing_speed_range 
+                ? checkSwingSpeedMatch(club.swing_speed_range, profile.swingSpeed)
+                : null;
+              
+              const handicapMatch = club.handicap_range
+                ? checkHandicapMatch(club.handicap_range, profile.handicap)
+                : null;
+
+              if (swingMatch === true && handicapMatch === true) {
+                match = { status: "good", label: "Good Fit", color: "text-accent" };
+              } else if (swingMatch === false || handicapMatch === false) {
+                match = { status: "poor", label: "Poor Fit", color: "text-destructive" };
+              } else if (swingMatch === true || handicapMatch === true) {
+                match = { status: "check", label: "Check Fit", color: "text-yellow-600" };
+              }
+            }
+
             if (!match) return null;
 
             return (
@@ -827,6 +1035,224 @@ function checkHandicapMatch(range: string, handicap: number): boolean {
   if (!match) return true;
   const [_, min, max] = match;
   return handicap >= parseInt(min) && handicap <= parseInt(max);
+}
+
+function ClubComparison({ products }: { products: ExtendedProduct[] }) {
+  const specs = getExpandedComparisonSpecs(products);
+
+  return (
+    <>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Specifications Comparison</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[600px]">
+              <thead>
+                <tr className="border-b">
+                  <th className="py-3 px-4 text-left font-semibold text-foreground sticky left-0 bg-background">
+                    Specification
+                  </th>
+                  {products.map((product, index) => (
+                    <th key={index} className="py-3 px-4 text-left font-semibold text-foreground min-w-[150px]">
+                      <div className="truncate">{product.brand}</div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {specs.map((spec, index) => (
+                  <tr key={index} className="border-b hover:bg-muted/50">
+                    <td className="py-3 px-4 font-medium text-muted-foreground sticky left-0 bg-background">
+                      <div className="flex items-center gap-2">
+                        {spec.icon}
+                        {spec.label}
+                      </div>
+                    </td>
+                    {spec.values.map((value, i) => (
+                      <td key={i} className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <span className={spec.isDifferent(i) ? "text-foreground font-semibold" : "text-muted-foreground"}>
+                            {value}
+                          </span>
+                          {spec.highlight === "best" && spec.isBest && spec.isBest(i) && (
+                            <CheckCircle2 className="h-4 w-4 text-accent flex-shrink-0" />
+                          )}
+                        </div>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Performance Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.map((product, index) => (
+              <PerformanceCard key={index} product={product} allProducts={products} />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </>
+  );
+}
+
+function BallComparison({ balls }: { balls: GolfBall[] }) {
+  return (
+    <>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Golf Ball Specifications</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[600px]">
+              <thead>
+                <tr className="border-b">
+                  <th className="py-3 px-4 text-left font-semibold text-foreground sticky left-0 bg-background">
+                    Specification
+                  </th>
+                  {balls.map((ball, index) => (
+                    <th key={index} className="py-3 px-4 text-left font-semibold text-foreground min-w-[150px]">
+                      <div className="truncate">{ball.brand}</div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b hover:bg-muted/50">
+                  <td className="py-3 px-4 font-medium text-muted-foreground sticky left-0 bg-background">
+                    <div className="flex items-center gap-2">
+                      <Circle className="h-4 w-4 text-accent" />
+                      Model
+                    </div>
+                  </td>
+                  {balls.map((ball, i) => (
+                    <td key={i} className="py-3 px-4 font-semibold">
+                      {ball.model_name}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b hover:bg-muted/50">
+                  <td className="py-3 px-4 font-medium text-muted-foreground sticky left-0 bg-background">
+                    Compression
+                  </td>
+                  {balls.map((ball, i) => (
+                    <td key={i} className="py-3 px-4">
+                      {ball.compression}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b hover:bg-muted/50">
+                  <td className="py-3 px-4 font-medium text-muted-foreground sticky left-0 bg-background">
+                    Cover Material
+                  </td>
+                  {balls.map((ball, i) => (
+                    <td key={i} className="py-3 px-4">
+                      {ball.cover_material}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b hover:bg-muted/50">
+                  <td className="py-3 px-4 font-medium text-muted-foreground sticky left-0 bg-background">
+                    Layers
+                  </td>
+                  {balls.map((ball, i) => (
+                    <td key={i} className="py-3 px-4">
+                      {ball.layers}-piece
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b hover:bg-muted/50">
+                  <td className="py-3 px-4 font-medium text-muted-foreground sticky left-0 bg-background">
+                    Feel
+                  </td>
+                  {balls.map((ball, i) => (
+                    <td key={i} className="py-3 px-4">
+                      {ball.feel}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b hover:bg-muted/50">
+                  <td className="py-3 px-4 font-medium text-muted-foreground sticky left-0 bg-background">
+                    Driver Spin (RPM)
+                  </td>
+                  {balls.map((ball, i) => (
+                    <td key={i} className="py-3 px-4">
+                      {ball.driver_spin}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b hover:bg-muted/50">
+                  <td className="py-3 px-4 font-medium text-muted-foreground sticky left-0 bg-background">
+                    Wedge Spin (RPM)
+                  </td>
+                  {balls.map((ball, i) => (
+                    <td key={i} className="py-3 px-4">
+                      {ball.wedge_spin}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b hover:bg-muted/50">
+                  <td className="py-3 px-4 font-medium text-muted-foreground sticky left-0 bg-background">
+                    Swing Speed Range
+                  </td>
+                  {balls.map((ball, i) => (
+                    <td key={i} className="py-3 px-4 text-sm">
+                      {ball.swing_speed_range}
+                    </td>
+                  ))}
+                </tr>
+                <tr className="border-b hover:bg-muted/50">
+                  <td className="py-3 px-4 font-medium text-muted-foreground sticky left-0 bg-background">
+                    Price per Dozen
+                  </td>
+                  {balls.map((ball, i) => (
+                    <td key={i} className="py-3 px-4 font-bold text-gold">
+                      ${ball.price_usd}
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Performance Ratings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {balls.map((ball, index) => (
+              <Card key={index} className="border-l-4 border-l-accent">
+                <CardContent className="pt-6 space-y-4">
+                  <div>
+                    <h4 className="font-bold truncate">{ball.brand}</h4>
+                    <p className="text-sm text-muted-foreground truncate">{ball.model_name}</p>
+                  </div>
+                  <PerformanceBar label="Distance" value={ball.distance_rating} color="bg-blue-500" />
+                  <PerformanceBar label="Greenside Control" value={ball.greenside_control} color="bg-accent" />
+                  <PerformanceBar label="Durability" value={ball.durability} color="bg-amber-500" />
+                  <PerformanceBar label="Wind Performance" value={ball.wind_performance} color="bg-teal-500" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </>
+  );
 }
 
 function PerformanceCard({ product, allProducts }: { product: ExtendedProduct; allProducts: ExtendedProduct[] }) {
