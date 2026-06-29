@@ -19,7 +19,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Profile", href: "/profile", icon: User },
   { name: "Fitting Sessions", href: "/dashboard", icon: FileText },
-  { name: "Club Compare", href: "/clubs/compare", icon: TrendingUp },
+  { name: "Compare Equipment", href: "/clubs/compare", icon: TrendingUp },
   { name: "Settings", href: "/profile/settings", icon: Settings },
 ];
 

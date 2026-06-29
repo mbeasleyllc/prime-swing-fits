@@ -284,12 +284,12 @@ export default function Home() {
                   <CardContent className="pt-8">
                     <div className="flex items-start gap-4">
                       <div className="bg-accent/10 p-4 rounded-xl flex-shrink-0">
-                        <FileText className="h-7 w-7 text-accent" />
+                        <TrendingUp className="h-7 w-7 text-accent" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold mb-3">Downloadable Report</h3>
+                        <h3 className="text-xl font-semibold mb-3">Compare Equipment</h3>
                         <p className="text-muted-foreground leading-relaxed">
-                          Get a professional PDF report you can take to any club fitter or pro shop for reference.
+                          Side-by-side comparison of clubs and golf balls with detailed specs, performance ratings, and fitting match indicators.
                         </p>
                       </div>
                     </div>
@@ -302,12 +302,48 @@ export default function Home() {
                   <CardContent className="pt-8">
                     <div className="flex items-start gap-4">
                       <div className="bg-gold/10 p-4 rounded-xl flex-shrink-0">
-                        <Award className="h-7 w-7 text-gold" />
+                        <FileText className="h-7 w-7 text-gold" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold mb-3">Downloadable Report</h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Get a professional PDF report you can take to any club fitter or pro shop for reference.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </AnimatedSection>
+
+              <AnimatedSection delay={600}>
+                <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent h-full">
+                  <CardContent className="pt-8">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-accent/10 p-4 rounded-xl flex-shrink-0">
+                        <Award className="h-7 w-7 text-accent" />
                       </div>
                       <div>
                         <h3 className="text-xl font-semibold mb-3">Expert Science</h3>
                         <p className="text-muted-foreground leading-relaxed">
                           Based on proven club fitting principles used by professional fitters and tour players worldwide.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </AnimatedSection>
+
+              <AnimatedSection delay={750}>
+                <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-gold h-full">
+                  <CardContent className="pt-8">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-gold/10 p-4 rounded-xl flex-shrink-0">
+                        <Trophy className="h-7 w-7 text-gold" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold mb-3">Golf Ball Matching</h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          Get personalized golf ball recommendations from top 20 rated balls matched to your swing speed and skill level.
                         </p>
                       </div>
                     </div>
