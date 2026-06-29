@@ -164,26 +164,29 @@ export default function EquipmentComparison() {
             }
           } else {
             results = GOLF_BALL_DATABASE.filter(ball =>
-              ball.brand?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              ball.model_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              ball.manufacturer?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              ball.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
               ball.best_for.some(bf => bf.toLowerCase().includes(searchQuery.toLowerCase()))
             );
             
             if (selectedBrand !== "All Brands") {
-              results = results.filter(p => p.brand === selectedBrand);
+              results = results.filter(ball => {
+                const golfBall = ball as GolfBall;
+                return golfBall.manufacturer === selectedBrand;
+              });
             }
             
             if (selectedBallFilter !== "All Balls") {
               results = results.filter(ball => {
                 const golfBall = ball as GolfBall;
                 if (selectedBallFilter === "Tour Performance") {
-                  return golfBall.price_usd && golfBall.price_usd >= 45 && golfBall.cover_material === "Urethane";
+                  return golfBall.price_per_dozen >= 45 && golfBall.cover_material === "Urethane";
                 } else if (selectedBallFilter === "Distance") {
-                  return golfBall.distance_rating >= 9;
+                  return golfBall.distance >= 9;
                 } else if (selectedBallFilter === "Soft Feel") {
                   return golfBall.compression <= 70;
                 } else if (selectedBallFilter === "Value") {
-                  return golfBall.price_usd && golfBall.price_usd <= 35;
+                  return golfBall.price_per_dozen <= 35;
                 }
                 return true;
               });
@@ -217,20 +220,23 @@ export default function EquipmentComparison() {
           filtered = [...GOLF_BALL_DATABASE];
           
           if (selectedBrand !== "All Brands") {
-            filtered = filtered.filter(p => p.brand === selectedBrand);
+            filtered = filtered.filter(ball => {
+              const golfBall = ball as GolfBall;
+              return golfBall.manufacturer === selectedBrand;
+            });
           }
           
           if (selectedBallFilter !== "All Balls") {
             filtered = filtered.filter(ball => {
               const golfBall = ball as GolfBall;
               if (selectedBallFilter === "Tour Performance") {
-                return golfBall.price_usd && golfBall.price_usd >= 45 && golfBall.cover_material === "Urethane";
+                return golfBall.price_per_dozen >= 45 && golfBall.cover_material === "Urethane";
               } else if (selectedBallFilter === "Distance") {
-                return golfBall.distance_rating >= 9;
+                return golfBall.distance >= 9;
               } else if (selectedBallFilter === "Soft Feel") {
                 return golfBall.compression <= 70;
               } else if (selectedBallFilter === "Value") {
-                return golfBall.price_usd && golfBall.price_usd <= 35;
+                return golfBall.price_per_dozen <= 35;
               }
               return true;
             });
@@ -330,17 +336,17 @@ export default function EquipmentComparison() {
   });
 
   const filteredFeaturedBalls = featuredBalls.filter(ball => {
-    const brandMatch = selectedBrand === "All Brands" || ball.brand === selectedBrand;
+    const brandMatch = selectedBrand === "All Brands" || ball.manufacturer === selectedBrand;
     let filterMatch = true;
     
     if (selectedBallFilter === "Tour Performance") {
-      filterMatch = ball.price_usd! >= 45 && ball.cover_material === "Urethane";
+      filterMatch = ball.price_per_dozen >= 45 && ball.cover_material === "Urethane";
     } else if (selectedBallFilter === "Distance") {
-      filterMatch = ball.distance_rating >= 9;
+      filterMatch = ball.distance >= 9;
     } else if (selectedBallFilter === "Soft Feel") {
       filterMatch = ball.compression <= 70;
     } else if (selectedBallFilter === "Value") {
-      filterMatch = ball.price_usd! <= 35;
+      filterMatch = ball.price_per_dozen <= 35;
     }
     
     return brandMatch && filterMatch;
@@ -745,19 +751,17 @@ function BallCard({ ball, activeSlot, comparisonSlots, addProductToSlot, toast }
       <CardContent className="p-3">
         <div className="space-y-2">
           <h4 className="font-semibold text-xs truncate text-foreground">
-            {ball.brand}
+            {ball.manufacturer}
           </h4>
           <p className="text-xs text-muted-foreground truncate">
-            {ball.model_name}
+            {ball.name}
           </p>
           <Badge variant="outline" className="text-xs">
             {ball.compression} Compression
           </Badge>
-          {ball.price_usd && (
-            <p className="text-sm font-bold text-gold">
-              ${ball.price_usd}/dozen
-            </p>
-          )}
+          <p className="text-sm font-bold text-gold">
+            ${ball.price_per_dozen}/dozen
+          </p>
           <Button size="sm" className="w-full bg-gold text-gold-foreground hover:bg-gold/90 h-7 text-xs">
             <Plus className="h-3 w-3 mr-1" />
             Add
@@ -846,7 +850,7 @@ function BallSearchCard({ ball, activeSlot, comparisonSlots, addProductToSlot, t
       <CardContent className="p-4">
         <div>
           <h4 className="font-semibold text-foreground">
-            {ball.brand} {ball.model_name}
+            {ball.manufacturer} {ball.name}
           </h4>
           <div className="flex items-center gap-2 mt-2">
             <Badge variant="outline" className="text-xs">
@@ -855,11 +859,9 @@ function BallSearchCard({ ball, activeSlot, comparisonSlots, addProductToSlot, t
             <Badge variant="outline" className="text-xs">
               {ball.cover_material}
             </Badge>
-            {ball.price_usd && (
-              <span className="text-sm font-semibold text-gold">
-                ${ball.price_usd}
-              </span>
-            )}
+            <span className="text-sm font-semibold text-gold">
+              ${ball.price_per_dozen}
+            </span>
           </div>
         </div>
       </CardContent>
@@ -897,26 +899,24 @@ function ComparisonSlotCard({ slot, activeSlot, setActiveSlot, removeProductFrom
               {slot.product.image_url && (
                 <img 
                   src={slot.product.image_url} 
-                  alt={slot.product.model_name ?? "Product"}
+                  alt={isBall ? slot.product.name : slot.product.model_name}
                   className="w-full h-32 object-cover rounded"
                 />
               )}
             </div>
             <div>
               <h3 className="font-bold text-lg text-foreground truncate">
-                {slot.product.brand}
+                {isBall ? slot.product.manufacturer : slot.product.brand}
               </h3>
               <p className="text-sm text-muted-foreground truncate">
-                {slot.product.model_name}
+                {isBall ? slot.product.name : slot.product.model_name}
               </p>
               <Badge variant="outline" className="mt-2">
                 {isBall ? "Golf Ball" : slot.product.category}
               </Badge>
-              {slot.product.price_usd && (
-                <p className="text-xl font-bold text-gold mt-2">
-                  ${slot.product.price_usd}{isBall && "/dozen"}
-                </p>
-              )}
+              <p className="text-xl font-bold text-gold mt-2">
+                ${isBall ? slot.product.price_per_dozen : slot.product.price_usd}{isBall && "/dozen"}
+              </p>
             </div>
           </div>
         ) : (
@@ -1123,7 +1123,7 @@ function BallComparison({ balls }: { balls: GolfBall[] }) {
                   </th>
                   {balls.map((ball, index) => (
                     <th key={index} className="py-3 px-4 text-left font-semibold text-foreground min-w-[150px]">
-                      <div className="truncate">{ball.brand}</div>
+                      <div className="truncate">{ball.manufacturer}</div>
                     </th>
                   ))}
                 </tr>
@@ -1138,7 +1138,7 @@ function BallComparison({ balls }: { balls: GolfBall[] }) {
                   </td>
                   {balls.map((ball, i) => (
                     <td key={i} className="py-3 px-4 font-semibold">
-                      {ball.model_name}
+                      {ball.name}
                     </td>
                   ))}
                 </tr>
@@ -1208,7 +1208,7 @@ function BallComparison({ balls }: { balls: GolfBall[] }) {
                   </td>
                   {balls.map((ball, i) => (
                     <td key={i} className="py-3 px-4 text-sm">
-                      {ball.swing_speed_range}
+                      {ball.swing_speed_range.join(", ")}
                     </td>
                   ))}
                 </tr>
@@ -1218,7 +1218,7 @@ function BallComparison({ balls }: { balls: GolfBall[] }) {
                   </td>
                   {balls.map((ball, i) => (
                     <td key={i} className="py-3 px-4 font-bold text-gold">
-                      ${ball.price_usd}
+                      ${ball.price_per_dozen}
                     </td>
                   ))}
                 </tr>
@@ -1238,10 +1238,10 @@ function BallComparison({ balls }: { balls: GolfBall[] }) {
               <Card key={index} className="border-l-4 border-l-accent">
                 <CardContent className="pt-6 space-y-4">
                   <div>
-                    <h4 className="font-bold truncate">{ball.brand}</h4>
-                    <p className="text-sm text-muted-foreground truncate">{ball.model_name}</p>
+                    <h4 className="font-bold truncate">{ball.manufacturer}</h4>
+                    <p className="text-sm text-muted-foreground truncate">{ball.name}</p>
                   </div>
-                  <PerformanceBar label="Distance" value={ball.distance_rating} color="bg-blue-500" />
+                  <PerformanceBar label="Distance" value={ball.distance} color="bg-blue-500" />
                   <PerformanceBar label="Greenside Control" value={ball.greenside_control} color="bg-accent" />
                   <PerformanceBar label="Durability" value={ball.durability} color="bg-amber-500" />
                   <PerformanceBar label="Wind Performance" value={ball.wind_performance} color="bg-teal-500" />
