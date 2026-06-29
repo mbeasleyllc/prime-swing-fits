@@ -181,57 +181,65 @@ export function ManualEntry({ onSave, sessionId }: ManualEntryProps) {
             </Select>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <Label htmlFor="ball_speed">Ball Speed (mph) *</Label>
+              <Label htmlFor="ball_speed" className="text-sm">Ball Speed (mph) *</Label>
               <Input
                 id="ball_speed"
                 type="number"
+                inputMode="decimal"
                 step="0.1"
                 value={formData.ball_speed}
                 onChange={(e) => handleChange("ball_speed", e.target.value)}
                 placeholder="150.5"
+                className="text-base"
                 required
               />
             </div>
 
             <div>
-              <Label htmlFor="club_speed">Club Speed (mph) *</Label>
+              <Label htmlFor="club_speed" className="text-sm">Club Speed (mph) *</Label>
               <Input
                 id="club_speed"
                 type="number"
+                inputMode="decimal"
                 step="0.1"
                 value={formData.club_speed}
                 onChange={(e) => handleChange("club_speed", e.target.value)}
                 placeholder="105.2"
+                className="text-base"
                 required
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <Label htmlFor="carry_distance">Carry Distance (yards) *</Label>
+              <Label htmlFor="carry_distance" className="text-sm">Carry Distance (yards) *</Label>
               <Input
                 id="carry_distance"
                 type="number"
+                inputMode="decimal"
                 step="0.1"
                 value={formData.carry_distance}
                 onChange={(e) => handleChange("carry_distance", e.target.value)}
                 placeholder="245.3"
+                className="text-base"
                 required
               />
             </div>
 
             <div>
-              <Label htmlFor="total_distance">Total Distance (yards)</Label>
+              <Label htmlFor="total_distance" className="text-sm">Total Distance (yards)</Label>
               <Input
                 id="total_distance"
                 type="number"
+                inputMode="decimal"
                 step="0.1"
                 value={formData.total_distance}
                 onChange={(e) => handleChange("total_distance", e.target.value)}
                 placeholder="260.5"
+                className="text-base"
               />
             </div>
           </div>
@@ -256,71 +264,81 @@ export function ManualEntry({ onSave, sessionId }: ManualEntryProps) {
           </Button>
 
           {showAdvanced && (
-            <div className="space-y-4 pt-4 border-t">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3 sm:space-y-4 pt-4 border-t">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <Label htmlFor="launch_angle">Launch Angle (°)</Label>
+                  <Label htmlFor="launch_angle" className="text-sm">Launch Angle (°)</Label>
                   <Input
                     id="launch_angle"
                     type="number"
+                    inputMode="decimal"
                     step="0.1"
                     value={formData.launch_angle}
                     onChange={(e) => handleChange("launch_angle", e.target.value)}
                     placeholder="12.5"
+                    className="text-base"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="spin_rate">Spin Rate (rpm)</Label>
+                  <Label htmlFor="spin_rate" className="text-sm">Spin Rate (rpm)</Label>
                   <Input
                     id="spin_rate"
                     type="number"
+                    inputMode="numeric"
                     value={formData.spin_rate}
                     onChange={(e) => handleChange("spin_rate", e.target.value)}
                     placeholder="2800"
+                    className="text-base"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="attack_angle">Attack Angle (°)</Label>
+                  <Label htmlFor="attack_angle" className="text-sm">Attack Angle (°)</Label>
                   <Input
                     id="attack_angle"
                     type="number"
+                    inputMode="decimal"
                     step="0.1"
                     value={formData.attack_angle}
                     onChange={(e) => handleChange("attack_angle", e.target.value)}
                     placeholder="3.2"
+                    className="text-base"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="club_path">Club Path (°)</Label>
+                  <Label htmlFor="club_path" className="text-sm">Club Path (°)</Label>
                   <Input
                     id="club_path"
                     type="number"
+                    inputMode="decimal"
                     step="0.1"
                     value={formData.club_path}
                     onChange={(e) => handleChange("club_path", e.target.value)}
                     placeholder="2.1"
+                    className="text-base"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="face_angle">Face Angle (°)</Label>
+                  <Label htmlFor="face_angle" className="text-sm">Face Angle (°)</Label>
                   <Input
                     id="face_angle"
                     type="number"
+                    inputMode="decimal"
                     step="0.1"
                     value={formData.face_angle}
                     onChange={(e) => handleChange("face_angle", e.target.value)}
                     placeholder="1.5"
+                    className="text-base"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="shot_type">Shot Type</Label>
+                  <Label htmlFor="shot_type" className="text-sm">Shot Type</Label>
                   <Select value={formData.shot_type} onValueChange={(v) => handleChange("shot_type", v)}>
-                    <SelectTrigger>
+                    <SelectTrigger className="text-base">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -336,7 +354,7 @@ export function ManualEntry({ onSave, sessionId }: ManualEntryProps) {
             </div>
           )}
 
-          <Button type="submit" disabled={saving} className="w-full">
+          <Button type="submit" disabled={saving} className="w-full touch-manipulation min-h-[44px]">
             <Plus className="w-4 h-4 mr-2" />
             {saving ? "Saving..." : "Add Shot"}
           </Button>

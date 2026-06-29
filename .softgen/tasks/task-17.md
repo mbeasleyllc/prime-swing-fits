@@ -30,11 +30,11 @@ Comprehensive testing, performance optimization, and mobile responsiveness polis
 - [x] Add loading skeletons for slow queries
 
 ### Mobile Responsiveness
-- [ ] Test all charts on mobile (375px, 768px, 1024px)
-- [ ] Ensure touch-friendly chart interactions
-- [ ] Optimize manual entry form for mobile keyboards
+- [x] Test all charts on mobile (375px, 768px, 1024px)
+- [x] Ensure touch-friendly chart interactions
+- [x] Optimize manual entry form for mobile keyboards
 - [ ] Test session list mobile layout (horizontal scroll where needed)
-- [ ] Verify Swing DNA radar chart responsive
+- [x] Verify Swing DNA radar chart responsive
 
 ### Calculation Accuracy
 - [ ] Verify consistency score formula with known datasets

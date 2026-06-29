@@ -51,6 +51,18 @@ export function SwingDNARadar({ data }: SwingDNARadarProps) {
     }
   }, [profile]);
 
+  useEffect(() => {
+    // Redraw on window resize for responsiveness
+    const handleResize = () => {
+      if (profile) {
+        drawRadarChart();
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [profile]);
+
   const fetchAndCalculateProfile = async () => {
     try {
       setLoading(true);
@@ -133,14 +145,19 @@ export function SwingDNARadar({ data }: SwingDNARadarProps) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas size
-    const size = Math.min(canvas.parentElement?.clientWidth ?? 400, 400);
+    // Responsive sizing based on viewport
+    const parentWidth = canvas.parentElement?.clientWidth ?? 400;
+    const isMobile = parentWidth < 640;
+    const isTablet = parentWidth >= 640 && parentWidth < 1024;
+    const size = isMobile ? Math.min(parentWidth - 32, 320) : Math.min(parentWidth, 400);
+    
     canvas.width = size;
     canvas.height = size;
 
     const centerX = size / 2;
     const centerY = size / 2;
-    const radius = size * 0.35;
+    const radius = isMobile ? size * 0.30 : size * 0.35;
+    const labelDistance = isMobile ? radius + 20 : radius + 30;
 
     // Clear canvas
     ctx.clearRect(0, 0, size, size);
@@ -167,14 +184,26 @@ export function SwingDNARadar({ data }: SwingDNARadarProps) {
       ctx.strokeStyle = "#e5e7eb";
       ctx.stroke();
 
-      // Draw labels
-      const labelX = centerX + Math.cos(angle) * (radius + 30);
-      const labelY = centerY + Math.sin(angle) * (radius + 30);
+      // Draw labels - responsive font size
+      const labelX = centerX + Math.cos(angle) * labelDistance;
+      const labelY = centerY + Math.sin(angle) * labelDistance;
       ctx.fillStyle = "#000";
-      ctx.font = "600 12px Inter";
+      ctx.font = isMobile ? "600 10px Inter" : "600 12px Inter";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(attr.label, labelX, labelY);
+      
+      // Split long labels on mobile
+      if (isMobile && attr.label.length > 10) {
+        const words = attr.label.split(" ");
+        if (words.length > 1) {
+          ctx.fillText(words[0], labelX, labelY - 6);
+          ctx.fillText(words[1], labelX, labelY + 6);
+        } else {
+          ctx.fillText(attr.label, labelX, labelY);
+        }
+      } else {
+        ctx.fillText(attr.label, labelX, labelY);
+      }
     });
 
     // Draw benchmark polygon (PGA Tour average)
@@ -214,10 +243,10 @@ export function SwingDNARadar({ data }: SwingDNARadarProps) {
     ctx.fillStyle = "rgba(34, 197, 94, 0.2)";
     ctx.fill();
     ctx.strokeStyle = "#22C55E";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = isMobile ? 1.5 : 2;
     ctx.stroke();
 
-    // Draw value points
+    // Draw value points - larger on mobile for touch
     attributes.forEach((attr, i) => {
       const angle = angleStep * i - Math.PI / 2;
       const value = (profile[attr.key] ?? 0) / 100;
@@ -225,7 +254,7 @@ export function SwingDNARadar({ data }: SwingDNARadarProps) {
       const y = centerY + Math.sin(angle) * radius * value;
       
       ctx.beginPath();
-      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.arc(x, y, isMobile ? 5 : 4, 0, Math.PI * 2);
       ctx.fillStyle = "#22C55E";
       ctx.fill();
       ctx.strokeStyle = "#fff";
@@ -315,17 +344,17 @@ export function SwingDNARadar({ data }: SwingDNARadarProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
           {/* Radar Chart */}
-          <div className="flex items-center justify-center">
-            <canvas ref={canvasRef} className="max-w-full" />
+          <div className="flex items-center justify-center min-h-[320px]">
+            <canvas ref={canvasRef} className="max-w-full touch-none" />
           </div>
 
           {/* Attribute Breakdown */}
-          <div className="space-y-4">
+          <div className="space-y-3 lg:space-y-4">
             <div>
-              <h3 className="font-semibold mb-2">Attribute Breakdown</h3>
-              <p className="text-sm text-muted-foreground mb-4">
+              <h3 className="font-semibold mb-1 lg:mb-2">Attribute Breakdown</h3>
+              <p className="text-xs lg:text-sm text-muted-foreground mb-3 lg:mb-4">
                 Compared to PGA Tour average (dashed line)
               </p>
             </div>
@@ -334,27 +363,27 @@ export function SwingDNARadar({ data }: SwingDNARadarProps) {
               const value = profile[attr.key] ?? 0;
               const diff = value - attr.benchmark;
               return (
-                <div key={attr.key} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div className="flex items-center gap-3">
+                <div key={attr.key} className="flex items-center justify-between p-3 lg:p-3 rounded-lg bg-muted/50 touch-manipulation">
+                  <div className="flex items-center gap-2 lg:gap-3">
                     <div className={getScoreColor(value, attr.benchmark)}>
                       {getScoreIcon(value, attr.benchmark)}
                     </div>
                     <div>
-                      <div className="font-medium">{attr.label}</div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="font-medium text-sm lg:text-base">{attr.label}</div>
+                      <div className="text-xs lg:text-sm text-muted-foreground">
                         {diff > 0 ? "+" : ""}{diff.toFixed(1)} vs benchmark
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold">{value.toFixed(0)}</div>
+                    <div className="text-xl lg:text-2xl font-bold">{value.toFixed(0)}</div>
                     <Badge
                       variant={
                         diff > 5 ? "default" :
                         diff < -5 ? "destructive" :
                         "secondary"
                       }
-                      className="mt-1"
+                      className="mt-1 text-xs"
                     >
                       {diff > 5 ? "Above Avg" : diff < -5 ? "Needs Work" : "Average"}
                     </Badge>
