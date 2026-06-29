@@ -69,7 +69,7 @@ export default function FittingResults() {
                      playerRes.data.experience === "intermediate" ? "intermediate" : "advanced",
           shotShape: swingRes.data.typical_shot || "straight",
           primaryGoal: playerRes.data.primary_goal || "distance",
-          handicap: playerRes.data.handicap || 20,
+          handicap: typeof playerRes.data.handicap === "number" ? playerRes.data.handicap : parseInt(playerRes.data.handicap) || 20,
           weather: "moderate",
           budget: playerRes.data.budget_range === "budget_conscious" ? "budget" :
                  playerRes.data.budget_range === "mid_range" ? "mid" : "premium"
