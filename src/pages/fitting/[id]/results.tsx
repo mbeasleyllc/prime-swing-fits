@@ -11,8 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, Download, Printer, ArrowLeft, Play, TrendingUp, Circle } from "lucide-react";
+import { AlertCircle, Download, Printer, ArrowLeft, Play, TrendingUp, Circle, RefreshCw, Activity } from "lucide-react";
 import { getRecommendedBalls, type GolfBall } from "@/data/golfBallDatabase";
+import { SwingDNARadar } from "@/components/analytics/SwingDNARadar";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function FittingResults() {
   const router = useRouter();
@@ -28,6 +30,10 @@ export default function FittingResults() {
   const [session, setSession] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [recommendedBalls, setRecommendedBalls] = useState<GolfBall[]>([]);
+  const [swingData, setSwingData] = useState<any>(null);
+  const [recentSessions, setRecentSessions] = useState<any[]>([]);
+  const [usedSwingData, setUsedSwingData] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -53,6 +59,19 @@ export default function FittingResults() {
       if (equipmentRes.data) setCurrentEquipment(equipmentRes.data);
       if (sessionRes.data) setSession(sessionRes.data);
 
+      // Load swing data
+      const { data: swingSessionsData } = await supabase
+        .from("swing_data_sessions")
+        .select("*, swing_dna(*)")
+        .eq("user_id", user.id)
+        .order("session_date", { ascending: false })
+        .limit(10);
+
+      if (swingSessionsData && swingSessionsData.length > 0) {
+        setSwingData(swingSessionsData[0].swing_dna);
+        setRecentSessions(swingSessionsData);
+      }
+
       if (recRes.data && playerRes.data && swingRes.data) {
         const { data: productsData } = await supabase
           .from("products")
@@ -77,11 +96,39 @@ export default function FittingResults() {
         setRecommendedBalls(balls);
       }
 
+      // Check if recommendations used swing data
+      if (recRes.data?.advisory_notes?.includes("actual swing data")) {
+        setUsedSwingData(true);
+      }
+
       setIsLoading(false);
     };
 
     loadResults();
   }, [id, user]);
+
+  const handleUpdateFromSwingData = async () => {
+    setIsUpdating(true);
+    try {
+      const sessionId = Array.isArray(id) ? id[0] : id;
+      const response = await fetch("/api/generate-recommendations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      });
+
+      if (response.ok) {
+        const { recommendation, usedSwingData: newUsedSwingData } = await response.json();
+        setRecommendations(recommendation);
+        setUsedSwingData(newUsedSwingData);
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Failed to update recommendations:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -135,9 +182,35 @@ export default function FittingResults() {
             </p>
           </div>
 
+          {usedSwingData && (
+            <Card className="mb-6 border-accent/30 bg-gradient-to-br from-accent/10 to-transparent">
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-accent">
+                  <Activity className="h-5 w-5" />
+                  <p className="font-semibold">
+                    These recommendations are based on your actual swing data from recent practice sessions.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="mb-6 border-accent/20 bg-accent/5">
             <CardHeader>
-              <CardTitle className="text-accent">Personalized Recommendations</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-accent">Personalized Recommendations</CardTitle>
+                {swingData && !usedSwingData && (
+                  <Button
+                    onClick={handleUpdateFromSwingData}
+                    disabled={isUpdating}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-2 ${isUpdating ? "animate-spin" : ""}`} />
+                    Update from Swing Data
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -168,6 +241,104 @@ export default function FittingResults() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Swing Data Integration Section */}
+          {swingData && (
+            <Card className="mb-6 border-accent/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-accent" />
+                  Swing Data Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <h3 className="font-semibold mb-4">Current Swing DNA Profile</h3>
+                  <div className="max-w-md mx-auto">
+                    <SwingDNARadar
+                      data={{
+                        club_speed_mph: swingData.club_speed_mph,
+                        ball_speed_mph: swingData.ball_speed_mph,
+                        launch_angle_deg: swingData.launch_angle_deg,
+                        spin_rate_rpm: swingData.spin_rate_rpm,
+                        carry_distance_yds: swingData.carry_distance_yds,
+                        consistency_score: swingData.consistency_score,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-3">How Swing Data Informed Your Recommendations</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="bg-muted/50 p-4 rounded-lg">
+                      <p className="font-medium mb-2">Club Speed → Shaft Flex</p>
+                      <p className="text-muted-foreground">
+                        Your club speed of {swingData.club_speed_mph} mph guided the {recommendations.shaft_flex_rec} flex recommendation
+                        {swingData.club_speed_mph >= 105 ? " for maximum control at high speeds" : 
+                         swingData.club_speed_mph >= 95 ? " for optimal energy transfer" : 
+                         " for better launch and distance"}
+                      </p>
+                    </div>
+                    <div className="bg-muted/50 p-4 rounded-lg">
+                      <p className="font-medium mb-2">Consistency → Shaft Selection</p>
+                      <p className="text-muted-foreground">
+                        Your consistency score of {swingData.consistency_score}% influenced shaft weight recommendations
+                        {swingData.consistency_score >= 80 ? " - your consistent swing can handle heavier options" :
+                         swingData.consistency_score >= 60 ? " - balanced weight for stability" :
+                         " - lighter shaft recommended for better control"}
+                      </p>
+                    </div>
+                    <div className="bg-muted/50 p-4 rounded-lg">
+                      <p className="font-medium mb-2">Launch Angle → Loft Selection</p>
+                      <p className="text-muted-foreground">
+                        Launch angle of {swingData.launch_angle_deg}° informed driver loft
+                        {swingData.launch_angle_deg < 10 ? " - higher loft recommended to optimize trajectory" :
+                         swingData.launch_angle_deg > 14 ? " - lower loft to reduce ballooning" :
+                         " - your launch is well-optimized"}
+                      </p>
+                    </div>
+                    <div className="bg-muted/50 p-4 rounded-lg">
+                      <p className="font-medium mb-2">Ball Speed → Distance Potential</p>
+                      <p className="text-muted-foreground">
+                        Ball speed of {swingData.ball_speed_mph} mph suggests {swingData.ball_speed_mph >= 150 ? "premium" : swingData.ball_speed_mph >= 140 ? "mid-range" : "game improvement"} equipment will maximize your distance
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {recentSessions.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-3">Recent Practice Sessions (Last 10)</h3>
+                    <div className="rounded-lg border overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Club Speed</TableHead>
+                            <TableHead>Ball Speed</TableHead>
+                            <TableHead>Carry</TableHead>
+                            <TableHead>Consistency</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {recentSessions.map((session, idx) => (
+                            <TableRow key={idx}>
+                              <TableCell>{new Date(session.session_date).toLocaleDateString()}</TableCell>
+                              <TableCell>{session.swing_dna?.club_speed_mph || "—"} mph</TableCell>
+                              <TableCell>{session.swing_dna?.ball_speed_mph || "—"} mph</TableCell>
+                              <TableCell>{session.swing_dna?.carry_distance_yds || "—"} yds</TableCell>
+                              <TableCell>{session.swing_dna?.consistency_score || "—"}%</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Performance Predictions */}
           <Card className="bg-blue-50 border-blue-200">

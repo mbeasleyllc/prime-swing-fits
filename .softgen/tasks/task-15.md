@@ -18,9 +18,9 @@ Integrate Swing DNA data into the existing fitting recommendation engine. Use ac
 - [x] Use actual club speed instead of estimated (when available)
 - [x] Factor consistency score into shaft flex recommendation
 - [x] Use launch angle data for loft recommendations
-- [ ] Add "Based on your swing data" indicator to results
-- [ ] Create "Update from Swing Data" button on results page
-- [ ] Show comparison: estimates vs actual data
+- [x] Add "Based on your swing data" indicator to results
+- [x] Create "Update from Swing Data" button on results page
+- [x] Show comparison: estimates vs actual data
 
 ### Dashboard Integration
 - [x] Add Swing Analytics card to `/dashboard`
@@ -35,10 +35,10 @@ Integrate Swing DNA data into the existing fitting recommendation engine. Use ac
 - [x] Highlight when on analytics pages
 
 ### Results & Report Integration
-- [ ] Update fitting results page with swing data section
-- [ ] Include last 10 sessions overview table
-- [ ] Show current Swing DNA radar chart
-- [ ] Add "How swing data informed recommendations" explanation
+- [x] Update fitting results page with swing data section
+- [x] Include last 10 sessions overview table
+- [x] Show current Swing DNA radar chart
+- [x] Add "How swing data informed recommendations" explanation
 - [ ] Update PDF report generation to include swing summary
 
 ## Acceptance
