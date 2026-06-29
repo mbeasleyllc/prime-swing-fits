@@ -1,6 +1,6 @@
 ---
 title: Fitting Integration
-status: in_progress
+status: done
 ---
 
 ## Notes
@@ -39,10 +39,10 @@ Integrate Swing DNA data into the existing fitting recommendation engine. Use ac
 - [x] Include last 10 sessions overview table
 - [x] Show current Swing DNA radar chart
 - [x] Add "How swing data informed recommendations" explanation
-- [ ] Update PDF report generation to include swing summary
+- [x] Update PDF report generation to include swing summary
 
 ## Acceptance
-- Recommendations update automatically when swing data exists
-- Dashboard card shows accurate latest stats
-- PDF reports include swing data when user has 5+ sessions
-- Navigation badge clears when user views new achievement
+- Recommendations update automatically when swing data exists ✓
+- Dashboard card shows accurate latest stats ✓
+- PDF reports include swing data when user has 5+ sessions ✓
+- Navigation badge clears when user views new achievement ✓

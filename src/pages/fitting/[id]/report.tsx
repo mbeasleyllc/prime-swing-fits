@@ -25,6 +25,8 @@ export default function FittingReport() {
   const [currentEquipment, setCurrentEquipment] = useState<any>(null);
   const [session, setSession] = useState<any>(null);
   const [recommendedBalls, setRecommendedBalls] = useState<GolfBall[]>([]);
+  const [swingData, setSwingData] = useState<any>(null);
+  const [recentSessions, setRecentSessions] = useState<any[]>([]);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -32,13 +34,15 @@ export default function FittingReport() {
     const loadData = async () => {
       const sessionId = Array.isArray(id) ? id[0] : id;
 
-      const [recRes, playerRes, swingRes, courseRes, physicalRes, equipmentRes] = await Promise.all([
+      const [recRes, playerRes, swingRes, courseRes, physicalRes, equipmentRes, sessionRes, swingSessionsRes] = await Promise.all([
         supabase.from("fitting_recommendations").select("*").eq("session_id", sessionId).eq("user_id", user.id).single(),
         supabase.from("player_profile").select("*").eq("session_id", sessionId).eq("user_id", user.id).single(),
         supabase.from("swing_profile").select("*").eq("session_id", sessionId).eq("user_id", user.id).single(),
         supabase.from("course_conditions").select("*").eq("session_id", sessionId).eq("user_id", user.id).single(),
         supabase.from("physical_profile").select("*").eq("session_id", sessionId).eq("user_id", user.id).single(),
         supabase.from("current_equipment").select("*").eq("session_id", sessionId).eq("user_id", user.id).single(),
+        supabase.from("fitting_sessions").select("*").eq("id", sessionId).single(),
+        supabase.from("swing_data_sessions").select("*, swing_dna(*)").eq("user_id", user.id).order("session_date", { ascending: false }).limit(5),
       ]);
 
       if (recRes.data) setRecommendations(recRes.data);
@@ -47,6 +51,12 @@ export default function FittingReport() {
       if (courseRes.data) setCourseConditions(courseRes.data);
       if (physicalRes.data) setPhysicalProfile(physicalRes.data);
       if (equipmentRes.data) setCurrentEquipment(equipmentRes.data);
+      if (sessionRes.data) setSession(sessionRes.data);
+
+      if (swingSessionsRes.data && swingSessionsRes.data.length > 0) {
+        setSwingData(swingSessionsRes.data[0].swing_dna);
+        setRecentSessions(swingSessionsRes.data);
+      }
 
       if (recRes.data && playerRes.data && swingRes.data) {
         const balls = getRecommendedBalls({
@@ -241,6 +251,56 @@ export default function FittingReport() {
               <div><dt className="font-bold text-primary">Club Type</dt><dd className="text-lg mt-1 capitalize">{recommendations.club_type_rec}</dd></div>
             </dl>
           </section>
+
+          {/* Swing Data Summary - when user has 5+ sessions */}
+          {recentSessions.length >= 5 && swingData && (
+            <section className="mb-8 break-inside-avoid bg-accent/5 p-6 rounded-lg border border-accent/20">
+              <h3 className="text-xl font-bold text-accent mb-4">Swing Data Summary</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                These recommendations incorporate your actual swing data from {recentSessions.length} recent practice sessions.
+              </p>
+              <dl className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <dt className="font-semibold text-muted-foreground">Average Club Speed</dt>
+                  <dd className="text-lg font-bold text-accent">{swingData.club_speed_mph} mph</dd>
+                </div>
+                <div>
+                  <dt className="font-semibold text-muted-foreground">Average Ball Speed</dt>
+                  <dd className="text-lg font-bold text-accent">{swingData.ball_speed_mph} mph</dd>
+                </div>
+                <div>
+                  <dt className="font-semibold text-muted-foreground">Launch Angle</dt>
+                  <dd className="text-lg font-bold text-accent">{swingData.launch_angle_deg}°</dd>
+                </div>
+                <div>
+                  <dt className="font-semibold text-muted-foreground">Carry Distance</dt>
+                  <dd className="text-lg font-bold text-accent">{swingData.carry_distance_yds} yds</dd>
+                </div>
+                <div>
+                  <dt className="font-semibold text-muted-foreground">Consistency Score</dt>
+                  <dd className="text-lg font-bold text-accent">{swingData.consistency_score}%</dd>
+                </div>
+                <div>
+                  <dt className="font-semibold text-muted-foreground">Spin Rate</dt>
+                  <dd className="text-lg font-bold text-accent">{swingData.spin_rate_rpm} rpm</dd>
+                </div>
+              </dl>
+              <div className="mt-4 pt-4 border-t border-accent/20">
+                <h4 className="font-semibold text-sm mb-2">Recent Session History</h4>
+                <div className="space-y-1 text-xs">
+                  {recentSessions.map((session, idx) => (
+                    <div key={idx} className="flex justify-between text-muted-foreground">
+                      <span>{new Date(session.session_date).toLocaleDateString()}</span>
+                      <span>{session.swing_dna?.club_speed_mph || "—"} mph • {session.swing_dna?.consistency_score || "—"}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground italic mt-4">
+                Your actual swing metrics were used to fine-tune shaft flex, weight, and loft recommendations for maximum performance.
+              </p>
+            </section>
+          )}
 
           {/* Performance Predictions */}
           <section className="space-y-3 break-inside-avoid">
