@@ -1,6 +1,6 @@
 ---
 title: Swing DNA - Phase 1: Database Schema & Core Infrastructure
-status: in_progress
+status: done
 priority: high
 type: feature
 tags: [analytics, database, schema]

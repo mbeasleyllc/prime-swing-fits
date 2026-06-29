@@ -15,6 +15,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievement_badges: {
+        Row: {
+          badge_description: string
+          badge_icon: string | null
+          badge_name: string
+          badge_type: string
+          created_at: string | null
+          earned_date: string
+          id: string
+          metric_value: number | null
+          user_id: string
+        }
+        Insert: {
+          badge_description: string
+          badge_icon?: string | null
+          badge_name: string
+          badge_type: string
+          created_at?: string | null
+          earned_date?: string
+          id?: string
+          metric_value?: number | null
+          user_id: string
+        }
+        Update: {
+          badge_description?: string
+          badge_icon?: string | null
+          badge_name?: string
+          badge_type?: string
+          created_at?: string | null
+          earned_date?: string
+          id?: string
+          metric_value?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       course_conditions: {
         Row: {
           ball_used: string | null
@@ -562,6 +598,143 @@ export type Database = {
           },
         ]
       }
+      swing_goals: {
+        Row: {
+          completed_date: string | null
+          created_at: string | null
+          current_value: number | null
+          goal_name: string
+          id: string
+          metric_name: string
+          notes: string | null
+          progress_percent: number | null
+          start_date: string
+          start_value: number | null
+          status: string | null
+          target_date: string
+          target_value: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_date?: string | null
+          created_at?: string | null
+          current_value?: number | null
+          goal_name: string
+          id?: string
+          metric_name: string
+          notes?: string | null
+          progress_percent?: number | null
+          start_date?: string
+          start_value?: number | null
+          status?: string | null
+          target_date: string
+          target_value: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_date?: string | null
+          created_at?: string | null
+          current_value?: number | null
+          goal_name?: string
+          id?: string
+          metric_name?: string
+          notes?: string | null
+          progress_percent?: number | null
+          start_date?: string
+          start_value?: number | null
+          status?: string | null
+          target_date?: string
+          target_value?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      swing_metrics: {
+        Row: {
+          attack_angle: number | null
+          ball_speed: number | null
+          carry_distance: number | null
+          club_path: number | null
+          club_speed: number | null
+          club_used: string | null
+          created_at: string | null
+          dynamic_loft: number | null
+          face_angle: number | null
+          id: string
+          landing_angle: number | null
+          launch_angle: number | null
+          launch_direction: number | null
+          max_height: number | null
+          session_id: string
+          shot_number: number
+          shot_type: string | null
+          smash_factor: number | null
+          spin_axis: number | null
+          spin_rate: number | null
+          total_distance: number | null
+          user_id: string
+        }
+        Insert: {
+          attack_angle?: number | null
+          ball_speed?: number | null
+          carry_distance?: number | null
+          club_path?: number | null
+          club_speed?: number | null
+          club_used?: string | null
+          created_at?: string | null
+          dynamic_loft?: number | null
+          face_angle?: number | null
+          id?: string
+          landing_angle?: number | null
+          launch_angle?: number | null
+          launch_direction?: number | null
+          max_height?: number | null
+          session_id: string
+          shot_number: number
+          shot_type?: string | null
+          smash_factor?: number | null
+          spin_axis?: number | null
+          spin_rate?: number | null
+          total_distance?: number | null
+          user_id: string
+        }
+        Update: {
+          attack_angle?: number | null
+          ball_speed?: number | null
+          carry_distance?: number | null
+          club_path?: number | null
+          club_speed?: number | null
+          club_used?: string | null
+          created_at?: string | null
+          dynamic_loft?: number | null
+          face_angle?: number | null
+          id?: string
+          landing_angle?: number | null
+          launch_angle?: number | null
+          launch_direction?: number | null
+          max_height?: number | null
+          session_id?: string
+          shot_number?: number
+          shot_type?: string | null
+          smash_factor?: number | null
+          spin_axis?: number | null
+          spin_rate?: number | null
+          total_distance?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swing_metrics_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "swing_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       swing_profile: {
         Row: {
           ball_flight: string | null
@@ -609,6 +782,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      swing_sessions: {
+        Row: {
+          avg_ball_speed: number | null
+          avg_carry_distance: number | null
+          avg_club_speed: number | null
+          avg_launch_angle: number | null
+          avg_spin_rate: number | null
+          avg_total_distance: number | null
+          consistency_score: number | null
+          created_at: string | null
+          device_type: string | null
+          id: string
+          location: string | null
+          notes: string | null
+          session_date: string
+          session_name: string | null
+          total_shots: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avg_ball_speed?: number | null
+          avg_carry_distance?: number | null
+          avg_club_speed?: number | null
+          avg_launch_angle?: number | null
+          avg_spin_rate?: number | null
+          avg_total_distance?: number | null
+          consistency_score?: number | null
+          created_at?: string | null
+          device_type?: string | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          session_date?: string
+          session_name?: string | null
+          total_shots?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avg_ball_speed?: number | null
+          avg_carry_distance?: number | null
+          avg_club_speed?: number | null
+          avg_launch_angle?: number | null
+          avg_spin_rate?: number | null
+          avg_total_distance?: number | null
+          consistency_score?: number | null
+          created_at?: string | null
+          device_type?: string | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          session_date?: string
+          session_name?: string | null
+          total_shots?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_profiles: {
         Row: {
@@ -721,6 +954,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_swing_subscriptions: {
+        Row: {
+          created_at: string | null
+          data_retention_months: number | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          last_payment_date: string | null
+          max_sessions_per_month: number | null
+          next_payment_date: string | null
+          start_date: string
+          stripe_subscription_id: string | null
+          tier: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data_retention_months?: number | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_payment_date?: string | null
+          max_sessions_per_month?: number | null
+          next_payment_date?: string | null
+          start_date?: string
+          stripe_subscription_id?: string | null
+          tier?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data_retention_months?: number | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_payment_date?: string | null
+          max_sessions_per_month?: number | null
+          next_payment_date?: string | null
+          start_date?: string
+          stripe_subscription_id?: string | null
+          tier?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           created_at: string | null
@@ -753,7 +1034,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_consistency_score: {
+        Args: { p_session_id: string }
+        Returns: number
+      }
+      get_improvement_trend: {
+        Args: { p_days_back?: number; p_metric_name: string; p_user_id: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
