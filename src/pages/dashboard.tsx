@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Eye, Download, Clock, CheckCircle2, Target, Trophy, TrendingUp, Lightbulb } from "lucide-react";
+import { Play, Eye, Download, Clock, CheckCircle2, Target, Trophy, TrendingUp, Lightbulb, Activity } from "lucide-react";
 import { BadgeShelf } from "@/components/gamification/BadgeShelf";
 import { GoalsList } from "@/components/gamification/GoalsList";
 import { InsightsPanel } from "@/components/gamification/InsightsPanel";
@@ -19,12 +19,14 @@ export default function Dashboard() {
   const [sessions, setSessions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({ badges: 0, activeGoals: 0, insights: 0 });
+  const [swingStats, setSwingStats] = useState<{ lastSession: string | null; consistencyScore: number | null; latestBadge: string | null; sessionCount: number } | null>(null);
+  const [userTier, setUserTier] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
 
     const loadData = async () => {
-      const [sessionsRes, badgesRes, goalsRes, insightsRes] = await Promise.all([
+      const [sessionsRes, badgesRes, goalsRes, insightsRes, swingSessionsRes, latestBadgeRes, userRes] = await Promise.all([
         supabase
           .from("fitting_sessions")
           .select("*")
@@ -43,6 +45,25 @@ export default function Dashboard() {
           .from("swing_insights")
           .select("id", { count: "exact" })
           .eq("user_id", user.id),
+        supabase
+          .from("swing_data_sessions")
+          .select("session_date, swing_dna(consistency_score)", { count: "exact" })
+          .eq("user_id", user.id)
+          .order("session_date", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("achievement_badges")
+          .select("badge_name, earned_at")
+          .eq("user_id", user.id)
+          .order("earned_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from("users")
+          .select("subscription_tier")
+          .eq("id", user.id)
+          .single(),
       ]);
 
       if (sessionsRes.data) setSessions(sessionsRes.data);
@@ -53,6 +74,23 @@ export default function Dashboard() {
         insights: insightsRes.count || 0,
       });
 
+      if (swingSessionsRes.data) {
+        setSwingStats({
+          lastSession: swingSessionsRes.data.session_date,
+          consistencyScore: swingSessionsRes.data.swing_dna?.consistency_score || null,
+          latestBadge: latestBadgeRes.data?.badge_name || null,
+          sessionCount: swingSessionsRes.count || 0,
+        });
+      } else {
+        setSwingStats({
+          lastSession: null,
+          consistencyScore: null,
+          latestBadge: null,
+          sessionCount: 0,
+        });
+      }
+
+      setUserTier(userRes.data?.subscription_tier || "entry");
       setIsLoading(false);
     };
 
@@ -132,6 +170,84 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Swing Analytics Card */}
+          {userTier !== "entry" && swingStats && (
+            <Card className="mb-8 border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-accent" />
+                    Swing Analytics
+                  </CardTitle>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/swing-analytics">
+                      View Full Dashboard
+                      <TrendingUp className="h-4 w-4 ml-2" />
+                    </Link>
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Last Session</p>
+                    <p className="text-lg font-semibold">
+                      {swingStats.lastSession 
+                        ? new Date(swingStats.lastSession).toLocaleDateString()
+                        : "No sessions yet"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Consistency Score</p>
+                    <p className="text-lg font-semibold">
+                      {swingStats.consistencyScore !== null ? `${swingStats.consistencyScore}%` : "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Latest Achievement</p>
+                    <p className="text-lg font-semibold">
+                      {swingStats.latestBadge || "Keep practicing!"}
+                    </p>
+                  </div>
+                </div>
+                {swingStats.sessionCount === 0 && (
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Track your swing data to get personalized insights and recommendations.
+                    </p>
+                    <Button asChild size="sm">
+                      <Link href="/swing-data/import">
+                        Import Swing Data
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Upgrade prompt for Entry tier */}
+          {userTier === "entry" && (
+            <Card className="mb-8 border-gold/30 bg-gradient-to-br from-gold/10 to-transparent">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-gold">
+                  <Trophy className="h-5 w-5" />
+                  Unlock Swing Analytics
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Upgrade to Core or Premium to access advanced swing data tracking, AI insights, and personalized improvement goals.
+                </p>
+                <Button asChild className="bg-gold hover:bg-gold/90">
+                  <Link href="/pricing">
+                    View Premium Features
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           <Tabs defaultValue="sessions" className="w-full">
             <TabsList className="grid w-full grid-cols-4">

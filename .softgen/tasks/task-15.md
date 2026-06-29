@@ -1,6 +1,6 @@
 ---
 title: Fitting Integration
-status: todo
+status: in_progress
 ---
 
 ## Notes
@@ -14,25 +14,25 @@ Integrate Swing DNA data into the existing fitting recommendation engine. Use ac
 
 ## Checklist
 ### Update Fitting Recommendations
-- [ ] Modify `/api/generate-recommendations.ts` to query swing data
-- [ ] Use actual club speed instead of estimated (when available)
-- [ ] Factor consistency score into shaft flex recommendation
-- [ ] Use launch angle data for loft recommendations
+- [x] Modify `/api/generate-recommendations.ts` to query swing data
+- [x] Use actual club speed instead of estimated (when available)
+- [x] Factor consistency score into shaft flex recommendation
+- [x] Use launch angle data for loft recommendations
 - [ ] Add "Based on your swing data" indicator to results
 - [ ] Create "Update from Swing Data" button on results page
 - [ ] Show comparison: estimates vs actual data
 
 ### Dashboard Integration
-- [ ] Add Swing Analytics card to `/dashboard`
-- [ ] Display: last session date, consistency score, latest achievement
-- [ ] Quick link to full analytics dashboard
-- [ ] Show upgrade prompt for Entry tier users
+- [x] Add Swing Analytics card to `/dashboard`
+- [x] Display: last session date, consistency score, latest achievement
+- [x] Quick link to full analytics dashboard
+- [x] Show upgrade prompt for Entry tier users
 
 ### Sidebar Navigation
-- [ ] Update `AppSidebar.tsx` with "Swing Analytics" menu item
-- [ ] Add TrendingUp icon
-- [ ] Badge indicator for new achievements (red dot)
-- [ ] Highlight when on analytics pages
+- [x] Update `AppSidebar.tsx` with "Swing Analytics" menu item
+- [x] Add TrendingUp icon
+- [x] Badge indicator for new achievements (red dot)
+- [x] Highlight when on analytics pages
 
 ### Results & Report Integration
 - [ ] Update fitting results page with swing data section

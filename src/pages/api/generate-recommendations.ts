@@ -19,17 +19,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const [profileRes, swingRes, physicalRes, equipmentRes] = await Promise.all([
+    const [profileRes, swingRes, physicalRes, equipmentRes, swingDataRes] = await Promise.all([
       supabase.from("player_profile").select("*").eq("session_id", sessionId).single(),
       supabase.from("swing_profile").select("*").eq("session_id", sessionId).single(),
       supabase.from("physical_profile").select("*").eq("session_id", sessionId).single(),
       supabase.from("current_equipment").select("*").eq("session_id", sessionId).single(),
+      supabase.from("swing_data_sessions").select("*, swing_dna(*)").eq("user_id", (await supabase.from("player_profile").select("user_id").eq("session_id", sessionId).single()).data?.user_id || "").order("session_date", { ascending: false }).limit(1).maybeSingle(),
     ]);
 
     const profile = profileRes.data;
     const swing = swingRes.data;
     const physical = physicalRes.data;
     const equipment = equipmentRes.data;
+    const latestSwingData = swingDataRes.data;
 
     if (!profile || !swing || !physical) {
       return res.status(400).json({ error: "Incomplete fitting data" });
@@ -60,11 +62,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const gripSizeRec = gripSizeMap[physical.hand_size || "medium"] || "standard";
 
     let flexScore = 0;
-    if (swing.swing_tempo === "fast") flexScore += 2;
-    else if (swing.swing_tempo === "moderate") flexScore += 1;
-    if (swing.swing_strength === "strong") flexScore += 2;
-    else if (swing.swing_strength === "moderate") flexScore += 1;
-    if (swing.ball_flight === "low") flexScore += 1;
+    
+    // Use actual swing data if available
+    let usedSwingData = false;
+    if (latestSwingData && latestSwingData.swing_dna) {
+      usedSwingData = true;
+      const swingDNA = latestSwingData.swing_dna;
+      
+      // Use actual club speed for flex determination
+      if (swingDNA.club_speed_mph) {
+        if (swingDNA.club_speed_mph >= 105) flexScore += 3;
+        else if (swingDNA.club_speed_mph >= 95) flexScore += 2;
+        else if (swingDNA.club_speed_mph >= 85) flexScore += 1;
+      }
+      
+      // Factor in consistency score
+      if (swingDNA.consistency_score >= 80) flexScore += 1;
+      else if (swingDNA.consistency_score < 60) flexScore -= 1;
+      
+      // Use launch angle for recommendations
+      if (swingDNA.launch_angle_deg && swingDNA.launch_angle_deg < 10) {
+        flexScore += 1; // Stiffer flex for low launch
+      }
+    } else {
+      // Fall back to estimated values
+      if (swing.swing_tempo === "fast") flexScore += 2;
+      else if (swing.swing_tempo === "moderate") flexScore += 1;
+      if (swing.swing_strength === "strong") flexScore += 2;
+      else if (swing.swing_strength === "moderate") flexScore += 1;
+      if (swing.ball_flight === "low") flexScore += 1;
+    }
 
     let shaftFlexRec = "R";
     if (flexScore <= 1) shaftFlexRec = "L";
@@ -90,6 +117,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     let advisoryNotes = "";
+    if (usedSwingData) {
+      advisoryNotes += "These recommendations incorporate your actual swing data from recent practice sessions. ";
+    }
     if (["severe", "moderate"].includes(physical.mobility_limit || "")) {
       advisoryNotes += "Due to your physical limitations, consider lightweight graphite shafts for reduced strain. A professional fitting is strongly recommended. ";
     }
@@ -202,7 +232,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error("Failed to send email notification:", emailError);
     }
 
-    return res.status(200).json({ recommendation });
+    return res.status(200).json({ recommendation, usedSwingData });
   } catch (error) {
     console.error("Recommendation generation error:", error);
     return res.status(500).json({ error: "Failed to generate recommendations" });
