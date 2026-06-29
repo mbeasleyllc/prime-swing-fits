@@ -1,0 +1,291 @@
+import { useState } from "react";
+import { Plus, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { VALID_CLUBS, VALID_SHOT_TYPES, validateSwingMetric } from "@/lib/swingDataValidation";
+
+interface ManualEntryProps {
+  onSave: (data: any) => Promise<void>;
+  sessionId?: string;
+}
+
+export function ManualEntry({ onSave, sessionId }: ManualEntryProps) {
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    club_used: "",
+    ball_speed: "",
+    club_speed: "",
+    carry_distance: "",
+    total_distance: "",
+    launch_angle: "",
+    spin_rate: "",
+    smash_factor: "",
+    attack_angle: "",
+    club_path: "",
+    face_angle: "",
+    launch_direction: "",
+    spin_axis: "",
+    max_height: "",
+    landing_angle: "",
+    dynamic_loft: "",
+    shot_type: "",
+  });
+
+  const handleChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Convert to numeric values
+    const numericData = {
+      club_used: formData.club_used || null,
+      ball_speed: formData.ball_speed ? parseFloat(formData.ball_speed) : null,
+      club_speed: formData.club_speed ? parseFloat(formData.club_speed) : null,
+      carry_distance: formData.carry_distance ? parseFloat(formData.carry_distance) : null,
+      total_distance: formData.total_distance ? parseFloat(formData.total_distance) : null,
+      launch_angle: formData.launch_angle ? parseFloat(formData.launch_angle) : null,
+      spin_rate: formData.spin_rate ? parseInt(formData.spin_rate) : null,
+      smash_factor: formData.smash_factor ? parseFloat(formData.smash_factor) : null,
+      attack_angle: formData.attack_angle ? parseFloat(formData.attack_angle) : null,
+      club_path: formData.club_path ? parseFloat(formData.club_path) : null,
+      face_angle: formData.face_angle ? parseFloat(formData.face_angle) : null,
+      launch_direction: formData.launch_direction ? parseFloat(formData.launch_direction) : null,
+      spin_axis: formData.spin_axis ? parseFloat(formData.spin_axis) : null,
+      max_height: formData.max_height ? parseFloat(formData.max_height) : null,
+      landing_angle: formData.landing_angle ? parseFloat(formData.landing_angle) : null,
+      dynamic_loft: formData.dynamic_loft ? parseFloat(formData.dynamic_loft) : null,
+      shot_type: formData.shot_type || null,
+    };
+
+    const validation = validateSwingMetric(numericData);
+    if (!validation.isValid) {
+      alert(`Validation errors:\n${validation.errors.join("\n")}`);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await onSave(numericData);
+      
+      setFormData({
+        club_used: formData.club_used,
+        ball_speed: "",
+        club_speed: "",
+        carry_distance: "",
+        total_distance: "",
+        launch_angle: "",
+        spin_rate: "",
+        smash_factor: "",
+        attack_angle: "",
+        club_path: "",
+        face_angle: "",
+        launch_direction: "",
+        spin_axis: "",
+        max_height: "",
+        landing_angle: "",
+        dynamic_loft: "",
+        shot_type: "",
+      });
+    } catch (error) {
+      console.error("Save failed:", error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Quick Entry</CardTitle>
+        <CardDescription>
+          Manually record a single shot (takes ~60 seconds)
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="club">Club *</Label>
+            <Select value={formData.club_used} onValueChange={(v) => handleChange("club_used", v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select club" />
+              </SelectTrigger>
+              <SelectContent>
+                {VALID_CLUBS.map((club) => (
+                  <SelectItem key={club} value={club}>
+                    {club}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="ball_speed">Ball Speed (mph) *</Label>
+              <Input
+                id="ball_speed"
+                type="number"
+                step="0.1"
+                value={formData.ball_speed}
+                onChange={(e) => handleChange("ball_speed", e.target.value)}
+                placeholder="150.5"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="club_speed">Club Speed (mph) *</Label>
+              <Input
+                id="club_speed"
+                type="number"
+                step="0.1"
+                value={formData.club_speed}
+                onChange={(e) => handleChange("club_speed", e.target.value)}
+                placeholder="105.2"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="carry_distance">Carry Distance (yards) *</Label>
+              <Input
+                id="carry_distance"
+                type="number"
+                step="0.1"
+                value={formData.carry_distance}
+                onChange={(e) => handleChange("carry_distance", e.target.value)}
+                placeholder="245.3"
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="total_distance">Total Distance (yards)</Label>
+              <Input
+                id="total_distance"
+                type="number"
+                step="0.1"
+                value={formData.total_distance}
+                onChange={(e) => handleChange("total_distance", e.target.value)}
+                placeholder="260.5"
+              />
+            </div>
+          </div>
+
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="w-full"
+          >
+            {showAdvanced ? (
+              <>
+                <ChevronUp className="w-4 h-4 mr-2" />
+                Hide Advanced Metrics
+              </>
+            ) : (
+              <>
+                <ChevronDown className="w-4 h-4 mr-2" />
+                Show Advanced Metrics
+              </>
+            )}
+          </Button>
+
+          {showAdvanced && (
+            <div className="space-y-4 pt-4 border-t">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="launch_angle">Launch Angle (°)</Label>
+                  <Input
+                    id="launch_angle"
+                    type="number"
+                    step="0.1"
+                    value={formData.launch_angle}
+                    onChange={(e) => handleChange("launch_angle", e.target.value)}
+                    placeholder="12.5"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="spin_rate">Spin Rate (rpm)</Label>
+                  <Input
+                    id="spin_rate"
+                    type="number"
+                    value={formData.spin_rate}
+                    onChange={(e) => handleChange("spin_rate", e.target.value)}
+                    placeholder="2800"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="attack_angle">Attack Angle (°)</Label>
+                  <Input
+                    id="attack_angle"
+                    type="number"
+                    step="0.1"
+                    value={formData.attack_angle}
+                    onChange={(e) => handleChange("attack_angle", e.target.value)}
+                    placeholder="3.2"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="club_path">Club Path (°)</Label>
+                  <Input
+                    id="club_path"
+                    type="number"
+                    step="0.1"
+                    value={formData.club_path}
+                    onChange={(e) => handleChange("club_path", e.target.value)}
+                    placeholder="2.1"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="face_angle">Face Angle (°)</Label>
+                  <Input
+                    id="face_angle"
+                    type="number"
+                    step="0.1"
+                    value={formData.face_angle}
+                    onChange={(e) => handleChange("face_angle", e.target.value)}
+                    placeholder="1.5"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="shot_type">Shot Type</Label>
+                  <Select value={formData.shot_type} onValueChange={(v) => handleChange("shot_type", v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {VALID_SHOT_TYPES.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <Button type="submit" disabled={saving} className="w-full">
+            <Plus className="w-4 h-4 mr-2" />
+            {saving ? "Saving..." : "Add Shot"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}

@@ -1,6 +1,6 @@
 ---
 title: Data Import System
-status: todo
+status: in_progress
 ---
 
 ## Notes
@@ -14,19 +14,19 @@ Create plug-and-play data import system supporting CSV drag-drop, launch monitor
 
 ## Checklist
 ### CSV Import (Universal)
-- [ ] Create CSV template with standardized columns
-- [ ] Build drag-and-drop file upload component (react-dropzone)
-- [ ] Implement CSV parser with PapaParse
-- [ ] Auto-detect and map flexible column headers
-- [ ] Preview first 5 rows before import
-- [ ] Validate data ranges (ball speed 80-200mph, etc.)
+- [x] Create CSV template with standardized columns
+- [x] Build drag-and-drop file upload component (react-dropzone)
+- [x] Implement CSV parser with PapaParse
+- [x] Auto-detect and map flexible column headers
+- [x] Preview first 5 rows before import
+- [x] Validate data ranges (ball speed 80-200mph, etc.)
 - [ ] Bulk insert validated data to database
 
 ### Manual Entry Form
-- [ ] Create quick single-shot entry form
-- [ ] Add club selection dropdown (all 14 clubs)
-- [ ] Essential metrics: club speed, ball speed, carry distance
-- [ ] Optional expandable section for advanced metrics
+- [x] Create quick single-shot entry form
+- [x] Add club selection dropdown (all 14 clubs)
+- [x] Essential metrics: club speed, ball speed, carry distance
+- [x] Optional expandable section for advanced metrics
 - [ ] Range session batch mode (multiple shots to same session)
 - [ ] Session summary before save
 
