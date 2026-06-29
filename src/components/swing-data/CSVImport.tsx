@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { validateBatch, VALID_CLUBS, VALID_DEVICE_TYPES } from "@/lib/swingDataValidation";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CSVImportProps {
   onImportComplete: (sessionId: string) => void;
@@ -30,6 +31,7 @@ interface ParsedRow {
 export function CSVImport({ onImportComplete, userId }: CSVImportProps) {
   const [file, setFile] = useState<File | null>(null);
   const [previewData, setPreviewData] = useState<ParsedRow[]>([]);
+  const [fullData, setFullData] = useState<ParsedRow[]>([]);
   const [validationResult, setValidationResult] = useState<any>(null);
   const [importing, setImporting] = useState(false);
   const [sessionName, setSessionName] = useState("");
@@ -79,6 +81,7 @@ export function CSVImport({ onImportComplete, userId }: CSVImportProps) {
 
         const preview = normalizedData.slice(0, 5);
         setPreviewData(preview);
+        setFullData(normalizedData);
 
         const validation = validateBatch(normalizedData);
         setValidationResult(validation);
@@ -93,20 +96,41 @@ export function CSVImport({ onImportComplete, userId }: CSVImportProps) {
   });
 
   const handleImport = async () => {
-    if (!file || !validationResult) return;
+    if (!file || !validationResult || !fullData.length) return;
 
     setImporting(true);
     try {
-      // TODO: Implement actual import to Supabase
-      // 1. Create swing_session
-      // 2. Insert swing_metrics
-      
-      setTimeout(() => {
-        setImporting(false);
-        onImportComplete("mock-session-id");
-      }, 2000);
-    } catch (error) {
+      const { data: session, error: sessionError } = await supabase
+        .from("swing_sessions")
+        .insert({
+          user_id: userId,
+          session_name: sessionName || "CSV Import Session",
+          device_type: "manual",
+          session_date: new Date().toISOString().split("T")[0],
+        })
+        .select()
+        .single();
+
+      if (sessionError) throw sessionError;
+
+      const validRows = validationResult.results
+        .filter((r: any) => r.result.isValid)
+        .map((r: any) => ({
+          session_id: session.id,
+          user_id: userId,
+          ...r.data,
+        }));
+
+      const { error: metricsError } = await supabase
+        .from("swing_metrics")
+        .insert(validRows);
+
+      if (metricsError) throw metricsError;
+
+      onImportComplete(session.id);
+    } catch (error: any) {
       console.error("Import failed:", error);
+      alert(`Import failed: ${error.message}`);
       setImporting(false);
     }
   };

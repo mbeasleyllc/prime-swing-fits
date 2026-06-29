@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Plus, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, ChevronDown, ChevronUp, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { VALID_CLUBS, VALID_SHOT_TYPES, validateSwingMetric } from "@/lib/swingDataValidation";
 
 interface ManualEntryProps {
@@ -15,6 +16,8 @@ interface ManualEntryProps {
 export function ManualEntry({ onSave, sessionId }: ManualEntryProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [batchMode, setBatchMode] = useState(false);
+  const [shotsInSession, setShotsInSession] = useState(0);
   const [formData, setFormData] = useState({
     club_used: "",
     ball_speed: "",
@@ -73,25 +76,48 @@ export function ManualEntry({ onSave, sessionId }: ManualEntryProps) {
     try {
       await onSave(numericData);
       
-      setFormData({
-        club_used: formData.club_used,
-        ball_speed: "",
-        club_speed: "",
-        carry_distance: "",
-        total_distance: "",
-        launch_angle: "",
-        spin_rate: "",
-        smash_factor: "",
-        attack_angle: "",
-        club_path: "",
-        face_angle: "",
-        launch_direction: "",
-        spin_axis: "",
-        max_height: "",
-        landing_angle: "",
-        dynamic_loft: "",
-        shot_type: "",
-      });
+      if (batchMode) {
+        setShotsInSession(prev => prev + 1);
+        setFormData({
+          club_used: formData.club_used,
+          ball_speed: "",
+          club_speed: "",
+          carry_distance: "",
+          total_distance: "",
+          launch_angle: "",
+          spin_rate: "",
+          smash_factor: "",
+          attack_angle: "",
+          club_path: "",
+          face_angle: "",
+          launch_direction: "",
+          spin_axis: "",
+          max_height: "",
+          landing_angle: "",
+          dynamic_loft: "",
+          shot_type: "",
+        });
+      } else {
+        setFormData({
+          club_used: "",
+          ball_speed: "",
+          club_speed: "",
+          carry_distance: "",
+          total_distance: "",
+          launch_angle: "",
+          spin_rate: "",
+          smash_factor: "",
+          attack_angle: "",
+          club_path: "",
+          face_angle: "",
+          launch_direction: "",
+          spin_axis: "",
+          max_height: "",
+          landing_angle: "",
+          dynamic_loft: "",
+          shot_type: "",
+        });
+      }
     } catch (error) {
       console.error("Save failed:", error);
     } finally {
@@ -102,12 +128,42 @@ export function ManualEntry({ onSave, sessionId }: ManualEntryProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Quick Entry</CardTitle>
-        <CardDescription>
-          Manually record a single shot (takes ~60 seconds)
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Quick Entry</CardTitle>
+            <CardDescription>
+              Manually record a single shot (takes ~60 seconds)
+            </CardDescription>
+          </div>
+          {batchMode && (
+            <Badge variant="secondary">
+              <ListChecks className="w-3 h-3 mr-1" />
+              {shotsInSession} shots
+            </Badge>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
+        <div className="mb-4">
+          <Button
+            type="button"
+            variant={batchMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => {
+              setBatchMode(!batchMode);
+              if (!batchMode) setShotsInSession(0);
+            }}
+          >
+            <ListChecks className="w-4 h-4 mr-2" />
+            {batchMode ? "Batch Mode Active" : "Enable Batch Mode"}
+          </Button>
+          {batchMode && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Club stays selected. Add multiple shots to same session.
+            </p>
+          )}
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="club">Club *</Label>

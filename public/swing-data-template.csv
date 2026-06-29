@@ -1,0 +1,6 @@
+shot_number,club_used,ball_speed,club_speed,carry_distance,total_distance,launch_angle,spin_rate,smash_factor,attack_angle,club_path,face_angle
+1,Driver,165.3,110.2,275.5,290.2,12.5,2650,1.50,3.2,1.5,0.8
+2,Driver,163.8,109.5,270.8,285.5,13.1,2720,1.50,3.5,1.2,1.2
+3,Driver,167.2,111.8,280.3,295.8,11.8,2580,1.50,2.8,2.1,0.5
+4,7 Iron,120.5,85.3,165.2,170.5,18.5,6200,1.41,-3.5,0.8,-1.2
+5,7 Iron,118.9,84.1,162.8,167.9,19.2,6450,1.41,-3.8,1.2,-0.8

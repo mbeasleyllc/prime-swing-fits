@@ -20,15 +20,15 @@ Create plug-and-play data import system supporting CSV drag-drop, launch monitor
 - [x] Auto-detect and map flexible column headers
 - [x] Preview first 5 rows before import
 - [x] Validate data ranges (ball speed 80-200mph, etc.)
-- [ ] Bulk insert validated data to database
+- [x] Bulk insert validated data to database
 
 ### Manual Entry Form
 - [x] Create quick single-shot entry form
 - [x] Add club selection dropdown (all 14 clubs)
 - [x] Essential metrics: club speed, ball speed, carry distance
 - [x] Optional expandable section for advanced metrics
-- [ ] Range session batch mode (multiple shots to same session)
-- [ ] Session summary before save
+- [x] Range session batch mode (multiple shots to same session)
+- [x] Session summary before save
 
 ### Launch Monitor Integrations
 - [ ] Research Golf Daddy API documentation

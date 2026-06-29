@@ -17,6 +17,7 @@ export default function SwingDataImport() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("csv");
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
   const handleImportComplete = (sessionId: string) => {
     toast({
@@ -30,27 +31,57 @@ export default function SwingDataImport() {
     if (!user) return;
 
     try {
-      const { data: session, error: sessionError } = await supabase
-        .from("swing_sessions")
-        .insert({
+      if (!currentSessionId) {
+        const { data: session, error: sessionError } = await supabase
+          .from("swing_sessions")
+          .insert({
+            user_id: user.id,
+            session_name: "Manual Entry Session",
+            device_type: "manual",
+            session_date: new Date().toISOString().split("T")[0],
+          })
+          .select()
+          .single();
+
+        if (sessionError) throw sessionError;
+        setCurrentSessionId(session.id);
+
+        const { data: metrics, error: metricsError } = await supabase
+          .from("swing_metrics")
+          .select("shot_number")
+          .eq("session_id", session.id)
+          .order("shot_number", { ascending: false })
+          .limit(1);
+
+        const nextShotNumber = metrics && metrics.length > 0 ? (metrics[0].shot_number || 0) + 1 : 1;
+
+        const { error: metricError } = await supabase.from("swing_metrics").insert({
+          session_id: session.id,
           user_id: user.id,
-          session_name: "Manual Entry Session",
-          device_type: "manual",
-          session_date: new Date().toISOString().split("T")[0],
-        })
-        .select()
-        .single();
+          shot_number: nextShotNumber,
+          ...shotData,
+        });
 
-      if (sessionError) throw sessionError;
+        if (metricError) throw metricError;
+      } else {
+        const { data: metrics, error: metricsError } = await supabase
+          .from("swing_metrics")
+          .select("shot_number")
+          .eq("session_id", currentSessionId)
+          .order("shot_number", { ascending: false })
+          .limit(1);
 
-      const { error: metricError } = await supabase.from("swing_metrics").insert({
-        session_id: session.id,
-        user_id: user.id,
-        shot_number: 1,
-        ...shotData,
-      });
+        const nextShotNumber = metrics && metrics.length > 0 ? (metrics[0].shot_number || 0) + 1 : 1;
 
-      if (metricError) throw metricError;
+        const { error: metricError } = await supabase.from("swing_metrics").insert({
+          session_id: currentSessionId,
+          user_id: user.id,
+          shot_number: nextShotNumber,
+          ...shotData,
+        });
+
+        if (metricError) throw metricError;
+      }
 
       toast({
         title: "Shot Recorded",
@@ -129,9 +160,11 @@ export default function SwingDataImport() {
               <p className="text-sm text-muted-foreground mb-4">
                 Get started with our pre-formatted CSV template
               </p>
-              <Button variant="outline" size="sm">
-                Download Template
-              </Button>
+              <a href="/swing-data-template.csv" download="swing-data-template.csv">
+                <Button variant="outline" size="sm">
+                  Download Template
+                </Button>
+              </a>
             </div>
           </TabsContent>
 
