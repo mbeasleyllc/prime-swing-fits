@@ -1,12 +1,6 @@
 ---
-title: Swing DNA - Phase 2: Data Import System (Plug & Play)
+title: Data Import System
 status: todo
-priority: high
-type: feature
-tags: [analytics, import, integration]
-created_by: agent
-created_at: 2026-06-29T20:14:00Z
-position: 12
 ---
 
 ## Notes
@@ -19,7 +13,6 @@ Create plug-and-play data import system supporting CSV drag-drop, launch monitor
 4. Generic JSON Import (TrackMan/FlightScope/SkyTrak) - Priority 3
 
 ## Checklist
-
 ### CSV Import (Universal)
 - [ ] Create CSV template with standardized columns
 - [ ] Build drag-and-drop file upload component (react-dropzone)

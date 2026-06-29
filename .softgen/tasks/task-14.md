@@ -1,12 +1,6 @@
 ---
-title: Swing DNA - Phase 4: Gamification & Goals
+title: Gamefication & Goals
 status: todo
-priority: medium
-type: feature
-tags: [analytics, gamification, goals]
-created_by: agent
-created_at: 2026-06-29T20:14:00Z
-position: 14
 ---
 
 ## Notes
@@ -19,7 +13,6 @@ Add achievement badge system and goal-setting to drive user engagement. Auto-awa
 - Dedication badges (frequency)
 
 ## Checklist
-
 ### Achievement System
 - [ ] Design 10 badge types with 3-4 levels each (bronze/silver/gold/platinum)
 - [ ] Create badge images/icons (SVG or PNG)

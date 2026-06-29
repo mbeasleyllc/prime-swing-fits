@@ -1,12 +1,6 @@
 ---
-title: Swing DNA - Phase 5: Fitting System Integration
+title: Fitting Integration
 status: todo
-priority: medium
-type: feature
-tags: [analytics, fitting, integration]
-created_by: agent
-created_at: 2026-06-29T20:14:00Z
-position: 15
 ---
 
 ## Notes
@@ -19,7 +13,6 @@ Integrate Swing DNA data into the existing fitting recommendation engine. Use ac
 4. Sidebar navigation (new menu item)
 
 ## Checklist
-
 ### Update Fitting Recommendations
 - [ ] Modify `/api/generate-recommendations.ts` to query swing data
 - [ ] Use actual club speed instead of estimated (when available)

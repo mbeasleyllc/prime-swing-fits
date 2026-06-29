@@ -1,12 +1,6 @@
 ---
-title: Swing DNA - Phase 7: Testing & Polish
+title: Testing & Polishing
 status: todo
-priority: medium
-type: chore
-tags: [analytics, testing, performance]
-created_by: agent
-created_at: 2026-06-29T20:14:00Z
-position: 17
 ---
 
 ## Notes
@@ -20,7 +14,6 @@ Comprehensive testing, performance optimization, and mobile responsiveness polis
 5. Data accuracy of all calculations
 
 ## Checklist
-
 ### Data Validation Testing
 - [ ] Test CSV import with 10 different formats (Excel, Google Sheets, TrackMan, etc.)
 - [ ] Validate metric ranges catch all impossible values

@@ -1,12 +1,6 @@
 ---
-title: Swing DNA - Phase 6: Subscription & Monetization
+title: Subscription & Monetization
 status: todo
-priority: high
-type: feature
-tags: [analytics, stripe, monetization]
-created_by: agent
-created_at: 2026-06-29T20:14:00Z
-position: 16
 ---
 
 ## Notes
@@ -19,7 +13,6 @@ Implement tier-based access control and Stripe subscription for Core add-on ($12
 - Premium Plus ($220): Included, unlimited history
 
 ## Checklist
-
 ### Tier Gating Middleware
 - [ ] Create `checkSwingAnalyticsAccess()` middleware function
 - [ ] Check user tier before rendering analytics pages

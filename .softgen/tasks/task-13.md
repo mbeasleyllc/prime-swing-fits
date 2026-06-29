@@ -1,12 +1,6 @@
 ---
-title: Swing DNA - Phase 3: Analytics Dashboard
+title: Analytics Dashboard
 status: todo
-priority: high
-type: feature
-tags: [analytics, dashboard, charts]
-created_by: agent
-created_at: 2026-06-29T20:14:00Z
-position: 13
 ---
 
 ## Notes
@@ -20,7 +14,6 @@ Build comprehensive analytics dashboard at `/swing-analytics` with session histo
 5. Detailed session drill-down
 
 ## Checklist
-
 ### Main Dashboard Page
 - [ ] Create `/swing-analytics` page with protected route
 - [ ] Build session history table with filters (date, club, device)

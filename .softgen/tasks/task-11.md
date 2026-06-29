@@ -1,12 +1,6 @@
 ---
-title: Swing DNA - Phase 1: Database Schema & Core Infrastructure
+title: Database Schema (Swing DNA)
 status: done
-priority: high
-type: feature
-tags: [analytics, database, schema]
-created_by: agent
-created_at: 2026-06-29T20:07:26Z
-position: 11
 ---
 
 ## Notes
@@ -24,7 +18,6 @@ Build the database foundation for Swing DNA Analytics & Progress Tracking. This 
 - TimescaleDB extension (optional, for time-series optimization)
 
 ## Checklist
-
 ### Database Tables
 - [x] Create `swing_sessions` table (user sessions with device tracking)
 - [x] Create `swing_metrics` table (individual shot data per session)
