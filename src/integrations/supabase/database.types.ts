@@ -605,6 +605,7 @@ export type Database = {
           current_value: number | null
           goal_name: string
           id: string
+          last_reminder_sent: string | null
           metric_name: string
           notes: string | null
           progress_percent: number | null
@@ -622,6 +623,7 @@ export type Database = {
           current_value?: number | null
           goal_name: string
           id?: string
+          last_reminder_sent?: string | null
           metric_name: string
           notes?: string | null
           progress_percent?: number | null
@@ -639,6 +641,7 @@ export type Database = {
           current_value?: number | null
           goal_name?: string
           id?: string
+          last_reminder_sent?: string | null
           metric_name?: string
           notes?: string | null
           progress_percent?: number | null
@@ -648,6 +651,42 @@ export type Database = {
           target_date?: string
           target_value?: number
           updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      swing_insights: {
+        Row: {
+          created_at: string | null
+          description: string
+          dismissed_at: string | null
+          id: string
+          insight_type: string
+          priority: string | null
+          recommendation: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          dismissed_at?: string | null
+          id?: string
+          insight_type: string
+          priority?: string | null
+          recommendation?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          dismissed_at?: string | null
+          id?: string
+          insight_type?: string
+          priority?: string | null
+          recommendation?: string | null
+          title?: string
           user_id?: string
         }
         Relationships: []
@@ -1008,7 +1047,9 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          last_badge_view: string | null
           role: string | null
+          subscription_tier: string | null
           updated_at: string | null
         }
         Insert: {
@@ -1016,7 +1057,9 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          last_badge_view?: string | null
           role?: string | null
+          subscription_tier?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -1024,7 +1067,9 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          last_badge_view?: string | null
           role?: string | null
+          subscription_tier?: string | null
           updated_at?: string | null
         }
         Relationships: []

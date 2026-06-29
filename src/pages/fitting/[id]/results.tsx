@@ -61,14 +61,14 @@ export default function FittingResults() {
 
       // Load swing data
       const { data: swingSessionsData } = await supabase
-        .from("swing_data_sessions")
-        .select("*, swing_dna(*)")
+        .from("swing_sessions")
+        .select("*")
         .eq("user_id", user.id)
         .order("session_date", { ascending: false })
         .limit(10);
 
       if (swingSessionsData && swingSessionsData.length > 0) {
-        setSwingData(swingSessionsData[0].swing_dna);
+        setSwingData(swingSessionsData[0]);
         setRecentSessions(swingSessionsData);
       }
 
@@ -325,10 +325,10 @@ export default function FittingResults() {
                           {recentSessions.map((session, idx) => (
                             <TableRow key={idx}>
                               <TableCell>{new Date(session.session_date).toLocaleDateString()}</TableCell>
-                              <TableCell>{session.swing_dna?.club_speed_mph || "—"} mph</TableCell>
-                              <TableCell>{session.swing_dna?.ball_speed_mph || "—"} mph</TableCell>
-                              <TableCell>{session.swing_dna?.carry_distance_yds || "—"} yds</TableCell>
-                              <TableCell>{session.swing_dna?.consistency_score || "—"}%</TableCell>
+                              <TableCell>{session.club_speed_mph || "—"} mph</TableCell>
+                              <TableCell>{session.ball_speed_mph || "—"} mph</TableCell>
+                              <TableCell>{session.carry_distance_yds || "—"} yds</TableCell>
+                              <TableCell>{session.consistency_score || "—"}%</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>

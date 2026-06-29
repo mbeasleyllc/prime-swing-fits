@@ -46,17 +46,17 @@ export default function Dashboard() {
           .select("id", { count: "exact" })
           .eq("user_id", user.id),
         supabase
-          .from("swing_data_sessions")
-          .select("session_date, swing_dna(consistency_score)", { count: "exact" })
+          .from("swing_sessions")
+          .select("session_date, club_speed_mph, consistency_score", { count: "exact" })
           .eq("user_id", user.id)
           .order("session_date", { ascending: false })
           .limit(1)
           .maybeSingle(),
         supabase
           .from("achievement_badges")
-          .select("badge_name, earned_at")
+          .select("badge_name, earned_date")
           .eq("user_id", user.id)
-          .order("earned_at", { ascending: false })
+          .order("earned_date", { ascending: false })
           .limit(1)
           .maybeSingle(),
         supabase
@@ -77,7 +77,7 @@ export default function Dashboard() {
       if (swingSessionsRes.data) {
         setSwingStats({
           lastSession: swingSessionsRes.data.session_date,
-          consistencyScore: swingSessionsRes.data.swing_dna?.consistency_score || null,
+          consistencyScore: swingSessionsRes.data.consistency_score || null,
           latestBadge: latestBadgeRes.data?.badge_name || null,
           sessionCount: swingSessionsRes.count || 0,
         });

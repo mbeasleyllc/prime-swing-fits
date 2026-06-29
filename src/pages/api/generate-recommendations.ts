@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       supabase.from("swing_profile").select("*").eq("session_id", sessionId).single(),
       supabase.from("physical_profile").select("*").eq("session_id", sessionId).single(),
       supabase.from("current_equipment").select("*").eq("session_id", sessionId).single(),
-      supabase.from("swing_data_sessions").select("*, swing_dna(*)").eq("user_id", (await supabase.from("player_profile").select("user_id").eq("session_id", sessionId).single()).data?.user_id || "").order("session_date", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("swing_sessions").select("*, swing_dna(*)").eq("user_id", (await supabase.from("player_profile").select("user_id").eq("session_id", sessionId).single()).data?.user_id || "").order("session_date", { ascending: false }).limit(1).maybeSingle(),
     ]);
 
     const profile = profileRes.data;
@@ -65,23 +65,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     // Use actual swing data if available
     let usedSwingData = false;
-    if (latestSwingData && latestSwingData.swing_dna) {
+    if (latestSwingData && latestSwingData.club_speed_mph) {
       usedSwingData = true;
-      const swingDNA = latestSwingData.swing_dna;
       
       // Use actual club speed for flex determination
-      if (swingDNA.club_speed_mph) {
-        if (swingDNA.club_speed_mph >= 105) flexScore += 3;
-        else if (swingDNA.club_speed_mph >= 95) flexScore += 2;
-        else if (swingDNA.club_speed_mph >= 85) flexScore += 1;
-      }
+      if (latestSwingData.club_speed_mph >= 105) flexScore += 3;
+      else if (latestSwingData.club_speed_mph >= 95) flexScore += 2;
+      else if (latestSwingData.club_speed_mph >= 85) flexScore += 1;
       
       // Factor in consistency score
-      if (swingDNA.consistency_score >= 80) flexScore += 1;
-      else if (swingDNA.consistency_score < 60) flexScore -= 1;
+      if (latestSwingData.consistency_score && latestSwingData.consistency_score >= 80) flexScore += 1;
+      else if (latestSwingData.consistency_score && latestSwingData.consistency_score < 60) flexScore -= 1;
       
       // Use launch angle for recommendations
-      if (swingDNA.launch_angle_deg && swingDNA.launch_angle_deg < 10) {
+      if (latestSwingData.launch_angle_deg && latestSwingData.launch_angle_deg < 10) {
         flexScore += 1; // Stiffer flex for low launch
       }
     } else {

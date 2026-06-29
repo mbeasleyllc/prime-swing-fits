@@ -42,7 +42,7 @@ export default function FittingReport() {
         supabase.from("physical_profile").select("*").eq("session_id", sessionId).eq("user_id", user.id).single(),
         supabase.from("current_equipment").select("*").eq("session_id", sessionId).eq("user_id", user.id).single(),
         supabase.from("fitting_sessions").select("*").eq("id", sessionId).single(),
-        supabase.from("swing_data_sessions").select("*, swing_dna(*)").eq("user_id", user.id).order("session_date", { ascending: false }).limit(5),
+        supabase.from("swing_sessions").select("*").eq("user_id", user.id).order("session_date", { ascending: false }).limit(5),
       ]);
 
       if (recRes.data) setRecommendations(recRes.data);
@@ -54,7 +54,7 @@ export default function FittingReport() {
       if (sessionRes.data) setSession(sessionRes.data);
 
       if (swingSessionsRes.data && swingSessionsRes.data.length > 0) {
-        setSwingData(swingSessionsRes.data[0].swing_dna);
+        setSwingData(swingSessionsRes.data[0]);
         setRecentSessions(swingSessionsRes.data);
       }
 
@@ -291,7 +291,7 @@ export default function FittingReport() {
                   {recentSessions.map((session, idx) => (
                     <div key={idx} className="flex justify-between text-muted-foreground">
                       <span>{new Date(session.session_date).toLocaleDateString()}</span>
-                      <span>{session.swing_dna?.club_speed_mph || "—"} mph • {session.swing_dna?.consistency_score || "—"}%</span>
+                      <span>{session.club_speed_mph || "—"} mph • {session.consistency_score || "—"}%</span>
                     </div>
                   ))}
                 </div>

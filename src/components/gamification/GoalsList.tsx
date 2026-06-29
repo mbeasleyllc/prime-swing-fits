@@ -130,9 +130,24 @@ export function GoalsList({ userId }: GoalsListProps) {
                   <AlertDescription>No active goals yet.</AlertDescription>
                 </Alert>
               ) : (
-                activeGoals.map((goal) => (
-                  <GoalCard key={goal.id} {...goal} />
-                ))
+                <div className="space-y-4">
+                  {activeGoals.map((goal) => (
+                    <GoalCard
+                      key={goal.id}
+                      id={goal.id}
+                      goalName={goal.goal_name}
+                      metricName={goal.metric_name}
+                      targetValue={goal.target_value}
+                      currentValue={goal.current_value}
+                      startValue={goal.start_value}
+                      progressPercent={goal.progress_percent}
+                      targetDate={goal.target_date}
+                      status={goal.status}
+                      completedDate={goal.completed_date}
+                      onUpdate={loadGoals}
+                    />
+                  ))}
+                </div>
               )}
             </TabsContent>
 
@@ -142,9 +157,24 @@ export function GoalsList({ userId }: GoalsListProps) {
                   <AlertDescription>No completed goals yet.</AlertDescription>
                 </Alert>
               ) : (
-                completedGoals.map((goal) => (
-                  <GoalCard key={goal.id} {...goal} />
-                ))
+                <div className="space-y-4">
+                  {completedGoals.map((goal) => (
+                    <GoalCard
+                      key={goal.id}
+                      id={goal.id}
+                      goalName={goal.goal_name}
+                      metricName={goal.metric_name}
+                      targetValue={goal.target_value}
+                      currentValue={goal.current_value}
+                      startValue={goal.start_value}
+                      progressPercent={goal.progress_percent}
+                      targetDate={goal.target_date}
+                      status={goal.status}
+                      completedDate={goal.completed_date}
+                      onUpdate={loadGoals}
+                    />
+                  ))}
+                </div>
               )}
             </TabsContent>
 
@@ -154,9 +184,24 @@ export function GoalsList({ userId }: GoalsListProps) {
                   <AlertDescription>No archived or abandoned goals.</AlertDescription>
                 </Alert>
               ) : (
-                otherGoals.map((goal) => (
-                  <GoalCard key={goal.id} {...goal} />
-                ))
+                <div className="space-y-4">
+                  {otherGoals.map((goal) => (
+                    <GoalCard
+                      key={goal.id}
+                      id={goal.id}
+                      goalName={goal.goal_name}
+                      metricName={goal.metric_name}
+                      targetValue={goal.target_value}
+                      currentValue={goal.current_value}
+                      startValue={goal.start_value}
+                      progressPercent={goal.progress_percent}
+                      targetDate={goal.target_date}
+                      status={goal.status}
+                      completedDate={goal.completed_date}
+                      onUpdate={loadGoals}
+                    />
+                  ))}
+                </div>
               )}
             </TabsContent>
           </Tabs>

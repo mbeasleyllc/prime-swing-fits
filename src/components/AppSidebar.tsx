@@ -41,15 +41,15 @@ export function AppSidebar() {
 
       const { data: latestBadge } = await supabase
         .from("achievement_badges")
-        .select("earned_at")
+        .select("earned_date")
         .eq("user_id", user.id)
-        .order("earned_at", { ascending: false })
+        .order("earned_date", { ascending: false })
         .limit(1)
         .maybeSingle();
 
       if (latestBadge && lastViewed) {
         const lastViewTime = lastViewed.last_badge_view ? new Date(lastViewed.last_badge_view) : new Date(0);
-        const latestBadgeTime = new Date(latestBadge.earned_at);
+        const latestBadgeTime = new Date(latestBadge.earned_date);
         setHasNewBadge(latestBadgeTime > lastViewTime);
       } else if (latestBadge) {
         setHasNewBadge(true);
