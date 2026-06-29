@@ -5,9 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Download, TrendingUp, TrendingDown, Minus } from "lucide-react";
-import type { Database } from "@/integrations/supabase/database.types";
 
-type SwingDNAProfile = Database["public"]["Tables"]["swing_dna_profiles"]["Row"];
+interface SwingDNAProfile {
+  power_score: number;
+  consistency_score: number;
+  efficiency_score: number;
+  launch_score: number;
+  spin_control_score: number;
+  accuracy_score: number;
+}
 
 export function SwingDNARadar() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -25,7 +31,7 @@ export function SwingDNARadar() {
   ] as const;
 
   useEffect(() => {
-    fetchProfile();
+    fetchAndCalculateProfile();
   }, []);
 
   useEffect(() => {
@@ -34,24 +40,76 @@ export function SwingDNARadar() {
     }
   }, [profile]);
 
-  const fetchProfile = async () => {
+  const fetchAndCalculateProfile = async () => {
     try {
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
-        .from("swing_dna_profiles")
+      // Get all swing metrics for the user
+      const { data: metrics, error } = await supabase
+        .from("swing_metrics")
         .select("*")
-        .eq("user_id", user.id)
-        .order("updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .eq("user_id", user.id);
 
       if (error) throw error;
-      setProfile(data);
+      if (!metrics || metrics.length === 0) {
+        setProfile(null);
+        return;
+      }
+
+      // Calculate DNA scores
+      const validMetrics = metrics.filter(m => 
+        m.club_speed && m.ball_speed && m.carry_distance
+      );
+
+      if (validMetrics.length === 0) {
+        setProfile(null);
+        return;
+      }
+
+      // Power Score: based on average club speed
+      const avgSpeed = validMetrics.reduce((sum, m) => sum + (m.club_speed ?? 0), 0) / validMetrics.length;
+      const powerScore = Math.min(100, (avgSpeed / 120) * 100);
+
+      // Consistency Score: based on standard deviation of speeds
+      const speedStdDev = Math.sqrt(
+        validMetrics.reduce((sq, m) => sq + Math.pow((m.club_speed ?? 0) - avgSpeed, 2), 0) / validMetrics.length
+      );
+      const consistencyScore = Math.max(0, 100 - (speedStdDev / avgSpeed) * 100);
+
+      // Efficiency Score: based on smash factor
+      const avgSmash = validMetrics.reduce((sum, m) => sum + (m.smash_factor ?? 0), 0) / validMetrics.length;
+      const efficiencyScore = Math.min(100, (avgSmash / 1.5) * 100);
+
+      // Launch Score: based on launch angle optimality (10-14° ideal)
+      const avgLaunch = validMetrics.reduce((sum, m) => sum + (m.launch_angle ?? 0), 0) / validMetrics.length;
+      const launchDeviation = Math.abs(avgLaunch - 12);
+      const launchScore = Math.max(0, 100 - (launchDeviation * 10));
+
+      // Spin Control Score: based on spin rate consistency
+      const spinRates = validMetrics.map(m => m.spin_rate ?? 0).filter(s => s > 0);
+      const avgSpin = spinRates.reduce((a, b) => a + b, 0) / spinRates.length;
+      const spinStdDev = Math.sqrt(
+        spinRates.reduce((sq, s) => sq + Math.pow(s - avgSpin, 2), 0) / spinRates.length
+      );
+      const spinScore = Math.max(0, 100 - (spinStdDev / avgSpin) * 50);
+
+      // Accuracy Score: based on offline distance variance
+      const offlineDistances = validMetrics.map(m => Math.abs(m.launch_direction ?? 0));
+      const avgOffline = offlineDistances.reduce((a, b) => a + b, 0) / offlineDistances.length;
+      const accuracyScore = Math.max(0, 100 - (avgOffline * 2));
+
+      setProfile({
+        power_score: powerScore,
+        consistency_score: consistencyScore,
+        efficiency_score: efficiencyScore,
+        launch_score: launchScore,
+        spin_control_score: spinScore,
+        accuracy_score: accuracyScore,
+      });
     } catch (error) {
-      console.error("Error fetching Swing DNA:", error);
+      console.error("Error calculating Swing DNA:", error);
     } finally {
       setLoading(false);
     }

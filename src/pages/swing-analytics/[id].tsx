@@ -14,7 +14,7 @@ import { ArrowLeft, TrendingUp, TrendingDown, Target } from "lucide-react";
 import type { Database } from "@/integrations/supabase/database.types";
 
 type SwingSession = Database["public"]["Tables"]["swing_sessions"]["Row"];
-type SwingShot = Database["public"]["Tables"]["swing_shots"]["Row"];
+type SwingMetric = Database["public"]["Tables"]["swing_metrics"]["Row"];
 
 export default function SessionDetailPage() {
   const router = useRouter();
@@ -23,10 +23,10 @@ export default function SessionDetailPage() {
   const dispersionCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const [session, setSession] = useState<SwingSession | null>(null);
-  const [shots, setShots] = useState<SwingShot[]>([]);
+  const [shots, setShots] = useState<SwingMetric[]>([]);
   const [loading, setLoading] = useState(true);
-  const [bestShot, setBestShot] = useState<SwingShot | null>(null);
-  const [worstShot, setWorstShot] = useState<SwingShot | null>(null);
+  const [bestShot, setBestShot] = useState<SwingMetric | null>(null);
+  const [worstShot, setWorstShot] = useState<SwingMetric | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -71,9 +71,9 @@ export default function SessionDetailPage() {
 
       setSession(sessionData);
 
-      // Fetch shots
+      // Fetch shots (from swing_metrics table)
       const { data: shotsData, error: shotsError } = await supabase
-        .from("swing_shots")
+        .from("swing_metrics")
         .select("*")
         .eq("session_id", id as string)
         .order("shot_number", { ascending: true });
@@ -145,9 +145,9 @@ export default function SessionDetailPage() {
     ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Calculate scale based on max offline distance
+    // Calculate scale based on max launch direction (offline)
     const offlineDistances = shots
-      .map(s => Math.abs(s.offline_distance ?? 0))
+      .map(s => Math.abs(s.launch_direction ?? 0))
       .filter(d => d > 0);
     
     if (offlineDistances.length === 0) return;
@@ -156,10 +156,10 @@ export default function SessionDetailPage() {
 
     // Draw shot dispersion
     shots.forEach(shot => {
-      if (!shot.offline_distance || !shot.carry_distance) return;
+      if (shot.launch_direction === null || !shot.carry_distance) return;
 
       const scale = maxRadius / maxOffline;
-      const x = centerX + (shot.offline_distance * scale);
+      const x = centerX + (shot.launch_direction * scale);
       const y = centerY - (shot.carry_distance * 0.1 * scale); // Scale carry for vertical
 
       ctx.beginPath();
@@ -231,8 +231,8 @@ export default function SessionDetailPage() {
           </Button>
           <h1 className="text-3xl font-bold">{formatDate(session.session_date)}</h1>
           <div className="flex flex-wrap gap-2 mt-2">
-            <Badge variant="outline">{session.club_used}</Badge>
-            <Badge variant="secondary">{session.device_used}</Badge>
+            <Badge variant="outline">{session.session_name || "Session"}</Badge>
+            <Badge variant="secondary">{session.device_type}</Badge>
             <Badge>{session.total_shots} shots</Badge>
           </div>
         </div>
@@ -392,8 +392,8 @@ export default function SessionDetailPage() {
                         {shot.spin_rate?.toFixed(0) ?? "-"} rpm
                       </TableCell>
                       <TableCell className="text-right tabular-nums">
-                        {shot.offline_distance !== null
-                          ? `${shot.offline_distance > 0 ? "R" : "L"}${Math.abs(shot.offline_distance).toFixed(0)} yds`
+                        {shot.launch_direction !== null
+                          ? `${shot.launch_direction > 0 ? "R" : "L"}${Math.abs(shot.launch_direction).toFixed(1)}°`
                           : "-"}
                       </TableCell>
                     </TableRow>

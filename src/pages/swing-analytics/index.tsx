@@ -68,11 +68,8 @@ export default function SwingAnalyticsPage() {
       if (filters.endDate) {
         query = query.lte("session_date", filters.endDate);
       }
-      if (filters.club) {
-        query = query.eq("club_used", filters.club);
-      }
       if (filters.device) {
-        query = query.eq("device_used", filters.device);
+        query = query.eq("device_type", filters.device);
       }
 
       const { data, error, count } = await query;
@@ -291,10 +288,12 @@ export default function SwingAnalyticsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">All Devices</SelectItem>
-                  <SelectItem value="TrackMan">TrackMan</SelectItem>
-                  <SelectItem value="FlightScope">FlightScope</SelectItem>
-                  <SelectItem value="GCQuad">GCQuad</SelectItem>
-                  <SelectItem value="SkyTrak">SkyTrak</SelectItem>
+                  <SelectItem value="golf_daddy">Golf Daddy</SelectItem>
+                  <SelectItem value="trackman">TrackMan</SelectItem>
+                  <SelectItem value="flightscope">FlightScope</SelectItem>
+                  <SelectItem value="garmin">Garmin</SelectItem>
+                  <SelectItem value="manual">Manual</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -335,10 +334,10 @@ export default function SwingAnalyticsPage() {
                       <TableRow key={session.id}>
                         <TableCell>{formatDate(session.session_date)}</TableCell>
                         <TableCell>
-                          <Badge variant="outline">{session.club_used}</Badge>
+                          <Badge variant="outline">{session.session_name || "Session"}</Badge>
                         </TableCell>
                         <TableCell className="text-muted-foreground text-sm">
-                          {session.device_used}
+                          {session.device_type}
                         </TableCell>
                         <TableCell className="text-right">{session.total_shots}</TableCell>
                         <TableCell className="text-right">

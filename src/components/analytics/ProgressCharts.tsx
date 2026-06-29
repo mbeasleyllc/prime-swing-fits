@@ -4,10 +4,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/database.types";
 
-type SwingShot = Database["public"]["Tables"]["swing_shots"]["Row"];
+type SwingMetric = Database["public"]["Tables"]["swing_metrics"]["Row"];
 
 export function ProgressCharts() {
-  const [shots, setShots] = useState<SwingShot[]>([]);
+  const [shots, setShots] = useState<SwingMetric[]>([]);
   const [loading, setLoading] = useState(true);
   const speedChartRef = useRef<HTMLCanvasElement>(null);
   const distanceChartRef = useRef<HTMLCanvasElement>(null);
@@ -32,19 +32,10 @@ export function ProgressCharts() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: sessions } = await supabase
-        .from("swing_sessions")
-        .select("id")
-        .eq("user_id", user.id);
-
-      if (!sessions || sessions.length === 0) return;
-
-      const sessionIds = sessions.map(s => s.id);
-
       const { data, error } = await supabase
-        .from("swing_shots")
+        .from("swing_metrics")
         .select("*")
-        .in("session_id", sessionIds)
+        .eq("user_id", user.id)
         .order("created_at", { ascending: true });
 
       if (error) throw error;
