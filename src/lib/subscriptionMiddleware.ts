@@ -64,7 +64,7 @@ export async function checkSwingAnalyticsAccess(
 
     return {
       hasAccess: true,
-      tier: swingSubscription.tier,
+      tier: (swingSubscription.tier as "core_addon" | "premium" | "premium_plus"),
       dataRetentionMonths: swingSubscription.data_retention_months,
       requiresUpgrade: false,
     };
