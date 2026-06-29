@@ -160,7 +160,12 @@ export default function EquipmentComparison() {
             }
             
             if (selectedBrand !== "All Brands") {
-              results = results.filter(p => p.brand === selectedBrand);
+              results = results.filter(p => {
+                if ("compression" in p) {
+                  return (p as GolfBall).manufacturer === selectedBrand;
+                }
+                return (p as Product).brand === selectedBrand;
+              });
             }
           } else {
             results = GOLF_BALL_DATABASE.filter(ball =>
@@ -214,7 +219,12 @@ export default function EquipmentComparison() {
           }
           
           if (selectedBrand !== "All Brands") {
-            filtered = filtered.filter(p => p.brand === selectedBrand);
+            filtered = filtered.filter(p => {
+              if ("compression" in p) {
+                return (p as GolfBall).manufacturer === selectedBrand;
+              }
+              return (p as Product).brand === selectedBrand;
+            });
           }
         } else {
           filtered = [...GOLF_BALL_DATABASE];
@@ -974,10 +984,14 @@ function FittingMatchIndicator({ products }: { products: { product: Product | Go
           {products.map((item, index) => {
             const product = item.product;
             let match: { status: string; label: string; color: string } | null = null;
+            
+            const isBall = "compression" in product;
+            const displayBrand = isBall ? (product as GolfBall).manufacturer : (product as Product).brand;
+            const displayModel = isBall ? (product as GolfBall).name : (product as Product).model_name;
 
             if (item.type === "ball") {
               const ball = product as GolfBall;
-              const swingMatch = checkSwingSpeedMatch(ball.swing_speed_range, profile.swingSpeed);
+              const swingMatch = checkSwingSpeedMatch(ball.swing_speed_range.join(","), profile.swingSpeed);
               if (swingMatch) {
                 match = { status: "good", label: "Good Fit", color: "text-accent" };
               }
@@ -1005,8 +1019,8 @@ function FittingMatchIndicator({ products }: { products: { product: Product | Go
             return (
               <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
                 <div className="flex-1">
-                  <p className="font-semibold text-sm truncate">{product.brand}</p>
-                  <p className="text-xs text-muted-foreground truncate">{product.model_name}</p>
+                  <p className="font-semibold text-sm truncate">{displayBrand}</p>
+                  <p className="text-xs text-muted-foreground truncate">{displayModel}</p>
                 </div>
                 <div className={`flex items-center gap-1 ${match.color} font-semibold text-sm whitespace-nowrap`}>
                   {match.status === "good" && <CheckCircle2 className="h-4 w-4" />}
