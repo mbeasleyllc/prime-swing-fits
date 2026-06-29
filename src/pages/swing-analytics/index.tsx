@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { SwingDNARadar } from "@/components/analytics/SwingDNARadar";
 import { ProgressCharts } from "@/components/analytics/ProgressCharts";
-import { TrendingUp, TrendingDown, Target, Calendar, Download, Upload, Plus, Eye, Filter } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, Calendar, Download, Upload, Plus, Eye, Filter, Activity } from "lucide-react";
 import type { Database } from "@/integrations/supabase/database.types";
 
 type SwingSession = Database["public"]["Tables"]["swing_sessions"]["Row"];
@@ -228,8 +228,33 @@ export default function SwingAnalyticsPage() {
           </Card>
         </div>
 
-        {/* Swing DNA Profile */}
-        <SwingDNARadar />
+        {/* Swing DNA Radar Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-accent" />
+              Your Swing DNA Profile
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {latestSession ? (
+              <SwingDNARadar
+                data={{
+                  club_speed_mph: latestSession.club_speed_mph,
+                  ball_speed_mph: latestSession.ball_speed_mph,
+                  launch_angle_deg: latestSession.launch_angle_deg,
+                  spin_rate_rpm: latestSession.spin_rate_rpm,
+                  carry_distance_yds: latestSession.carry_distance_yds,
+                  consistency_score: latestSession.consistency_score,
+                }}
+              />
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                Complete a swing session to see your DNA profile
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Progress Charts */}
         <ProgressCharts />

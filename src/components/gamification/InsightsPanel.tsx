@@ -13,7 +13,6 @@ interface Insight {
   title: string;
   description: string;
   recommendation: string | null;
-  drill_link: string | null;
   priority: string;
   created_at: string;
   dismissed_at: string | null;
@@ -108,25 +107,13 @@ export function InsightsPanel({ userId }: InsightsPanelProps) {
 
                 <p className="text-foreground mb-4">{insight.description}</p>
 
-                <div className="rounded-lg bg-accent/10 p-4 mb-4">
-                  <h4 className="font-semibold text-sm mb-2 text-accent">
-                    Recommendation
-                  </h4>
-                  <p className="text-sm">{insight.recommendation}</p>
-                </div>
-
-                {insight.drill_link && (
-                  <Button variant="outline" size="sm" asChild>
-                    <a
-                      href={insight.drill_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      Practice Drill Video
-                    </a>
-                  </Button>
+                {insight.recommendation && (
+                  <div className="rounded-lg bg-accent/10 p-4">
+                    <h4 className="font-semibold text-sm mb-2 text-accent">
+                      Recommendation
+                    </h4>
+                    <p className="text-sm">{insight.recommendation}</p>
+                  </div>
                 )}
               </Card>
             );
