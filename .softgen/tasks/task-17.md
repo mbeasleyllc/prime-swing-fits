@@ -15,19 +15,19 @@ Comprehensive testing, performance optimization, and mobile responsiveness polis
 
 ## Checklist
 ### Data Validation Testing
-- [ ] Test CSV import with 10 different formats (Excel, Google Sheets, TrackMan, etc.)
-- [ ] Validate metric ranges catch all impossible values
+- [x] Test CSV import with 10 different formats (Excel, Google Sheets, TrackMan, etc.)
+- [x] Validate metric ranges catch all impossible values
 - [ ] Test missing data scenarios (partial metrics)
-- [ ] Verify graceful error messages for corrupt files
+- [x] Verify graceful error messages for corrupt files
 - [ ] Test concurrent imports (race conditions)
 
 ### Performance Optimization
-- [ ] Add database indexes on `user_id` and `session_date`
-- [ ] Implement pagination (20 sessions per page)
+- [x] Add database indexes on `user_id` and `session_date`
+- [x] Implement pagination (20 sessions per page)
 - [ ] Optimize chart queries (weekly aggregates for 1yr+ data)
 - [ ] Test dashboard load time with 1000+ sessions
 - [ ] Verify charts render smoothly with 500+ data points
-- [ ] Add loading skeletons for slow queries
+- [x] Add loading skeletons for slow queries
 
 ### Mobile Responsiveness
 - [ ] Test all charts on mobile (375px, 768px, 1024px)

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/database.types";
 
@@ -355,6 +356,12 @@ export function ProgressCharts() {
           <CardTitle>Progress Charts</CardTitle>
           <CardDescription>Loading your swing data...</CardDescription>
         </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-[300px] w-full" />
+          </div>
+        </CardContent>
       </Card>
     );
   }

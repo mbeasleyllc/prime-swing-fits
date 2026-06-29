@@ -79,26 +79,38 @@ export function CSVImport({ onImportComplete, userId }: CSVImportProps) {
       complete: (results) => {
         const data = results.data as ParsedRow[];
         
+        // Detect file format and show helpful message
+        const headers = results.meta.fields || [];
+        let detectedFormat = "Custom Format";
+        
+        if (headers.some(h => h.toLowerCase().includes("trackman"))) {
+          detectedFormat = "TrackMan";
+        } else if (headers.some(h => h.toLowerCase().includes("flightscope"))) {
+          detectedFormat = "FlightScope";
+        } else if (headers.some(h => h.toLowerCase().includes("garmin"))) {
+          detectedFormat = "Garmin";
+        }
+        
         // Auto-detect and normalize column names
         const normalizedData = data.map((row, index) => ({
-          shot_number: row.shot_number || row.shot || index + 1,
-          club_used: row.club_used || row.club || row.club_type,
-          ball_speed: row.ball_speed || row.ballspeed,
-          club_speed: row.club_speed || row.clubspeed,
-          carry_distance: row.carry_distance || row.carry,
-          total_distance: row.total_distance || row.total,
-          launch_angle: row.launch_angle || row.launch,
-          spin_rate: row.spin_rate || row.spin,
+          shot_number: row.shot_number || row.shot || row.shot_no || row["#"] || index + 1,
+          club_used: row.club_used || row.club || row.club_type || row.club_name,
+          ball_speed: row.ball_speed || row.ballspeed || row.ball_speed_mph || row["ball speed"],
+          club_speed: row.club_speed || row.clubspeed || row.club_speed_mph || row["club speed"],
+          carry_distance: row.carry_distance || row.carry || row.carry_yds || row["carry (yds)"],
+          total_distance: row.total_distance || row.total || row.total_yds || row["total (yds)"],
+          launch_angle: row.launch_angle || row.launch || row.launch_deg || row["launch angle"],
+          spin_rate: row.spin_rate || row.spin || row.spin_rpm || row["spin rate"],
           smash_factor: row.smash_factor || row.smash,
-          attack_angle: row.attack_angle,
-          club_path: row.club_path,
-          face_angle: row.face_angle,
-          launch_direction: row.launch_direction,
-          spin_axis: row.spin_axis,
-          max_height: row.max_height,
-          landing_angle: row.landing_angle,
-          dynamic_loft: row.dynamic_loft,
-          shot_type: row.shot_type,
+          attack_angle: row.attack_angle || row.attack,
+          club_path: row.club_path || row.path,
+          face_angle: row.face_angle || row.face,
+          launch_direction: row.launch_direction || row.direction,
+          spin_axis: row.spin_axis || row.axis,
+          max_height: row.max_height || row.height || row.apex,
+          landing_angle: row.landing_angle || row.landing,
+          dynamic_loft: row.dynamic_loft || row.loft,
+          shot_type: row.shot_type || row.type,
         }));
 
         const preview = normalizedData.slice(0, 5);
@@ -106,7 +118,11 @@ export function CSVImport({ onImportComplete, userId }: CSVImportProps) {
         setFullData(normalizedData);
 
         const validation = validateBatch(normalizedData);
-        setValidationResult(validation);
+        setValidationResult({
+          ...validation,
+          detectedFormat,
+          totalRows: normalizedData.length,
+        });
       },
     });
   }, []);
@@ -260,24 +276,34 @@ export function CSVImport({ onImportComplete, userId }: CSVImportProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           {validationResult && (
-            <div className="flex gap-3">
-              <Badge variant={validationResult.invalidCount > 0 ? "destructive" : "default"}>
-                <CheckCircle2 className="w-3 h-3 mr-1" />
-                {validationResult.validCount} Valid
-              </Badge>
-              {validationResult.invalidCount > 0 && (
-                <Badge variant="destructive">
-                  <AlertCircle className="w-3 h-3 mr-1" />
-                  {validationResult.invalidCount} Invalid
+            <>
+              <div className="flex items-center gap-2 mb-3">
+                <Badge variant="outline">
+                  {validationResult.detectedFormat || "Custom Format"}
                 </Badge>
-              )}
-              {validationResult.warningCount > 0 && (
-                <Badge variant="secondary">
-                  <AlertCircle className="w-3 h-3 mr-1" />
-                  {validationResult.warningCount} Warnings
+                <span className="text-sm text-muted-foreground">
+                  {validationResult.totalRows || fullData.length} total rows
+                </span>
+              </div>
+              <div className="flex gap-3">
+                <Badge variant={validationResult.invalidCount > 0 ? "destructive" : "default"}>
+                  <CheckCircle2 className="w-3 h-3 mr-1" />
+                  {validationResult.validCount} Valid
                 </Badge>
-              )}
-            </div>
+                {validationResult.invalidCount > 0 && (
+                  <Badge variant="destructive">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationResult.invalidCount} Invalid
+                  </Badge>
+                )}
+                {validationResult.warningCount > 0 && (
+                  <Badge variant="secondary">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {validationResult.warningCount} Warnings
+                  </Badge>
+                )}
+              </div>
+            </>
           )}
 
           <div>
@@ -329,7 +355,24 @@ export function CSVImport({ onImportComplete, userId }: CSVImportProps) {
             <Alert variant="destructive">
               <AlertCircle className="w-4 h-4" />
               <AlertDescription>
-                {validationResult.invalidCount} rows have validation errors. Review data before importing.
+                <div className="font-medium mb-2">
+                  {validationResult.invalidCount} rows have validation errors:
+                </div>
+                <ul className="text-sm space-y-1 mt-2">
+                  {validationResult.results
+                    .filter((r: any) => !r.result.isValid)
+                    .slice(0, 3)
+                    .map((r: any, idx: number) => (
+                      <li key={idx}>
+                        Shot {r.data.shot_number}: {r.result.errors.join(", ")}
+                      </li>
+                    ))}
+                  {validationResult.invalidCount > 3 && (
+                    <li className="text-muted-foreground italic">
+                      ...and {validationResult.invalidCount - 3} more errors
+                    </li>
+                  )}
+                </ul>
               </AlertDescription>
             </Alert>
           )}
