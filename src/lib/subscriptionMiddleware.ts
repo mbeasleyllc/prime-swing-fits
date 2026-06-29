@@ -1,4 +1,4 @@
-import { createClient } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface SwingSubscriptionAccess {
   hasAccess: boolean;
@@ -14,8 +14,6 @@ export interface SwingSubscriptionAccess {
 export async function checkSwingAnalyticsAccess(
   userId: string
 ): Promise<SwingSubscriptionAccess> {
-  const supabase = createClient();
-
   // Get user's main subscription tier
   const { data: user, error: userError } = await supabase
     .from("users")
