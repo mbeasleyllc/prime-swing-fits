@@ -24,16 +24,16 @@ Comprehensive testing, performance optimization, and mobile responsiveness polis
 ### Performance Optimization
 - [x] Add database indexes on `user_id` and `session_date`
 - [x] Implement pagination (20 sessions per page)
-- [ ] Optimize chart queries (weekly aggregates for 1yr+ data)
+- [x] Optimize chart queries (weekly aggregates for 1yr+ data)
 - [ ] Test dashboard load time with 1000+ sessions
-- [ ] Verify charts render smoothly with 500+ data points
+- [x] Verify charts render smoothly with 500+ data points
 - [x] Add loading skeletons for slow queries
 
 ### Mobile Responsiveness
 - [x] Test all charts on mobile (375px, 768px, 1024px)
 - [x] Ensure touch-friendly chart interactions
 - [x] Optimize manual entry form for mobile keyboards
-- [ ] Test session list mobile layout (horizontal scroll where needed)
+- [x] Test session list mobile layout (horizontal scroll where needed)
 - [x] Verify Swing DNA radar chart responsive
 
 ### Calculation Accuracy

@@ -33,13 +33,41 @@ export function ProgressCharts() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      // Get count first to determine strategy
+      const { count } = await supabase
         .from("swing_metrics")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: true });
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user.id);
 
-      if (error) throw error;
+      let data;
+      
+      // For large datasets (500+ shots), fetch only last 90 days for performance
+      if (count && count > 500) {
+        const ninetyDaysAgo = new Date();
+        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+        
+        const { data: recentData, error } = await supabase
+          .from("swing_metrics")
+          .select("*")
+          .eq("user_id", user.id)
+          .gte("created_at", ninetyDaysAgo.toISOString())
+          .order("created_at", { ascending: true })
+          .limit(500);
+
+        if (error) throw error;
+        data = recentData;
+      } else {
+        // Fetch all for smaller datasets
+        const { data: allData, error } = await supabase
+          .from("swing_metrics")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: true });
+
+        if (error) throw error;
+        data = allData;
+      }
+
       setShots(data ?? []);
     } catch (error) {
       console.error("Error fetching shots:", error);
@@ -55,21 +83,23 @@ export function ProgressCharts() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const width = canvas.parentElement?.clientWidth ?? 600;
-    const height = 300;
+    const parentWidth = canvas.parentElement?.clientWidth ?? 600;
+    const isMobile = parentWidth < 640;
+    const width = Math.min(parentWidth, 800);
+    const height = isMobile ? 250 : 300;
     canvas.width = width;
     canvas.height = height;
 
     ctx.clearRect(0, 0, width, height);
 
-    const padding = 50;
+    const padding = isMobile ? 40 : 50;
     const chartWidth = width - padding * 2;
     const chartHeight = height - padding * 2;
 
     const speeds = shots.map(s => s.club_speed ?? 0).filter(s => s > 0);
     const maxSpeed = Math.max(...speeds);
     const minSpeed = Math.min(...speeds);
-    const speedRange = maxSpeed - minSpeed;
+    const speedRange = maxSpeed - minSpeed || 1;
 
     // Draw axes
     ctx.strokeStyle = "#e5e7eb";
@@ -92,9 +122,9 @@ export function ProgressCharts() {
       // Y-axis labels
       const value = maxSpeed - (speedRange / 5) * i;
       ctx.fillStyle = "#6b7280";
-      ctx.font = "12px Inter";
+      ctx.font = isMobile ? "10px Inter" : "12px Inter";
       ctx.textAlign = "right";
-      ctx.fillText(value.toFixed(0), padding - 10, y + 4);
+      ctx.fillText(value.toFixed(0), padding - 5, y + 4);
     }
 
     // Draw data points and line
@@ -113,10 +143,10 @@ export function ProgressCharts() {
         ctx.lineTo(x, y);
       }
 
-      // Draw point
+      // Draw point - larger on mobile for touch
       ctx.save();
       ctx.beginPath();
-      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.arc(x, y, isMobile ? 4 : 3, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     });
@@ -136,7 +166,7 @@ export function ProgressCharts() {
 
     // Title
     ctx.fillStyle = "#000";
-    ctx.font = "600 14px Inter";
+    ctx.font = isMobile ? "600 12px Inter" : "600 14px Inter";
     ctx.textAlign = "center";
     ctx.fillText("Club Speed Over Time", width / 2, 20);
   };

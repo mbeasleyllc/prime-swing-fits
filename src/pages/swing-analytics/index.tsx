@@ -415,64 +415,70 @@ export default function SwingAnalyticsPage() {
                 </div>
               ) : (
                 <>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Club</TableHead>
-                        <TableHead>Device</TableHead>
-                        <TableHead className="text-right">Shots</TableHead>
-                        <TableHead className="text-right">Avg Speed</TableHead>
-                        <TableHead className="text-right">Avg Distance</TableHead>
-                        <TableHead></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {sessions.map((session) => (
-                        <TableRow key={session.id}>
-                          <TableCell>{formatDate(session.session_date)}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{session.session_name || "Session"}</Badge>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground text-sm">
-                            {session.device_type}
-                          </TableCell>
-                          <TableCell className="text-right">{session.total_shots}</TableCell>
-                          <TableCell className="text-right">
-                            {session.avg_club_speed ? `${session.avg_club_speed.toFixed(1)} mph` : "-"}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {session.avg_carry_distance ? `${session.avg_carry_distance.toFixed(0)} yds` : "-"}
-                          </TableCell>
-                          <TableCell>
-                            <Button variant="ghost" size="sm" asChild>
-                              <Link href={`/swing-analytics/${session.id}`}>
-                                <Eye className="w-4 h-4" />
-                              </Link>
-                            </Button>
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="min-w-[100px]">Date</TableHead>
+                          <TableHead className="min-w-[120px]">Club</TableHead>
+                          <TableHead className="min-w-[100px]">Device</TableHead>
+                          <TableHead className="text-right min-w-[60px]">Shots</TableHead>
+                          <TableHead className="text-right min-w-[100px]">Avg Speed</TableHead>
+                          <TableHead className="text-right min-w-[110px]">Avg Distance</TableHead>
+                          <TableHead className="min-w-[60px]"></TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {sessions.map((session) => (
+                          <TableRow key={session.id} className="touch-manipulation">
+                            <TableCell className="font-medium">{formatDate(session.session_date)}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{session.session_name || "Session"}</Badge>
+                            </TableCell>
+                            <TableCell className="text-muted-foreground text-sm">
+                              {session.device_type}
+                            </TableCell>
+                            <TableCell className="text-right font-medium">{session.total_shots}</TableCell>
+                            <TableCell className="text-right">
+                              {session.avg_club_speed ? `${session.avg_club_speed.toFixed(1)} mph` : "-"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {session.avg_carry_distance ? `${session.avg_carry_distance.toFixed(0)} yds` : "-"}
+                            </TableCell>
+                            <TableCell>
+                              <Button variant="ghost" size="sm" className="h-9 w-9 p-0" asChild>
+                                <Link href={`/swing-analytics/${session.id}`}>
+                                  <Eye className="w-4 h-4" />
+                                </Link>
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
 
                   {/* Pagination */}
                   {totalPages > 1 && (
-                    <div className="flex justify-between items-center mt-4">
+                    <div className="flex justify-between items-center mt-4 gap-2">
                       <Button
                         variant="outline"
+                        size="sm"
                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                         disabled={currentPage === 1}
+                        className="min-h-[44px]"
                       >
                         Previous
                       </Button>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-muted-foreground whitespace-nowrap">
                         Page {currentPage} of {totalPages}
                       </span>
                       <Button
                         variant="outline"
+                        size="sm"
                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                         disabled={currentPage === totalPages}
+                        className="min-h-[44px]"
                       >
                         Next
                       </Button>
