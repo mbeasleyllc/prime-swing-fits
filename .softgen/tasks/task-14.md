@@ -1,6 +1,6 @@
 ---
 title: Gamefication & Goals
-status: todo
+status: done
 ---
 
 ## Notes
