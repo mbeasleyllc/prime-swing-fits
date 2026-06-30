@@ -1465,10 +1465,410 @@ function SwingProfileSection({
   );
 }
 
-function PreferencesSection({ profile, saving, onSave }: any) {
-  return <div>Preferences section placeholder</div>;
+function PreferencesSection({
+  profile,
+  saving,
+  onSave,
+}: {
+  profile: Partial<UserProfile>;
+  saving: boolean;
+  onSave: (data: Partial<UserProfile>) => void;
+}) {
+  const [formData, setFormData] = useState({
+    primary_goals: profile.primary_goals || [],
+    club_budget: profile.club_budget || "",
+    preferred_brands: profile.preferred_brands || [],
+    club_priorities: profile.club_priorities || [],
+    fitting_preferences: profile.fitting_preferences || "",
+  });
+
+  useEffect(() => {
+    setFormData({
+      primary_goals: profile.primary_goals || [],
+      club_budget: profile.club_budget || "",
+      preferred_brands: profile.preferred_brands || [],
+      club_priorities: profile.club_priorities || [],
+      fitting_preferences: profile.fitting_preferences || "",
+    });
+  }, [profile]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({
+      primary_goals: formData.primary_goals.length > 0 ? formData.primary_goals : null,
+      club_budget: formData.club_budget || null,
+      preferred_brands: formData.preferred_brands.length > 0 ? formData.preferred_brands : null,
+      club_priorities: formData.club_priorities.length > 0 ? formData.club_priorities : null,
+      fitting_preferences: formData.fitting_preferences || null,
+    } as Partial<UserProfile>);
+  };
+
+  const goalOptions = [
+    { value: "lower_scores", label: "Lower My Scores", description: "Overall game improvement focus" },
+    { value: "more_distance", label: "More Distance", description: "Maximize driving distance" },
+    { value: "better_accuracy", label: "Better Accuracy", description: "Hit more fairways and greens" },
+    { value: "straighter_shots", label: "Straighter Shots", description: "Eliminate hooks and slices" },
+    { value: "more_forgiveness", label: "More Forgiveness", description: "Reduce penalty on mis-hits" },
+    { value: "consistency", label: "More Consistency", description: "Predictable shot patterns" },
+  ];
+
+  const brandOptions = [
+    "TaylorMade", "Callaway", "Titleist", "Ping", "Mizuno", "Cobra", 
+    "Srixon", "Cleveland", "PXG", "Wilson", "Honma", "No Preference"
+  ];
+
+  const priorityOptions = [
+    { value: "forgiveness", label: "Forgiveness", description: "Reduce penalty on mis-hits" },
+    { value: "distance", label: "Distance", description: "Maximum yardage potential" },
+    { value: "accuracy", label: "Accuracy", description: "Shot direction control" },
+    { value: "feel", label: "Feel", description: "Premium sound and feedback" },
+    { value: "workability", label: "Workability", description: "Shot shaping ability" },
+    { value: "looks", label: "Looks", description: "Visual appeal at address" },
+  ];
+
+  const toggleGoal = (goal: string) => {
+    setFormData(prev => ({
+      ...prev,
+      primary_goals: prev.primary_goals.includes(goal)
+        ? prev.primary_goals.filter(g => g !== goal)
+        : [...prev.primary_goals, goal]
+    }));
+  };
+
+  const toggleBrand = (brand: string) => {
+    setFormData(prev => ({
+      ...prev,
+      preferred_brands: prev.preferred_brands.includes(brand)
+        ? prev.preferred_brands.filter(b => b !== brand)
+        : [...prev.preferred_brands, brand]
+    }));
+  };
+
+  const togglePriority = (priority: string) => {
+    setFormData(prev => ({
+      ...prev,
+      club_priorities: prev.club_priorities.includes(priority)
+        ? prev.club_priorities.filter(p => p !== priority)
+        : [...prev.club_priorities, priority]
+    }));
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Target className="h-5 w-5 text-accent" />
+          Preferences & Goals
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div>
+            <Label className="text-base font-semibold mb-3 block">
+              Primary Goals (select all that apply)
+            </Label>
+            <p className="text-sm text-muted-foreground mb-4">
+              What do you want to achieve with your new clubs? This helps us prioritize recommendations.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {goalOptions.map((goal) => (
+                <div
+                  key={goal.value}
+                  className={`flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors ${
+                    formData.primary_goals.includes(goal.value)
+                      ? "border-accent bg-accent/10"
+                      : "border-border hover:bg-muted/50"
+                  }`}
+                  onClick={() => toggleGoal(goal.value)}
+                >
+                  <Checkbox
+                    checked={formData.primary_goals.includes(goal.value)}
+                    onCheckedChange={() => toggleGoal(goal.value)}
+                    className="mt-0.5"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium text-foreground">{goal.label}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{goal.description}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="club_budget" className="text-base font-semibold">
+              Club Budget per Club
+            </Label>
+            <p className="text-sm text-muted-foreground mb-3">
+              Helps us recommend clubs in your price range. We'll show options at all price points.
+            </p>
+            <Select
+              value={formData.club_budget}
+              onValueChange={(value) => setFormData({ ...formData, club_budget: value })}
+            >
+              <SelectTrigger id="club_budget">
+                <SelectValue placeholder="Select your budget range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="under_200">Under $200 (Value/Game Improvement)</SelectItem>
+                <SelectItem value="200-400">$200–$400 (Mid-Range/Performance)</SelectItem>
+                <SelectItem value="400-600">$400–$600 (Premium/Tour Level)</SelectItem>
+                <SelectItem value="over_600">$600+ (Ultra-Premium/Custom)</SelectItem>
+                <SelectItem value="no_preference">No Preference (Show All)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label className="text-base font-semibold mb-3 block">
+              Preferred Brands (optional)
+            </Label>
+            <p className="text-sm text-muted-foreground mb-4">
+              Select brands you trust or have experience with. We'll prioritize these but show all quality options.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+              {brandOptions.map((brand) => (
+                <div
+                  key={brand}
+                  className={`flex items-center space-x-2 p-3 border rounded-lg cursor-pointer transition-colors ${
+                    formData.preferred_brands.includes(brand)
+                      ? "border-accent bg-accent/10"
+                      : "border-border hover:bg-muted/50"
+                  }`}
+                  onClick={() => toggleBrand(brand)}
+                >
+                  <Checkbox
+                    checked={formData.preferred_brands.includes(brand)}
+                    onCheckedChange={() => toggleBrand(brand)}
+                  />
+                  <Label className="font-medium cursor-pointer text-sm">{brand}</Label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-base font-semibold mb-3 block">
+              Club Priorities (rank top 3)
+            </Label>
+            <p className="text-sm text-muted-foreground mb-4">
+              What matters most to you in a golf club? Select your top 3 priorities in order of importance.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {priorityOptions.map((priority) => (
+                <div
+                  key={priority.value}
+                  className={`flex items-start space-x-3 p-4 border rounded-lg cursor-pointer transition-colors ${
+                    formData.club_priorities.includes(priority.value)
+                      ? "border-accent bg-accent/10"
+                      : "border-border hover:bg-muted/50"
+                  }`}
+                  onClick={() => togglePriority(priority.value)}
+                >
+                  <Checkbox
+                    checked={formData.club_priorities.includes(priority.value)}
+                    onCheckedChange={() => togglePriority(priority.value)}
+                    className="mt-0.5"
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium text-foreground">{priority.label}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{priority.description}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="fitting_preferences" className="text-base font-semibold">
+              Additional Notes (optional)
+            </Label>
+            <p className="text-sm text-muted-foreground mb-3">
+              Any other preferences, concerns, or information that might help with your fitting?
+            </p>
+            <textarea
+              id="fitting_preferences"
+              value={formData.fitting_preferences}
+              onChange={(e) => setFormData({ ...formData, fitting_preferences: e.target.value })}
+              placeholder="Example: I have a bad back so I need lighter clubs, or I prefer blade-style irons..."
+              className="w-full min-h-[100px] p-3 border rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-accent"
+            />
+          </div>
+
+          <div className="pt-4 border-t">
+            <Button 
+              type="submit" 
+              disabled={saving} 
+              className="w-full bg-gold text-gold-foreground hover:bg-gold/90"
+            >
+              {saving ? "Saving..." : "Save Preferences"}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
 }
 
-function FittingHistorySection({ sessions }: any) {
-  return <div>Fitting history section placeholder</div>;
+function FittingHistorySection({ sessions }: { sessions: FittingSession[] }) {
+  const router = useRouter();
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "—";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
+    });
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <Badge className="bg-accent text-white">Completed</Badge>;
+      case "in_progress":
+        return <Badge className="bg-blue-500 text-white">In Progress</Badge>;
+      case "abandoned":
+        return <Badge variant="outline">Abandoned</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  if (sessions.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart className="h-5 w-5 text-accent" />
+            Fitting History
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-12">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+              <FileText className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">No Fitting History</h3>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              You haven't completed any club fittings yet. Start your first fitting to get personalized recommendations.
+            </p>
+            <Button
+              onClick={() => router.push("/fitting/new")}
+              className="bg-gold text-gold-foreground hover:bg-gold/90"
+            >
+              Start New Fitting
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <BarChart className="h-5 w-5 text-accent" />
+            Fitting History
+          </CardTitle>
+          <Button
+            onClick={() => router.push("/fitting/new")}
+            size="sm"
+            className="bg-accent text-white hover:bg-accent/90"
+          >
+            New Fitting
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date Completed</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="hidden md:table-cell">Clubs Fitted</TableHead>
+                <TableHead className="hidden lg:table-cell">Primary Goal</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessions.map((session) => (
+                <TableRow key={session.id}>
+                  <TableCell className="font-medium">
+                    {formatDate(session.completed_at)}
+                  </TableCell>
+                  <TableCell>{getStatusBadge(session.status)}</TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <div className="text-sm text-muted-foreground">
+                      Full Bag
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell">
+                    <div className="text-sm text-muted-foreground capitalize">
+                      {session.primary_goal?.replace(/_/g, " ") || "—"}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => router.push(`/fitting/${session.id}/results`)}
+                            >
+                              <FileText className="h-4 w-4" />
+                              <span className="ml-2 hidden sm:inline">View</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>View fitting results</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => router.push(`/fitting/${session.id}/report`)}
+                            >
+                              <Download className="h-4 w-4" />
+                              <span className="ml-2 hidden sm:inline">PDF</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Download PDF report</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {sessions.length > 0 && (
+          <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+            <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
+              <Info className="h-4 w-4 text-accent" />
+              Pro Tip
+            </h4>
+            <p className="text-sm text-muted-foreground">
+              We recommend getting re-fitted every 2-3 years, or sooner if your swing characteristics change significantly. 
+              Your swing speed, ball flight, and goals can evolve with practice and experience.
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
