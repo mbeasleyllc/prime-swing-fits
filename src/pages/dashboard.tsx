@@ -11,7 +11,11 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Play, Eye, Download, Clock, CheckCircle2, Target, Trophy, TrendingUp, Lightbulb, Activity, ArrowUp, ArrowDown, Minus, Gauge, Share2 } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Play, Eye, Download, Clock, CheckCircle2, Target, Trophy, TrendingUp, Lightbulb, Activity, ArrowUp, ArrowDown, Minus, Gauge, Share2, Settings, X, RotateCcw } from "lucide-react";
 import { BadgeShelf } from "@/components/gamification/BadgeShelf";
 import { GoalsList } from "@/components/gamification/GoalsList";
 import { InsightsPanel } from "@/components/gamification/InsightsPanel";
@@ -49,6 +53,9 @@ export default function Dashboard() {
     }>;
     fittingDate: string | null;
   } | null>(null);
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
+  const [clubPreferences, setClubPreferences] = useState<Record<string, { name: string; flex: string; loft: string }>>({});
+  const [isSavingPreferences, setIsSavingPreferences] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -360,6 +367,52 @@ export default function Dashboard() {
     return specs[clubType] || specs["Driver"];
   };
 
+  const handleSavePreferences = async () => {
+    if (!user || !recommendedBag) return;
+    
+    setIsSavingPreferences(true);
+    try {
+      // Save preferences to database (localStorage for now until schema is added)
+      localStorage.setItem(`club_preferences_${user.id}`, JSON.stringify(clubPreferences));
+      
+      // Merge preferences with recommendations
+      const updatedBag = {
+        ...recommendedBag,
+        clubs: recommendedBag.clubs.map(club => ({
+          ...club,
+          ...(clubPreferences[club.type] || {}),
+        })),
+      };
+      
+      setRecommendedBag(updatedBag);
+      setPreferencesOpen(false);
+    } catch (error) {
+      console.error("Error saving preferences:", error);
+    } finally {
+      setIsSavingPreferences(false);
+    }
+  };
+
+  const handleResetPreferences = () => {
+    if (!user) return;
+    localStorage.removeItem(`club_preferences_${user.id}`);
+    setClubPreferences({});
+    // Reload bag without preferences
+    if (recommendedBag) {
+      window.location.reload();
+    }
+  };
+
+  const updateClubPreference = (clubType: string, field: string, value: string) => {
+    setClubPreferences(prev => ({
+      ...prev,
+      [clubType]: {
+        ...(prev[clubType] || {}),
+        [field]: value,
+      },
+    }));
+  };
+
   if (isLoading) {
     return (
       <ProtectedRoute>
@@ -476,12 +529,108 @@ export default function Dashboard() {
                       <Target className="h-5 w-5 text-gold" />
                       Your Recommended Bag
                     </CardTitle>
-                    {recommendedBag && (
-                      <Button variant="outline" size="sm" onClick={handleShareBag}>
-                        <Share2 className="h-4 w-4 mr-2" />
-                        Share My Bag
-                      </Button>
-                    )}
+                    <div className="flex gap-2">
+                      {recommendedBag && (
+                        <>
+                          <Dialog open={preferencesOpen} onOpenChange={setPreferencesOpen}>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Settings className="h-4 w-4 mr-2" />
+                                Customize
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                  <Settings className="h-5 w-5 text-gold" />
+                                  Customize Your Bag
+                                </DialogTitle>
+                                <DialogDescription>
+                                  Override any club recommendations below. Your preferences will be saved.
+                                </DialogDescription>
+                              </DialogHeader>
+                              
+                              <div className="space-y-6 py-4">
+                                {recommendedBag.clubs.map((club) => {
+                                  const pref = clubPreferences[club.type] || {};
+                                  return (
+                                    <div key={club.type} className="p-4 border rounded-lg space-y-4">
+                                      <h4 className="font-semibold text-sm text-gold">{club.type}</h4>
+                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="space-y-2">
+                                          <Label htmlFor={`${club.type}-name`}>Club Model</Label>
+                                          <Input
+                                            id={`${club.type}-name`}
+                                            placeholder={club.name}
+                                            defaultValue={pref.name || ""}
+                                            onChange={(e) => updateClubPreference(club.type, "name", e.target.value)}
+                                          />
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label htmlFor={`${club.type}-flex`}>Shaft Flex</Label>
+                                          <Select
+                                            defaultValue={pref.flex || club.flex}
+                                            onValueChange={(value) => updateClubPreference(club.type, "flex", value)}
+                                          >
+                                            <SelectTrigger id={`${club.type}-flex`}>
+                                              <SelectValue placeholder={club.flex} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="Lady">Lady</SelectItem>
+                                              <SelectItem value="Senior">Senior</SelectItem>
+                                              <SelectItem value="Regular">Regular</SelectItem>
+                                              <SelectItem value="Stiff">Stiff</SelectItem>
+                                              <SelectItem value="X-Stiff">X-Stiff</SelectItem>
+                                              <SelectItem value="Wedge">Wedge</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label htmlFor={`${club.type}-loft`}>Loft</Label>
+                                          <Input
+                                            id={`${club.type}-loft`}
+                                            placeholder={club.loft}
+                                            defaultValue={pref.loft || ""}
+                                            onChange={(e) => updateClubPreference(club.type, "loft", e.target.value)}
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              <div className="flex justify-between gap-3 pt-4 border-t">
+                                <Button
+                                  variant="outline"
+                                  onClick={handleResetPreferences}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <RotateCcw className="h-4 w-4 mr-2" />
+                                  Reset to Recommendations
+                                </Button>
+                                <div className="flex gap-2">
+                                  <Button variant="outline" onClick={() => setPreferencesOpen(false)}>
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    onClick={handleSavePreferences}
+                                    disabled={isSavingPreferences}
+                                    className="bg-gold hover:bg-gold/90"
+                                  >
+                                    {isSavingPreferences ? "Saving..." : "Save Preferences"}
+                                  </Button>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                          <Button variant="outline" size="sm" onClick={handleShareBag}>
+                            <Share2 className="h-4 w-4 mr-2" />
+                            Share
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
