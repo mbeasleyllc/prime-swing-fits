@@ -5,23 +5,25 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Zap, Star, Crown } from "lucide-react";
+import { Check, Zap, Star, Crown, TrendingUp, Trophy, Target, Database } from "lucide-react";
 
 export default function Pricing() {
   const plans = [
     {
       name: "Entry",
       price: "$20",
-      description: "Single Club",
+      period: "one-time",
+      description: "Single Club Fitting",
       icon: Zap,
       features: [
-        "Club Length / Grip Size (Static Specifications)",
-        "Lie Angle",
-        "Shaft Flex Baseline",
-        "Set Composition & Gapping",
-        "Recommendations on clubs and accessories to buy (budget-based)",
-        "Compare Equipment tool access",
-        "Golf ball recommendations",
+        "Single club recommendation",
+        "Club length & grip size",
+        "Lie angle analysis",
+        "Shaft flex baseline",
+        "Basic equipment comparison",
+        "Golf ball recommendation",
+        "Downloadable PDF report",
+        "Profile management",
       ],
       cta: "Get Started",
       popular: false,
@@ -32,17 +34,19 @@ export default function Pricing() {
     {
       name: "Core",
       price: "$59",
-      description: "Full Bag",
+      period: "one-time",
+      description: "Full Bag Fitting",
       icon: Check,
       features: [
-        "Club Length / Grip Size (Static Specifications)",
-        "Lie Angle",
-        "Shaft Flex Baseline",
-        "Set Composition & Gapping",
-        "Recommendations on clubs and accessories to buy (budget-based)",
-        "Complete bag analysis",
-        "Compare Equipment tool access",
-        "Golf ball recommendations",
+        "Everything in Entry, plus:",
+        "Complete 14-club bag analysis",
+        "Set composition & gapping",
+        "Club-to-club optimization",
+        "Budget-based recommendations",
+        "Advanced equipment comparison",
+        "Golf ball matching",
+        "Fitting history tracking",
+        "Personalized dashboard",
       ],
       cta: "Start Fitting",
       popular: true,
@@ -53,17 +57,19 @@ export default function Pricing() {
     {
       name: "Premium",
       price: "$99",
-      description: "Full Bag Fitting",
+      period: "one-time",
+      description: "Advanced Full Bag",
       icon: Star,
       features: [
         "Everything in Core, plus:",
-        "Swing data required",
+        "Swing data integration required",
         "Advanced shaft optimization",
         "Launch/spin/flight modeling",
         "Face angle analysis",
-        "Detailed performance predictions",
-        "Advanced Compare Equipment analytics",
-        "Premium golf ball matching",
+        "Performance predictions",
+        "750+ club database access",
+        "650+ ball database access",
+        "Priority support",
       ],
       cta: "Go Premium",
       popular: false,
@@ -74,23 +80,65 @@ export default function Pricing() {
     {
       name: "Premium Plus",
       price: "$220",
+      period: "one-time",
       description: "Complete Pro Setup",
       icon: Crown,
       features: [
         "Everything in Premium, plus:",
         "Golf Daddy launch monitor included",
-        "Professional-grade swing analytics",
+        "Professional-grade analytics",
         "Real-time ball flight data",
         "Detailed performance reports",
-        "Priority support",
-        "Advanced Compare Equipment analytics",
         "Tour-level ball optimization",
+        "6 months Swing Analytics FREE",
+        "VIP priority support",
       ],
       cta: "Get Pro Setup",
       popular: false,
-      color: "text-primary",
-      bgColor: "bg-primary/5",
-      borderColor: "border-primary/20",
+      color: "text-gold",
+      bgColor: "bg-gold/5",
+      borderColor: "border-gold/20",
+    },
+  ];
+
+  const addOns = [
+    {
+      name: "Swing Analytics",
+      price: "$9.99",
+      period: "per month",
+      description: "Track & Improve Your Game",
+      icon: TrendingUp,
+      features: [
+        "Swing DNA radar visualization",
+        "Progress charts & KPI tracking",
+        "Session history management",
+        "CSV import from launch monitors",
+        "Manual shot entry",
+        "30-day trend analysis",
+        "Consistency score metrics",
+        "Device integrations (TrackMan, FlightScope, Garmin)",
+      ],
+      color: "text-accent",
+      borderColor: "border-accent",
+    },
+    {
+      name: "Gamification",
+      price: "FREE",
+      period: "all tiers",
+      description: "Stay Motivated & Engaged",
+      icon: Trophy,
+      features: [
+        "Achievement badge system",
+        "Goal setting & tracking",
+        "Weekly performance summaries",
+        "Milestone celebrations",
+        "Progress streaks",
+        "Personal records tracking",
+        "Motivational insights",
+        "Community leaderboards (coming soon)",
+      ],
+      color: "text-success",
+      borderColor: "border-success",
     },
   ];
 
@@ -103,6 +151,10 @@ export default function Pricing() {
         <section className="py-16 md:py-24 bg-gradient-to-b from-primary/5 to-background">
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="text-center max-w-3xl mx-auto mb-16">
+              <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full mb-4">
+                <Target className="h-4 w-4" />
+                <span className="text-sm font-semibold">Professional Club Fitting Technology</span>
+              </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
                 Choose Your Perfect Plan
               </h1>
@@ -112,7 +164,7 @@ export default function Pricing() {
             </div>
 
             {/* Pricing Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-16">
               {plans.map((plan, index) => {
                 const IconComponent = plan.icon;
                 return (
@@ -140,6 +192,7 @@ export default function Pricing() {
                       <CardDescription className="text-sm">{plan.description}</CardDescription>
                       <div className="mt-4">
                         <span className="text-4xl font-bold text-foreground">{plan.price}</span>
+                        <span className="text-sm text-muted-foreground ml-2">{plan.period}</span>
                       </div>
                     </CardHeader>
 
@@ -168,10 +221,148 @@ export default function Pricing() {
               })}
             </div>
 
+            {/* Add-Ons Section */}
+            <div className="mt-16">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                  Premium Add-Ons & Features
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Enhance your experience with advanced analytics and gamification
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto">
+                {addOns.map((addon, index) => {
+                  const IconComponent = addon.icon;
+                  return (
+                    <Card
+                      key={index}
+                      className={`border-2 ${addon.borderColor} hover:shadow-xl transition-all duration-300`}
+                    >
+                      <CardHeader className="text-center pb-4">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center">
+                          <IconComponent className={`h-8 w-8 ${addon.color}`} />
+                        </div>
+                        <CardTitle className="text-2xl font-bold">{addon.name}</CardTitle>
+                        <CardDescription className="text-sm">{addon.description}</CardDescription>
+                        <div className="mt-4">
+                          <span className="text-4xl font-bold text-foreground">{addon.price}</span>
+                          <span className="text-sm text-muted-foreground ml-2">{addon.period}</span>
+                        </div>
+                      </CardHeader>
+
+                      <CardContent>
+                        <ul className="space-y-3">
+                          {addon.features.map((feature, featureIndex) => (
+                            <li key={featureIndex} className="flex items-start gap-2">
+                              <Check className={`h-5 w-5 mt-0.5 flex-shrink-0 ${addon.color}`} />
+                              <span className="text-sm text-muted-foreground">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+
+                        {addon.name === "Swing Analytics" && (
+                          <Button
+                            className="w-full mt-6 bg-accent hover:bg-accent/90"
+                            size="lg"
+                            asChild
+                          >
+                            <Link href="/swing-analytics">
+                              Learn More
+                            </Link>
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Feature Comparison Table */}
+            <div className="mt-20">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                  What's Included
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  Compare features across all plans
+                </p>
+              </div>
+
+              <Card className="overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-muted/50">
+                      <tr>
+                        <th className="text-left p-4 font-semibold">Feature</th>
+                        <th className="text-center p-4 font-semibold">Entry</th>
+                        <th className="text-center p-4 font-semibold bg-accent/10">Core</th>
+                        <th className="text-center p-4 font-semibold">Premium</th>
+                        <th className="text-center p-4 font-semibold">Premium Plus</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      <tr>
+                        <td className="p-4 font-medium">Club Recommendations</td>
+                        <td className="text-center p-4">1 Club</td>
+                        <td className="text-center p-4 bg-accent/5">Full Bag</td>
+                        <td className="text-center p-4">Full Bag</td>
+                        <td className="text-center p-4">Full Bag</td>
+                      </tr>
+                      <tr>
+                        <td className="p-4 font-medium">Equipment Database Access</td>
+                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
+                        <td className="text-center p-4 bg-accent/5"><Check className="h-5 w-5 text-success mx-auto" /></td>
+                        <td className="text-center p-4"><Database className="h-5 w-5 text-accent mx-auto" /></td>
+                        <td className="text-center p-4"><Database className="h-5 w-5 text-accent mx-auto" /></td>
+                      </tr>
+                      <tr>
+                        <td className="p-4 font-medium">Profile Management</td>
+                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
+                        <td className="text-center p-4 bg-accent/5"><Check className="h-5 w-5 text-success mx-auto" /></td>
+                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
+                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
+                      </tr>
+                      <tr>
+                        <td className="p-4 font-medium">Gamification & Badges</td>
+                        <td className="text-center p-4"><Trophy className="h-5 w-5 text-gold mx-auto" /></td>
+                        <td className="text-center p-4 bg-accent/5"><Trophy className="h-5 w-5 text-gold mx-auto" /></td>
+                        <td className="text-center p-4"><Trophy className="h-5 w-5 text-gold mx-auto" /></td>
+                        <td className="text-center p-4"><Trophy className="h-5 w-5 text-gold mx-auto" /></td>
+                      </tr>
+                      <tr>
+                        <td className="p-4 font-medium">Advanced Shaft Optimization</td>
+                        <td className="text-center p-4 text-muted-foreground">—</td>
+                        <td className="text-center p-4 bg-accent/5 text-muted-foreground">—</td>
+                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
+                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
+                      </tr>
+                      <tr>
+                        <td className="p-4 font-medium">Launch Monitor Included</td>
+                        <td className="text-center p-4 text-muted-foreground">—</td>
+                        <td className="text-center p-4 bg-accent/5 text-muted-foreground">—</td>
+                        <td className="text-center p-4 text-muted-foreground">—</td>
+                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
+                      </tr>
+                      <tr>
+                        <td className="p-4 font-medium">Swing Analytics (6 months)</td>
+                        <td className="text-center p-4 text-muted-foreground">—</td>
+                        <td className="text-center p-4 bg-accent/5 text-muted-foreground">—</td>
+                        <td className="text-center p-4 text-muted-foreground">—</td>
+                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </div>
+
             {/* Additional Info */}
             <div className="mt-16 text-center">
               <p className="text-muted-foreground mb-4">
-                All plans include access to our guided fitting wizard and personalized recommendations
+                All plans include our guided fitting wizard, downloadable PDF reports, and personalized recommendations
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button variant="outline" size="lg" asChild>
@@ -180,7 +371,7 @@ export default function Pricing() {
                   </Link>
                 </Button>
                 <Button variant="ghost" size="lg" asChild>
-                  <Link href="/">
+                  <Link href="/how-it-works">
                     Learn more about our process
                   </Link>
                 </Button>
@@ -209,12 +400,39 @@ export default function Pricing() {
 
               <Card>
                 <CardHeader>
+                  <CardTitle className="text-lg">What is Swing Analytics?</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Swing Analytics is our premium add-on ($9.99/month) that tracks your swing data over time with 
+                    professional visualizations, progress charts, and performance insights. Import data from launch monitors 
+                    or enter manually. Premium Plus includes 6 months FREE.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
                   <CardTitle className="text-lg">Do I need swing data for Premium plans?</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
                     Premium and Premium Plus tiers require swing data inputs for advanced modeling. Premium Plus includes 
-                    the Golf Daddy launch monitor to capture this data professionally.
+                    the Golf Daddy launch monitor to capture this data professionally. Without a launch monitor, you can 
+                    still get quality recommendations from Entry or Core plans.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">What is the Gamification system?</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Our gamification features (FREE on all plans) help you stay motivated with achievement badges, 
+                    goal tracking, weekly summaries, and progress streaks. Celebrate milestones and track personal records 
+                    as you improve your game.
                   </p>
                 </CardContent>
               </Card>
@@ -226,7 +444,8 @@ export default function Pricing() {
                 <CardContent>
                   <p className="text-muted-foreground">
                     Yes! You can upgrade to a higher tier at any time. Your existing fitting data will be enhanced 
-                    with the additional analysis features of your new plan.
+                    with the additional analysis features of your new plan. Swing Analytics can be added to any plan 
+                    as a monthly subscription.
                   </p>
                 </CardContent>
               </Card>
@@ -238,7 +457,8 @@ export default function Pricing() {
                 <CardContent>
                   <p className="text-muted-foreground">
                     The Golf Daddy is a portable launch monitor that measures ball speed, launch angle, spin rate, 
-                    and flight path. It's included with Premium Plus and ships directly to you for use during your fitting.
+                    and flight path. It's included with Premium Plus ($220) and ships directly to you for use during 
+                    your fitting and ongoing practice.
                   </p>
                 </CardContent>
               </Card>
