@@ -183,14 +183,14 @@ function ProfileContent() {
         .eq("user_id", user!.id)
         .maybeSingle();
 
-      const upsertData = {
+      // Build upsert data with only the fields being updated
+      const upsertData: any = {
         user_id: user!.id,
-        ...profile,
         ...data,
         updated_at: new Date().toISOString(),
       };
 
-      // Include id if profile exists (for update), omit for insert
+      // Include id if profile exists (required for update)
       if (existingProfile?.id) {
         upsertData.id = existingProfile.id;
       }
@@ -201,8 +201,12 @@ function ProfileContent() {
           onConflict: "user_id"
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Upsert error:", error);
+        throw error;
+      }
 
+      // Update localStorage for swing profile sections
       if (section === "swing-profile" || section === "measurements") {
         const swingProfile = {
           swingSpeed: data.swing_speed_range || profile.swing_speed_range,
@@ -217,6 +221,7 @@ function ProfileContent() {
         localStorage.setItem("psfSwingProfile", JSON.stringify(swingProfile));
       }
 
+      // Update local state with saved data
       setProfile(prev => ({ ...prev, ...data }));
       
       toast({
@@ -224,6 +229,7 @@ function ProfileContent() {
         description: `${getSectionName(section)} updated successfully`,
       });
       
+      // Refresh profile from database
       await fetchProfile();
     } catch (error) {
       console.error("Error saving profile:", error);
