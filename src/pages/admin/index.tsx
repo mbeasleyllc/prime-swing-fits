@@ -5,10 +5,10 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, Activity, Award, TrendingUp } from "lucide-react";
+import { Users, Activity, Award, TrendingUp, FileText } from "lucide-react";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -185,32 +185,47 @@ export default function AdminDashboard() {
           </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = "/admin/sessions"}>
-              <CardHeader>
-                <CardTitle>Manage Sessions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">View, filter, and manage all fitting sessions</p>
-              </CardContent>
-            </Card>
+            <Link href="/admin/sessions">
+              <Card className="hover:border-accent transition-colors cursor-pointer">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-accent" />
+                    Fitting Sessions
+                  </CardTitle>
+                  <CardDescription>
+                    View and manage all fitting sessions
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
 
-            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = "/admin/rules"}>
-              <CardHeader>
-                <CardTitle>Fitting Rules</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Configure recommendation engine logic</p>
-              </CardContent>
-            </Card>
+            <Link href="/admin/users">
+              <Card className="hover:border-accent transition-colors cursor-pointer">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-accent" />
+                    User Management
+                  </CardTitle>
+                  <CardDescription>
+                    Manage user roles and subscriptions
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
 
-            <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => window.location.href = "/admin/products"}>
-              <CardHeader>
-                <CardTitle>Product Catalog</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">Manage recommended products</p>
-              </CardContent>
-            </Card>
+            <Link href="/admin/rules">
+              <Card className="hover:border-accent transition-colors cursor-pointer">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-accent" />
+                    Fitting Rules
+                  </CardTitle>
+                  <CardDescription>
+                    Configure recommendation engine logic
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
           </div>
         </div>
 
