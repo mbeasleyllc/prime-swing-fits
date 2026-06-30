@@ -35,6 +35,7 @@ import {
   SettingsIcon
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -58,19 +59,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 type FittingSession = Database["public"]["Tables"]["fitting_sessions"]["Row"];
 
 export default function Profile() {
-  const { user } = useAuth();
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState("info");
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
   return (
     <ProtectedRoute>
       <ProfileContent />
@@ -81,19 +75,39 @@ export default function Profile() {
 function ProfileContent() {
   const { toast } = useToast();
   const { user } = useAuth();
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeSection, setActiveSection] = useState("personal-info");
   const [profile, setProfile] = useState<Partial<UserProfile>>({});
   const [sessions, setSessions] = useState<FittingSession[]>([]);
   const [showMeasureGuide, setShowMeasureGuide] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
       fetchSessions();
+      fetchAvatarUrl();
     }
   }, [user]);
+
+  const fetchAvatarUrl = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("avatar_url")
+        .eq("id", user!.id)
+        .single();
+
+      if (error) throw error;
+      setAvatarUrl(data?.avatar_url || null);
+    } catch (error) {
+      console.error("Error fetching avatar:", error);
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -311,8 +325,13 @@ function ProfileContent() {
 
       if (updateError) throw updateError;
 
-      // Refresh profile data
-      await fetchProfile();
+      // Refresh avatar URL
+      await fetchAvatarUrl();
+      
+      toast({
+        title: "Success",
+        description: "Avatar uploaded successfully",
+      });
     } catch (error: any) {
       console.error("Avatar upload error:", error);
       setUploadError(error.message || "Failed to upload avatar");
@@ -321,7 +340,7 @@ function ProfileContent() {
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-[60vh]">
@@ -346,7 +365,7 @@ function ProfileContent() {
                   <div className="flex items-center gap-6 mb-8">
                     <div className="relative">
                       <Avatar className="h-24 w-24">
-                        <AvatarImage src={profile?.avatar_url} />
+                        <AvatarImage src={avatarUrl || undefined} />
                         <AvatarFallback className="text-2xl bg-gold/20 text-gold font-semibold">
                           {user?.email?.charAt(0).toUpperCase()}
                         </AvatarFallback>
@@ -531,48 +550,6 @@ function ProfileContent() {
                 History
               </Button>
             </div>
-          </div>
-
-          <div className="flex flex-wrap gap-2 mb-6">
-            <Button
-              variant={activeTab === "info" ? "default" : "outline"}
-              onClick={() => setActiveTab("info")}
-              className={activeTab === "info" ? "bg-gold hover:bg-gold/90" : ""}
-            >
-              <User className="h-4 w-4 mr-2" />
-              Profile Info
-            </Button>
-            <Button
-              variant={activeTab === "measurements" ? "default" : "outline"}
-              onClick={() => setActiveTab("measurements")}
-              className={activeTab === "measurements" ? "bg-gold hover:bg-gold/90" : ""}
-            >
-              <Ruler className="h-4 w-4 mr-2" />
-              Measurements
-            </Button>
-            <Button
-              variant={activeTab === "swing" ? "default" : "outline"}
-              onClick={() => setActiveTab("swing")}
-              className={activeTab === "swing" ? "bg-gold hover:bg-gold/90" : ""}
-            >
-              <Target className="h-4 w-4 mr-2" />
-              Swing Profile
-            </Button>
-            <Button
-              variant={activeTab === "goals" ? "default" : "outline"}
-              onClick={() => setActiveTab("goals")}
-              className={activeTab === "goals" ? "bg-gold hover:bg-gold/90" : ""}
-            >
-              <Trophy className="h-4 w-4 mr-2" />
-              Goals
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => router.push("/profile/settings")}
-            >
-              <SettingsIcon className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
           </div>
 
           <main className="flex-1 space-y-8">
