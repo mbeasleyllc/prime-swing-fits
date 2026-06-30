@@ -215,70 +215,74 @@ export default function Dashboard() {
       }
 
       // Fetch recommended bag from most recent completed fitting
-      const { data: recentFitting, error: fittingError } = await supabase
-        .from("fitting_sessions")
-        .select("id, recommendations, completed_at")
-        .eq("user_id", user.id)
-        .eq("status", "completed")
-        .not("recommendations", "is", null)
-        .order("completed_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // TODO: Verify fitting_sessions schema has recommendations column
+      // const { data: recentFitting, error: fittingError } = await supabase
+      //   .from("fitting_sessions")
+      //   .select("id, recommendations, completed_at")
+      //   .eq("user_id", user.id)
+      //   .eq("status", "completed")
+      //   .not("recommendations", "is", null)
+      //   .order("completed_at", { ascending: false })
+      //   .limit(1)
+      //   .maybeSingle();
 
-      if (recentFitting && recentFitting.recommendations) {
-        const recs = recentFitting.recommendations as any;
-        const clubs = [
-          {
-            type: "Driver",
-            name: recs.driver?.model || "TaylorMade Stealth 2",
-            flex: recs.driver?.shaft_flex || "Stiff",
-            loft: recs.driver?.loft || "10.5°",
-            isRecent: true,
-          },
-          {
-            type: "3-Wood",
-            name: "Callaway Paradym",
-            flex: recs.driver?.shaft_flex || "Stiff",
-            loft: "15°",
-            isRecent: true,
-          },
-          {
-            type: "Hybrid",
-            name: "Ping G430",
-            flex: recs.driver?.shaft_flex || "Stiff",
-            loft: "19°",
-            isRecent: true,
-          },
-          {
-            type: "Irons (5-PW)",
-            name: recs.iron?.model || "Titleist T200",
-            flex: recs.iron?.shaft_flex || "Regular",
-            loft: "5i-PW",
-            isRecent: true,
-          },
-          {
-            type: "Wedges",
-            name: "Vokey SM9",
-            flex: "Wedge",
-            loft: "52°, 56°, 60°",
-            isRecent: false,
-          },
-          {
-            type: "Putter",
-            name: recs.putter?.model || "Scotty Cameron Special Select",
-            flex: "—",
-            loft: recs.putter?.lie_angle || "71°",
-            isRecent: true,
-          },
-        ];
+      // if (recentFitting && recentFitting.recommendations) {
+      //   const recs = recentFitting.recommendations as any;
+      //   const clubs = [
+      //     {
+      //       type: "Driver",
+      //       name: recs.driver?.model || "TaylorMade Stealth 2",
+      //       flex: recs.driver?.shaft_flex || "Stiff",
+      //       loft: recs.driver?.loft || "10.5°",
+      //       isRecent: true,
+      //     },
+      //     {
+      //       type: "3-Wood",
+      //       name: "Callaway Paradym",
+      //       flex: recs.driver?.shaft_flex || "Stiff",
+      //       loft: "15°",
+      //       isRecent: true,
+      //     },
+      //     {
+      //       type: "Hybrid",
+      //       name: "Ping G430",
+      //       flex: recs.driver?.shaft_flex || "Stiff",
+      //       loft: "19°",
+      //       isRecent: true,
+      //     },
+      //     {
+      //       type: "Irons (5-PW)",
+      //       name: recs.iron?.model || "Titleist T200",
+      //       flex: recs.iron?.shaft_flex || "Regular",
+      //       loft: "5i-PW",
+      //       isRecent: true,
+      //     },
+      //     {
+      //       type: "Wedges",
+      //       name: "Vokey SM9",
+      //       flex: "Wedge",
+      //       loft: "52°, 56°, 60°",
+      //       isRecent: false,
+      //     },
+      //     {
+      //       type: "Putter",
+      //       name: recs.putter?.model || "Scotty Cameron Special Select",
+      //       flex: "—",
+      //       loft: recs.putter?.lie_angle || "71°",
+      //       isRecent: true,
+      //     },
+      //   ];
 
-        setRecommendedBag({
-          clubs,
-          fittingDate: recentFitting.completed_at,
-        });
-      } else {
-        setRecommendedBag(null);
-      }
+      //   setRecommendedBag({
+      //     clubs,
+      //     fittingDate: recentFitting.completed_at,
+      //   });
+      // } else {
+      //   setRecommendedBag(null);
+      // }
+      
+      // Show empty state until schema is verified
+      setRecommendedBag(null);
 
       setIsLoading(false);
     };
