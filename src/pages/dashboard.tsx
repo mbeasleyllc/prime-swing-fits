@@ -407,7 +407,9 @@ export default function Dashboard() {
     setClubPreferences(prev => ({
       ...prev,
       [clubType]: {
-        ...(prev[clubType] || {}),
+        name: (prev[clubType]?.name || ""),
+        flex: (prev[clubType]?.flex || ""),
+        loft: (prev[clubType]?.loft || ""),
         [field]: value,
       },
     }));
@@ -552,7 +554,7 @@ export default function Dashboard() {
                               
                               <div className="space-y-6 py-4">
                                 {recommendedBag.clubs.map((club) => {
-                                  const pref = clubPreferences[club.type] || {};
+                                  const pref = (clubPreferences[club.type] || { name: "", flex: "", loft: "" }) as { name: string; flex: string; loft: string };
                                   return (
                                     <div key={club.type} className="p-4 border rounded-lg space-y-4">
                                       <h4 className="font-semibold text-sm text-gold">{club.type}</h4>
