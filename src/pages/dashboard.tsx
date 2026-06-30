@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Eye, Download, Clock, CheckCircle2, Target, Trophy, TrendingUp, Lightbulb, Activity, ArrowUp, ArrowDown, Minus } from "lucide-react";
+import { Play, Eye, Download, Clock, CheckCircle2, Target, Trophy, TrendingUp, Lightbulb, Activity, ArrowUp, ArrowDown, Minus, Gauge } from "lucide-react";
 import { BadgeShelf } from "@/components/gamification/BadgeShelf";
 import { GoalsList } from "@/components/gamification/GoalsList";
 import { InsightsPanel } from "@/components/gamification/InsightsPanel";
@@ -29,6 +29,14 @@ export default function Dashboard() {
     completionRate: number;
     recentSessions: number;
     trend: "up" | "down" | "stable";
+  } | null>(null);
+  const [swingSnapshot, setSwingSnapshot] = useState<{
+    chartData: Array<{ session: number; speed: number }>;
+    avgClubSpeed: number | null;
+    avgCarryDistance: number | null;
+    recommendedFlex: string | null;
+    speedTrend: "up" | "down" | "stable";
+    distanceTrend: "up" | "down" | "stable";
   } | null>(null);
 
   useEffect(() => {
@@ -129,6 +137,73 @@ export default function Dashboard() {
       }
 
       setUserTier(userRes.data?.subscription_tier || "entry");
+      
+      // Fetch swing snapshot data (last 6 sessions)
+      const { data: swingMetrics, error: swingMetricsError } = await supabase
+        .from("swing_metrics")
+        .select("club_speed, carry_distance, created_at")
+        .eq("user_id", user.id)
+        .not("club_speed", "is", null)
+        .not("carry_distance", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(30);
+
+      if (swingMetrics && swingMetrics.length > 0) {
+        // Group by session (assume 5 shots per session, take averages)
+        const sessions: Array<{ avgSpeed: number; avgDistance: number }> = [];
+        for (let i = 0; i < Math.min(swingMetrics.length, 30); i += 5) {
+          const sessionShots = swingMetrics.slice(i, i + 5);
+          const avgSpeed = sessionShots.reduce((sum, shot) => sum + (shot.club_speed || 0), 0) / sessionShots.length;
+          const avgDistance = sessionShots.reduce((sum, shot) => sum + (shot.carry_distance || 0), 0) / sessionShots.length;
+          sessions.push({ avgSpeed, avgDistance });
+        }
+
+        // Take last 6 sessions
+        const last6Sessions = sessions.slice(0, 6).reverse();
+        
+        // Create chart data
+        const chartData = last6Sessions.map((session, idx) => ({
+          session: idx + 1,
+          speed: Math.round(session.avgSpeed),
+        }));
+
+        // Calculate overall averages
+        const avgClubSpeed = Math.round(
+          last6Sessions.reduce((sum, s) => sum + s.avgSpeed, 0) / last6Sessions.length
+        );
+        const avgCarryDistance = Math.round(
+          last6Sessions.reduce((sum, s) => sum + s.avgDistance, 0) / last6Sessions.length
+        );
+
+        // Determine recommended flex based on club speed
+        let recommendedFlex = "Regular";
+        if (avgClubSpeed >= 110) recommendedFlex = "X-Stiff";
+        else if (avgClubSpeed >= 100) recommendedFlex = "Stiff";
+        else if (avgClubSpeed >= 85) recommendedFlex = "Regular";
+        else if (avgClubSpeed >= 75) recommendedFlex = "Senior";
+        else recommendedFlex = "Lady";
+
+        // Calculate trends (first 3 vs last 3 sessions)
+        const firstHalfSpeed = last6Sessions.slice(0, 3).reduce((sum, s) => sum + s.avgSpeed, 0) / 3;
+        const secondHalfSpeed = last6Sessions.slice(3, 6).reduce((sum, s) => sum + s.avgSpeed, 0) / 3;
+        const speedTrend = secondHalfSpeed > firstHalfSpeed + 2 ? "up" : secondHalfSpeed < firstHalfSpeed - 2 ? "down" : "stable";
+
+        const firstHalfDistance = last6Sessions.slice(0, 3).reduce((sum, s) => sum + s.avgDistance, 0) / 3;
+        const secondHalfDistance = last6Sessions.slice(3, 6).reduce((sum, s) => sum + s.avgDistance, 0) / 3;
+        const distanceTrend = secondHalfDistance > firstHalfDistance + 5 ? "up" : secondHalfDistance < firstHalfDistance - 5 ? "down" : "stable";
+
+        setSwingSnapshot({
+          chartData,
+          avgClubSpeed,
+          avgCarryDistance,
+          recommendedFlex,
+          speedTrend,
+          distanceTrend,
+        });
+      } else {
+        setSwingSnapshot(null);
+      }
+
       setIsLoading(false);
     };
 
@@ -272,6 +347,159 @@ export default function Dashboard() {
               </Card>
             </div>
           )}
+
+          {/* Your Swing Snapshot Widget */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5 text-success" />
+                Your Swing Snapshot
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {swingSnapshot ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Left: Line Chart */}
+                  <div className="bg-primary rounded-xl p-6 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
+                    <div className="relative">
+                      <p className="text-white/70 text-sm mb-4">Club Speed Trend (Last 6 Sessions)</p>
+                      <div className="h-48 flex items-end justify-between gap-2">
+                        {swingSnapshot.chartData.map((point, idx) => {
+                          const maxSpeed = Math.max(...swingSnapshot.chartData.map(p => p.speed));
+                          const minSpeed = Math.min(...swingSnapshot.chartData.map(p => p.speed));
+                          const range = maxSpeed - minSpeed || 1;
+                          const heightPercent = ((point.speed - minSpeed) / range) * 70 + 30;
+                          
+                          return (
+                            <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                              <div className="w-full flex flex-col items-center">
+                                <span className="text-gold text-xs font-semibold mb-1">{point.speed}</span>
+                                <div 
+                                  className="w-full bg-gold rounded-t-md transition-all duration-300"
+                                  style={{ height: `${heightPercent}%` }}
+                                />
+                              </div>
+                              <span className="text-white/50 text-xs">S{point.session}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Key Metrics */}
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-success/10 rounded-lg p-3">
+                          <Gauge className="h-6 w-6 text-success" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Avg Club Speed</p>
+                          <p className="text-3xl font-bold">{swingSnapshot.avgClubSpeed} <span className="text-lg text-muted-foreground">mph</span></p>
+                        </div>
+                      </div>
+                      <div className={`p-2 rounded-full ${
+                        swingSnapshot.speedTrend === "up" ? "bg-success/10" : 
+                        swingSnapshot.speedTrend === "down" ? "bg-destructive/10" : 
+                        "bg-muted"
+                      }`}>
+                        {swingSnapshot.speedTrend === "up" && <ArrowUp className="h-5 w-5 text-success" />}
+                        {swingSnapshot.speedTrend === "down" && <ArrowDown className="h-5 w-5 text-destructive" />}
+                        {swingSnapshot.speedTrend === "stable" && <Minus className="h-5 w-5 text-muted-foreground" />}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-gold/10 rounded-lg p-3">
+                          <Target className="h-6 w-6 text-gold" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Avg Carry Distance</p>
+                          <p className="text-3xl font-bold">{swingSnapshot.avgCarryDistance} <span className="text-lg text-muted-foreground">yds</span></p>
+                        </div>
+                      </div>
+                      <div className={`p-2 rounded-full ${
+                        swingSnapshot.distanceTrend === "up" ? "bg-success/10" : 
+                        swingSnapshot.distanceTrend === "down" ? "bg-destructive/10" : 
+                        "bg-muted"
+                      }`}>
+                        {swingSnapshot.distanceTrend === "up" && <ArrowUp className="h-5 w-5 text-success" />}
+                        {swingSnapshot.distanceTrend === "down" && <ArrowDown className="h-5 w-5 text-destructive" />}
+                        {swingSnapshot.distanceTrend === "stable" && <Minus className="h-5 w-5 text-muted-foreground" />}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-primary/10 rounded-lg p-3">
+                          <Activity className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Recommended Flex</p>
+                          <p className="text-3xl font-bold">{swingSnapshot.recommendedFlex}</p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        Based on speed
+                      </Badge>
+                    </div>
+
+                    <div className="pt-4 border-t">
+                      <Link 
+                        href="/swing-analytics" 
+                        className="text-gold hover:text-gold/80 text-sm font-medium underline decoration-gold/30 hover:decoration-gold/60 transition-all inline-flex items-center gap-1"
+                      >
+                        View Full Analytics
+                        <TrendingUp className="h-4 w-4" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-16 text-center">
+                  <div className="max-w-lg mx-auto">
+                    <div className="relative w-48 h-48 mx-auto mb-6">
+                      {/* Golfer Silhouette SVG */}
+                      <svg
+                        viewBox="0 0 200 200"
+                        className="w-full h-full text-muted-foreground/20"
+                        fill="currentColor"
+                      >
+                        <path d="M100 40 C85 40 75 50 75 65 C75 80 85 90 100 90 C115 90 125 80 125 65 C125 50 115 40 100 40 Z" />
+                        <path d="M100 95 L100 150 M100 115 L70 100 M100 115 L130 130 M100 150 L70 180 M100 150 L130 180" 
+                          stroke="currentColor" 
+                          strokeWidth="6" 
+                          strokeLinecap="round" 
+                          fill="none"
+                        />
+                        <path d="M130 130 L160 100 L165 95" 
+                          stroke="currentColor" 
+                          strokeWidth="4" 
+                          strokeLinecap="round" 
+                          fill="none"
+                        />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold mb-3 text-foreground">
+                      Complete your first fitting to see your swing data
+                    </h3>
+                    <p className="text-muted-foreground mb-6">
+                      Start tracking your club speed, carry distance, and get personalized recommendations to improve your game.
+                    </p>
+                    <Button asChild className="bg-gold hover:bg-gold/90">
+                      <Link href="/swing-data/import">
+                        <Play className="h-4 w-4 mr-2" />
+                        Import Swing Data
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* AI Weekly Summary - Core and Premium users only */}
           {userTier !== "entry" && user && (
