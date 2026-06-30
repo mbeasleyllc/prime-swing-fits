@@ -13,6 +13,7 @@ import { Play, Eye, Download, Clock, CheckCircle2, Target, Trophy, TrendingUp, L
 import { BadgeShelf } from "@/components/gamification/BadgeShelf";
 import { GoalsList } from "@/components/gamification/GoalsList";
 import { InsightsPanel } from "@/components/gamification/InsightsPanel";
+import { WeeklySummary } from "@/components/analytics/WeeklySummary";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -126,6 +127,13 @@ export default function Dashboard() {
               </Link>
             </Button>
           </div>
+
+          {/* AI Weekly Summary - Core and Premium users only */}
+          {userTier !== "entry" && user && (
+            <div className="mb-8">
+              <WeeklySummary userId={user.id} />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <Card>
