@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
+import { AppLayout } from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -92,7 +91,6 @@ function UsersContent() {
 
       if (error) throw error;
 
-      // Fetch additional subscription data for each user
       const usersWithSubs = await Promise.all(
         (data || []).map(async (profile) => {
           const [userProfiles, swingSubs] = await Promise.all([
@@ -227,12 +225,10 @@ function UsersContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      <div className="container mx-auto px-4 py-8 mt-20">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">User Management</h1>
+    <AppLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">User Management</h1>
           <p className="text-muted-foreground">
             Manage user roles and subscription access
           </p>
@@ -333,9 +329,7 @@ function UsersContent() {
           </CardContent>
         </Card>
       </div>
-
-      <Footer />
-    </div>
+    </AppLayout>
   );
 }
 

@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
+import { AppLayout } from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -11,8 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { BarChart3, Download, Filter, RefreshCw, ArrowLeft, Activity, Users, FileText, TrendingUp } from "lucide-react";
-import Link from "next/link";
+import { BarChart3, Download, RefreshCw, Activity, Users, FileText, TrendingUp } from "lucide-react";
 
 interface SystemStats {
   totalUsers: number;
@@ -91,7 +89,7 @@ function LogsContent() {
         totalFittings: fittingsCount.count || 0,
         totalSwingData: swingDataCount.count || 0,
         activeSubscriptions: subscriptionsCount.count || 0,
-        revenue: 0, // Calculate from subscriptions when billing is implemented
+        revenue: 0,
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -101,7 +99,6 @@ function LogsContent() {
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      // Mock logs - replace with actual activity log table when created
       const mockLogs: ActivityLog[] = [
         {
           id: "1",
@@ -214,26 +211,16 @@ function LogsContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      <div className="container mx-auto px-4 py-8 mt-20">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Logs & Reports</h1>
-            <p className="text-muted-foreground">
-              System monitoring, activity logs, and analytics
-            </p>
-          </div>
-          <Button variant="outline" asChild>
-            <Link href="/admin">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Admin
-            </Link>
-          </Button>
+    <AppLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Logs & Reports</h1>
+          <p className="text-muted-foreground">
+            System monitoring, activity logs, and analytics
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -279,7 +266,7 @@ function LogsContent() {
           </Card>
         </div>
 
-        <Card className="mb-6">
+        <Card>
           <CardHeader>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <CardTitle className="flex items-center gap-2">
@@ -398,9 +385,7 @@ function LogsContent() {
           </CardContent>
         </Card>
       </div>
-
-      <Footer />
-    </div>
+    </AppLayout>
   );
 }
 

@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
+import { AppLayout } from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -14,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Tag, Plus, Edit2, Trash2, Copy, ArrowLeft } from "lucide-react";
+import { Tag, Plus, Edit2, Trash2, Copy } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +22,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import Link from "next/link";
 
 interface Coupon {
   id: string;
@@ -45,7 +43,6 @@ function CouponsContent() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -79,7 +76,6 @@ function CouponsContent() {
   const fetchCoupons = async () => {
     try {
       setLoading(true);
-      // Mock data - replace with actual database query when coupon table is created
       const mockCoupons: Coupon[] = [
         {
           id: "1",
@@ -117,15 +113,6 @@ function CouponsContent() {
     }
   };
 
-  const generateRandomCode = () => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let code = "";
-    for (let i = 0; i < 8; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return code;
-  };
-
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     toast({
@@ -148,26 +135,16 @@ function CouponsContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      <div className="container mx-auto px-4 py-8 mt-20">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Coupon Codes</h1>
-            <p className="text-muted-foreground">
-              Create and manage discount codes for subscriptions
-            </p>
-          </div>
-          <Button variant="outline" asChild>
-            <Link href="/admin">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Admin
-            </Link>
-          </Button>
+    <AppLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Coupon Codes</h1>
+          <p className="text-muted-foreground">
+            Create and manage discount codes for subscriptions
+          </p>
         </div>
 
-        <Card className="mb-6">
+        <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -204,7 +181,7 @@ function CouponsContent() {
             ) : coupons.length === 0 ? (
               <div className="text-center py-12">
                 <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">No Coupons Yet</h3>
+                <h3 className="text-lg font-semibold mb-2">No Coupons Yet</h3>
                 <p className="text-muted-foreground mb-4">
                   Create your first discount code to get started
                 </p>
@@ -292,9 +269,7 @@ function CouponsContent() {
           </CardContent>
         </Card>
       </div>
-
-      <Footer />
-    </div>
+    </AppLayout>
   );
 }
 
@@ -321,7 +296,6 @@ function CouponForm({
     setSaving(true);
 
     try {
-      // Mock save - replace with actual database insert when coupon table is created
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       toast({
