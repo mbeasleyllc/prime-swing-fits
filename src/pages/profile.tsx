@@ -183,12 +183,18 @@ function ProfileContent() {
         .eq("user_id", user!.id)
         .maybeSingle();
 
-      // Build upsert data with only the fields being updated
+      // Build upsert data with ONLY the fields being updated
       const upsertData: any = {
         user_id: user!.id,
-        ...data,
         updated_at: new Date().toISOString(),
       };
+
+      // Add only the fields from data parameter (not spreading entire profile)
+      Object.keys(data).forEach(key => {
+        if (data[key as keyof UserProfile] !== undefined) {
+          upsertData[key] = data[key as keyof UserProfile];
+        }
+      });
 
       // Include id if profile exists (required for update)
       if (existingProfile?.id) {
@@ -202,7 +208,7 @@ function ProfileContent() {
         });
 
       if (error) {
-        console.error("Upsert error:", error);
+        console.error("Upsert error details:", error);
         throw error;
       }
 
