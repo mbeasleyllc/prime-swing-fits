@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Eye, Download, Clock, CheckCircle2, Target, Trophy, TrendingUp, Lightbulb, Activity, ArrowUp, ArrowDown, Minus, Gauge } from "lucide-react";
+import { Play, Eye, Download, Clock, CheckCircle2, Target, Trophy, TrendingUp, Lightbulb, Activity, ArrowUp, ArrowDown, Minus, Gauge, Share2 } from "lucide-react";
 import { BadgeShelf } from "@/components/gamification/BadgeShelf";
 import { GoalsList } from "@/components/gamification/GoalsList";
 import { InsightsPanel } from "@/components/gamification/InsightsPanel";
@@ -37,6 +37,16 @@ export default function Dashboard() {
     recommendedFlex: string | null;
     speedTrend: "up" | "down" | "stable";
     distanceTrend: "up" | "down" | "stable";
+  } | null>(null);
+  const [recommendedBag, setRecommendedBag] = useState<{
+    clubs: Array<{
+      type: string;
+      name: string;
+      flex: string;
+      loft: string;
+      isRecent: boolean;
+    }>;
+    fittingDate: string | null;
   } | null>(null);
 
   useEffect(() => {
@@ -204,11 +214,97 @@ export default function Dashboard() {
         setSwingSnapshot(null);
       }
 
+      // Fetch recommended bag from most recent completed fitting
+      const { data: recentFitting, error: fittingError } = await supabase
+        .from("fitting_sessions")
+        .select("id, recommendations, completed_at")
+        .eq("user_id", user.id)
+        .eq("status", "completed")
+        .not("recommendations", "is", null)
+        .order("completed_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (recentFitting && recentFitting.recommendations) {
+        const recs = recentFitting.recommendations as any;
+        const clubs = [
+          {
+            type: "Driver",
+            name: recs.driver?.model || "TaylorMade Stealth 2",
+            flex: recs.driver?.shaft_flex || "Stiff",
+            loft: recs.driver?.loft || "10.5°",
+            isRecent: true,
+          },
+          {
+            type: "3-Wood",
+            name: "Callaway Paradym",
+            flex: recs.driver?.shaft_flex || "Stiff",
+            loft: "15°",
+            isRecent: true,
+          },
+          {
+            type: "Hybrid",
+            name: "Ping G430",
+            flex: recs.driver?.shaft_flex || "Stiff",
+            loft: "19°",
+            isRecent: true,
+          },
+          {
+            type: "Irons (5-PW)",
+            name: recs.iron?.model || "Titleist T200",
+            flex: recs.iron?.shaft_flex || "Regular",
+            loft: "5i-PW",
+            isRecent: true,
+          },
+          {
+            type: "Wedges",
+            name: "Vokey SM9",
+            flex: "Wedge",
+            loft: "52°, 56°, 60°",
+            isRecent: false,
+          },
+          {
+            type: "Putter",
+            name: recs.putter?.model || "Scotty Cameron Special Select",
+            flex: "—",
+            loft: recs.putter?.lie_angle || "71°",
+            isRecent: true,
+          },
+        ];
+
+        setRecommendedBag({
+          clubs,
+          fittingDate: recentFitting.completed_at,
+        });
+      } else {
+        setRecommendedBag(null);
+      }
+
       setIsLoading(false);
     };
 
     loadData();
   }, [user]);
+
+  const handleShareBag = () => {
+    if (!recommendedBag) return;
+    
+    const bagText = recommendedBag.clubs
+      .map(club => `${club.type}: ${club.name} (${club.flex}, ${club.loft})`)
+      .join('\n');
+    
+    const shareText = `My Prime Swing Fits Recommended Bag:\n\n${bagText}\n\nGet your personalized club fitting at primeswingfits.com`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: 'My Recommended Golf Bag',
+        text: shareText,
+      });
+    } else {
+      navigator.clipboard.writeText(shareText);
+      alert('Bag details copied to clipboard!');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -317,6 +413,147 @@ export default function Dashboard() {
                   </Card>
                 </div>
               )}
+
+              {/* Your Recommended Bag - Entry/Core */}
+              <Card className="mb-8">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5 text-gold" />
+                      Your Recommended Bag
+                    </CardTitle>
+                    {recommendedBag && (
+                      <Button variant="outline" size="sm" onClick={handleShareBag}>
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Share My Bag
+                      </Button>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {recommendedBag ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                      {/* Left: Golf Bag SVG */}
+                      <div className="flex justify-center">
+                        <svg
+                          viewBox="0 0 200 300"
+                          className="w-full max-w-[200px] h-auto"
+                          fill="none"
+                        >
+                          {/* Golf Bag Body */}
+                          <path
+                            d="M60 80 L60 250 Q60 270 80 270 L120 270 Q140 270 140 250 L140 80 Z"
+                            fill="#1B4332"
+                            stroke="#D4AF37"
+                            strokeWidth="2"
+                          />
+                          {/* Bag Top Opening */}
+                          <ellipse cx="100" cy="80" rx="40" ry="15" fill="#0A0A0A" stroke="#D4AF37" strokeWidth="2" />
+                          {/* Bag Straps */}
+                          <path d="M70 100 Q50 150 55 200" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round" fill="none" />
+                          <path d="M130 100 Q150 150 145 200" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round" fill="none" />
+                          {/* Club Slots */}
+                          <line x1="85" y1="60" x2="85" y2="75" stroke="#D4AF37" strokeWidth="2" />
+                          <line x1="95" y1="55" x2="95" y2="70" stroke="#D4AF37" strokeWidth="2" />
+                          <line x1="105" y1="55" x2="105" y2="70" stroke="#D4AF37" strokeWidth="2" />
+                          <line x1="115" y1="60" x2="115" y2="75" stroke="#D4AF37" strokeWidth="2" />
+                          {/* Club Heads (visible in bag) */}
+                          <circle cx="85" cy="55" r="5" fill="#D4AF37" />
+                          <circle cx="95" cy="50" r="5" fill="#D4AF37" />
+                          <circle cx="105" cy="50" r="5" fill="#D4AF37" />
+                          <circle cx="115" cy="55" r="5" fill="#D4AF37" />
+                          {/* Bag Pocket */}
+                          <rect x="75" y="150" width="50" height="35" rx="8" fill="#0A0A0A" stroke="#D4AF37" strokeWidth="2" />
+                          <circle cx="100" cy="167" r="3" fill="#D4AF37" />
+                          {/* Bag Base */}
+                          <ellipse cx="100" cy="270" rx="42" ry="12" fill="#0A0A0A" stroke="#D4AF37" strokeWidth="2" />
+                        </svg>
+                      </div>
+
+                      {/* Right: Club List */}
+                      <div className="lg:col-span-2 space-y-3">
+                        {recommendedBag.clubs.map((club, idx) => (
+                          <div
+                            key={idx}
+                            className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
+                              club.isRecent
+                                ? 'border-gold bg-gold/5 shadow-md'
+                                : 'border-border bg-muted/30'
+                            }`}
+                          >
+                            <div className="flex items-center gap-4 flex-1">
+                              <div className={`rounded-lg p-2 ${
+                                club.isRecent ? 'bg-gold/10' : 'bg-muted'
+                              }`}>
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  className={`w-6 h-6 ${
+                                    club.isRecent ? 'text-gold' : 'text-muted-foreground'
+                                  }`}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                >
+                                  <path d="M12 2 L12 18 M12 18 L8 16 M12 18 L16 16 M9 22 L15 22" />
+                                </svg>
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-sm mb-1">{club.type}</h4>
+                                <p className="text-xs text-muted-foreground">{club.name}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium">{club.flex}</p>
+                              <p className="text-xs text-muted-foreground">{club.loft}</p>
+                            </div>
+                            {club.isRecent && (
+                              <Badge className="ml-3 bg-gold/20 text-gold border-gold/30">
+                                Latest
+                              </Badge>
+                            )}
+                          </div>
+                        ))}
+                        {recommendedBag.fittingDate && (
+                          <p className="text-xs text-muted-foreground text-center pt-4 border-t">
+                            Based on fitting completed {new Date(recommendedBag.fittingDate).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="py-16 text-center">
+                      <div className="max-w-lg mx-auto">
+                        {/* Placeholder Golf Bag Silhouette */}
+                        <div className="relative w-48 h-64 mx-auto mb-6">
+                          <svg
+                            viewBox="0 0 200 300"
+                            className="w-full h-full text-muted-foreground/20"
+                            fill="currentColor"
+                          >
+                            <path d="M60 80 L60 250 Q60 270 80 270 L120 270 Q140 270 140 250 L140 80 Z" />
+                            <ellipse cx="100" cy="80" rx="40" ry="15" />
+                            <ellipse cx="100" cy="270" rx="42" ry="12" />
+                            <rect x="75" y="150" width="50" height="35" rx="8" />
+                          </svg>
+                        </div>
+                        <h3 className="text-2xl font-bold mb-3 text-foreground">
+                          Complete a fitting to build your bag
+                        </h3>
+                        <p className="text-muted-foreground mb-6">
+                          Get personalized club recommendations based on your swing characteristics, experience level, and playing goals.
+                        </p>
+                        <Button asChild size="lg" className="bg-gold hover:bg-gold/90">
+                          <Link href="/fitting/new">
+                            <Play className="h-4 w-4 mr-2" />
+                            Start Your Fitting
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
               {/* Upgrade to Premium Banner */}
               <Card className="mb-8 border-gold/30 bg-gradient-to-br from-gold/10 via-gold/5 to-transparent relative overflow-hidden">
@@ -817,6 +1054,147 @@ export default function Dashboard() {
                           <Link href="/swing-data/import">
                             <Play className="h-4 w-4 mr-2" />
                             Import Swing Data
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Your Recommended Bag - Premium */}
+              <Card className="mb-8">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5 text-gold" />
+                      Your Recommended Bag
+                    </CardTitle>
+                    {recommendedBag && (
+                      <Button variant="outline" size="sm" onClick={handleShareBag}>
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Share My Bag
+                      </Button>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {recommendedBag ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                      {/* Left: Golf Bag SVG */}
+                      <div className="flex justify-center">
+                        <svg
+                          viewBox="0 0 200 300"
+                          className="w-full max-w-[200px] h-auto"
+                          fill="none"
+                        >
+                          {/* Golf Bag Body */}
+                          <path
+                            d="M60 80 L60 250 Q60 270 80 270 L120 270 Q140 270 140 250 L140 80 Z"
+                            fill="#1B4332"
+                            stroke="#D4AF37"
+                            strokeWidth="2"
+                          />
+                          {/* Bag Top Opening */}
+                          <ellipse cx="100" cy="80" rx="40" ry="15" fill="#0A0A0A" stroke="#D4AF37" strokeWidth="2" />
+                          {/* Bag Straps */}
+                          <path d="M70 100 Q50 150 55 200" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round" fill="none" />
+                          <path d="M130 100 Q150 150 145 200" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round" fill="none" />
+                          {/* Club Slots */}
+                          <line x1="85" y1="60" x2="85" y2="75" stroke="#D4AF37" strokeWidth="2" />
+                          <line x1="95" y1="55" x2="95" y2="70" stroke="#D4AF37" strokeWidth="2" />
+                          <line x1="105" y1="55" x2="105" y2="70" stroke="#D4AF37" strokeWidth="2" />
+                          <line x1="115" y1="60" x2="115" y2="75" stroke="#D4AF37" strokeWidth="2" />
+                          {/* Club Heads (visible in bag) */}
+                          <circle cx="85" cy="55" r="5" fill="#D4AF37" />
+                          <circle cx="95" cy="50" r="5" fill="#D4AF37" />
+                          <circle cx="105" cy="50" r="5" fill="#D4AF37" />
+                          <circle cx="115" cy="55" r="5" fill="#D4AF37" />
+                          {/* Bag Pocket */}
+                          <rect x="75" y="150" width="50" height="35" rx="8" fill="#0A0A0A" stroke="#D4AF37" strokeWidth="2" />
+                          <circle cx="100" cy="167" r="3" fill="#D4AF37" />
+                          {/* Bag Base */}
+                          <ellipse cx="100" cy="270" rx="42" ry="12" fill="#0A0A0A" stroke="#D4AF37" strokeWidth="2" />
+                        </svg>
+                      </div>
+
+                      {/* Right: Club List */}
+                      <div className="lg:col-span-2 space-y-3">
+                        {recommendedBag.clubs.map((club, idx) => (
+                          <div
+                            key={idx}
+                            className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
+                              club.isRecent
+                                ? 'border-gold bg-gold/5 shadow-md'
+                                : 'border-border bg-muted/30'
+                            }`}
+                          >
+                            <div className="flex items-center gap-4 flex-1">
+                              <div className={`rounded-lg p-2 ${
+                                club.isRecent ? 'bg-gold/10' : 'bg-muted'
+                              }`}>
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  className={`w-6 h-6 ${
+                                    club.isRecent ? 'text-gold' : 'text-muted-foreground'
+                                  }`}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                >
+                                  <path d="M12 2 L12 18 M12 18 L8 16 M12 18 L16 16 M9 22 L15 22" />
+                                </svg>
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-sm mb-1">{club.type}</h4>
+                                <p className="text-xs text-muted-foreground">{club.name}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium">{club.flex}</p>
+                              <p className="text-xs text-muted-foreground">{club.loft}</p>
+                            </div>
+                            {club.isRecent && (
+                              <Badge className="ml-3 bg-gold/20 text-gold border-gold/30">
+                                Latest
+                              </Badge>
+                            )}
+                          </div>
+                        ))}
+                        {recommendedBag.fittingDate && (
+                          <p className="text-xs text-muted-foreground text-center pt-4 border-t">
+                            Based on fitting completed {new Date(recommendedBag.fittingDate).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="py-16 text-center">
+                      <div className="max-w-lg mx-auto">
+                        {/* Placeholder Golf Bag Silhouette */}
+                        <div className="relative w-48 h-64 mx-auto mb-6">
+                          <svg
+                            viewBox="0 0 200 300"
+                            className="w-full h-full text-muted-foreground/20"
+                            fill="currentColor"
+                          >
+                            <path d="M60 80 L60 250 Q60 270 80 270 L120 270 Q140 270 140 250 L140 80 Z" />
+                            <ellipse cx="100" cy="80" rx="40" ry="15" />
+                            <ellipse cx="100" cy="270" rx="42" ry="12" />
+                            <rect x="75" y="150" width="50" height="35" rx="8" />
+                          </svg>
+                        </div>
+                        <h3 className="text-2xl font-bold mb-3 text-foreground">
+                          Complete a fitting to build your bag
+                        </h3>
+                        <p className="text-muted-foreground mb-6">
+                          Get personalized club recommendations based on your swing characteristics, experience level, and playing goals.
+                        </p>
+                        <Button asChild size="lg" className="bg-gold hover:bg-gold/90">
+                          <Link href="/fitting/new">
+                            <Play className="h-4 w-4 mr-2" />
+                            Start Your Fitting
                           </Link>
                         </Button>
                       </div>
