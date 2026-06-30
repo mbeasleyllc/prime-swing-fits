@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
+import { useParallax } from "@/hooks/useParallax";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { WeeklySummary } from "@/components/analytics/WeeklySummary";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const parallaxOffset = useParallax({ speed: 0.3, direction: "down" });
   const [sessions, setSessions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({ badges: 0, activeGoals: 0, insights: 0 });
@@ -113,19 +115,48 @@ export default function Dashboard() {
     <ProtectedRoute>
       <AppLayout>
         <div className="max-w-7xl">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">
-                Welcome back, {user?.user_metadata?.full_name || user?.email?.split("@")[0]}
-              </h1>
-              <p className="text-muted-foreground">Track your progress and manage your fitting sessions</p>
+          {/* Hero Banner with Parallax Effect */}
+          <div className="relative -mx-8 mb-8 h-[200px] overflow-hidden rounded-2xl">
+            {/* Background Image with Parallax */}
+            <div 
+              className="absolute inset-0 bg-cover bg-center transition-transform duration-75"
+              style={{ 
+                backgroundImage: "url('https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop')",
+                transform: `translateY(${parallaxOffset}px)`
+              }}
+            />
+            
+            {/* Dark Green Gradient Overlay (60% opacity) */}
+            <div 
+              className="absolute inset-0"
+              style={{ 
+                background: "linear-gradient(135deg, rgba(27, 67, 50, 0.75) 0%, rgba(27, 67, 50, 0.45) 100%)"
+              }}
+            />
+            
+            {/* Content */}
+            <div className="relative h-full flex items-center justify-between px-8">
+              <div className="flex-1">
+                <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">
+                  Welcome back, {user?.user_metadata?.full_name || user?.email?.split("@")[0]}
+                </h1>
+                <p className="text-white/90 text-lg drop-shadow-md">
+                  Track your progress and manage your fitting sessions
+                </p>
+              </div>
+              
+              {/* Prominent CTA Button */}
+              <Button 
+                size="lg" 
+                asChild 
+                className="bg-gold hover:bg-gold/90 text-gold-foreground shadow-xl hover:shadow-2xl transition-all hover:scale-105 font-semibold"
+              >
+                <Link href="/fitting/new">
+                  <Play className="h-5 w-5 mr-2" />
+                  Start New Fitting
+                </Link>
+              </Button>
             </div>
-            <Button size="lg" asChild className="bg-accent hover:bg-accent/90">
-              <Link href="/fitting/new">
-                <Play className="h-5 w-5 mr-2" />
-                Start New Fitting
-              </Link>
-            </Button>
           </div>
 
           {/* AI Weekly Summary - Core and Premium users only */}
