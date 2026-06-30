@@ -128,8 +128,8 @@ export function ProgressCharts() {
     }
 
     // Draw data points and line
-    ctx.strokeStyle = "#22C55E";
-    ctx.fillStyle = "#22C55E";
+    ctx.strokeStyle = "#2D6A4F";
+    ctx.fillStyle = "#2D6A4F";
     ctx.lineWidth = 2;
     ctx.beginPath();
 
@@ -157,7 +157,7 @@ export function ProgressCharts() {
     const avgSpeed = speeds.reduce((a, b) => a + b, 0) / speeds.length;
     const y = height - padding - ((avgSpeed - minSpeed) / speedRange) * chartHeight;
     ctx.setLineDash([5, 5]);
-    ctx.strokeStyle = "#9ca3af";
+    ctx.strokeStyle = "#C9A84C";
     ctx.beginPath();
     ctx.moveTo(padding, y);
     ctx.lineTo(width - padding, y);
@@ -203,7 +203,7 @@ export function ProgressCharts() {
     ctx.stroke();
 
     // Draw carry distance line
-    ctx.strokeStyle = "#22C55E";
+    ctx.strokeStyle = "#2D6A4F";
     ctx.lineWidth = 2;
     ctx.beginPath();
     carryDistances.forEach((dist, i) => {
@@ -215,7 +215,7 @@ export function ProgressCharts() {
     ctx.stroke();
 
     // Draw total distance line
-    ctx.strokeStyle = "#D4AF37";
+    ctx.strokeStyle = "#C9A84C";
     ctx.lineWidth = 2;
     ctx.beginPath();
     totalDistances.forEach((dist, i) => {
@@ -227,14 +227,14 @@ export function ProgressCharts() {
     ctx.stroke();
 
     // Legend
-    ctx.fillStyle = "#22C55E";
+    ctx.fillStyle = "#2D6A4F";
     ctx.fillRect(padding, 30, 15, 3);
     ctx.fillStyle = "#000";
     ctx.font = "12px Inter";
     ctx.textAlign = "left";
     ctx.fillText("Carry", padding + 20, 33);
 
-    ctx.fillStyle = "#D4AF37";
+    ctx.fillStyle = "#C9A84C";
     ctx.fillRect(padding + 80, 30, 15, 3);
     ctx.fillStyle = "#000";
     ctx.fillText("Total", padding + 100, 33);
@@ -290,7 +290,7 @@ export function ProgressCharts() {
     ctx.stroke();
 
     // Draw variance line
-    ctx.strokeStyle = "#22C55E";
+    ctx.strokeStyle = "#2D6A4F";
     ctx.lineWidth = 2;
     ctx.beginPath();
     variances.forEach((variance, i) => {
@@ -353,9 +353,9 @@ export function ProgressCharts() {
 
       ctx.beginPath();
       ctx.arc(x, y, 4, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(34, 197, 94, 0.6)";
+      ctx.fillStyle = "rgba(45, 106, 79, 0.6)";
       ctx.fill();
-      ctx.strokeStyle = "#22C55E";
+      ctx.strokeStyle = "#C9A84C";
       ctx.lineWidth = 1;
       ctx.stroke();
     });

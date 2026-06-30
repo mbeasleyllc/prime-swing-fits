@@ -240,9 +240,9 @@ export function SwingDNARadar({ data }: SwingDNARadarProps) {
       }
     });
     ctx.closePath();
-    ctx.fillStyle = "rgba(34, 197, 94, 0.2)";
+    ctx.fillStyle = "rgba(45, 106, 79, 0.2)";
     ctx.fill();
-    ctx.strokeStyle = "#22C55E";
+    ctx.strokeStyle = "#2D6A4F";
     ctx.lineWidth = isMobile ? 1.5 : 2;
     ctx.stroke();
 
@@ -255,7 +255,7 @@ export function SwingDNARadar({ data }: SwingDNARadarProps) {
       
       ctx.beginPath();
       ctx.arc(x, y, isMobile ? 5 : 4, 0, Math.PI * 2);
-      ctx.fillStyle = "#22C55E";
+      ctx.fillStyle = "#C9A84C";
       ctx.fill();
       ctx.strokeStyle = "#fff";
       ctx.lineWidth = 2;
@@ -283,9 +283,9 @@ export function SwingDNARadar({ data }: SwingDNARadarProps) {
 
   const getScoreColor = (value: number, benchmark: number) => {
     const diff = value - benchmark;
-    if (diff > 5) return "text-green-600";
-    if (diff < -5) return "text-red-600";
-    return "text-yellow-600";
+    if (diff > 5) return "text-success";
+    if (diff < -5) return "text-destructive";
+    return "text-gold";
   };
 
   const getScoreIcon = (value: number, benchmark: number) => {
