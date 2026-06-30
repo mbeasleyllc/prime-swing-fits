@@ -225,7 +225,7 @@ export default function Dashboard() {
       }
 
       // Fetch recommended bag from most recent completed fitting
-      const { data: completedSessions } = await supabase
+      const { data: recentFittingData } = await supabase
         .from("fitting_sessions")
         .select(`
           id, 
@@ -246,8 +246,8 @@ export default function Dashboard() {
         .order("completed_at", { ascending: false })
         .limit(1);
 
-      if (completedSessions && completedSessions.length > 0 && completedSessions[0].fitting_recommendations) {
-        const session = completedSessions[0];
+      if (recentFittingData && recentFittingData.length > 0 && recentFittingData[0].fitting_recommendations) {
+        const session = recentFittingData[0];
         const recs = session.fitting_recommendations[0] as any;
         
         // Parse recommendations into club list
