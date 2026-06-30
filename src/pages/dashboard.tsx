@@ -225,526 +225,852 @@ export default function Dashboard() {
     <ProtectedRoute>
       <AppLayout>
         <div className="max-w-7xl">
-          {/* Hero Banner with Parallax Effect */}
-          <div className="relative mb-8 h-[200px] overflow-hidden rounded-2xl">
-            {/* Background Image with Parallax */}
-            <div 
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-75"
-              style={{ 
-                backgroundImage: "url('https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop')",
-                transform: `translateY(${parallaxOffset}px)`
-              }}
-            />
-            
-            {/* Dark Green Gradient Overlay (60% opacity) */}
-            <div 
-              className="absolute inset-0"
-              style={{ 
-                background: "linear-gradient(135deg, rgba(27, 67, 50, 0.75) 0%, rgba(27, 67, 50, 0.45) 100%)"
-              }}
-            />
-            
-            {/* Content */}
-            <div className="relative h-full flex items-center justify-between px-8">
-              <div className="flex-1">
-                <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">
-                  Welcome back, {user?.user_metadata?.full_name || user?.email?.split("@")[0]}
-                </h1>
-                <p className="text-white/90 text-lg drop-shadow-md">
-                  Track your progress and manage your fitting sessions
-                </p>
-              </div>
-              
-              {/* Prominent CTA Button */}
-              <Button 
-                size="lg" 
-                asChild 
-                className="bg-gold hover:bg-gold/90 text-gold-foreground shadow-xl hover:shadow-2xl transition-all hover:scale-105 font-semibold"
-              >
-                <Link href="/fitting/new">
-                  <Play className="h-5 w-5 mr-2" />
-                  Start New Fitting
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          {/* Fitting Summary Stats */}
-          {fittingStats && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              <Card className="hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-success/10 rounded-lg p-3">
-                        <CheckCircle2 className="h-6 w-6 text-success" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Total Fittings</p>
-                        <p className="text-2xl font-bold">{fittingStats.totalFittings}</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-gold/10 rounded-lg p-3">
-                        <Target className="h-6 w-6 text-gold" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Completion Rate</p>
-                        <p className="text-2xl font-bold">{fittingStats.completionRate}%</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-primary/10 rounded-lg p-3">
-                        <Activity className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Last 30 Days</p>
-                        <p className="text-2xl font-bold">{fittingStats.recentSessions}</p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`rounded-lg p-3 ${
-                        fittingStats.trend === "up" ? "bg-success/10" : 
-                        fittingStats.trend === "down" ? "bg-destructive/10" : 
-                        "bg-muted"
-                      }`}>
-                        {fittingStats.trend === "up" && <ArrowUp className="h-6 w-6 text-success" />}
-                        {fittingStats.trend === "down" && <ArrowDown className="h-6 w-6 text-destructive" />}
-                        {fittingStats.trend === "stable" && <Minus className="h-6 w-6 text-muted-foreground" />}
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-1">Activity Trend</p>
-                        <p className="text-lg font-semibold">
-                          {fittingStats.trend === "up" && <Badge variant="success" className="text-xs">Growing</Badge>}
-                          {fittingStats.trend === "down" && <Badge variant="destructive" className="text-xs">Declining</Badge>}
-                          {fittingStats.trend === "stable" && <Badge variant="secondary" className="text-xs">Steady</Badge>}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* Your Swing Snapshot Widget */}
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-success" />
-                Your Swing Snapshot
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {swingSnapshot ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {/* Left: Line Chart */}
-                  <div className="bg-primary rounded-xl p-6 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
-                    <div className="relative">
-                      <p className="text-white/70 text-sm mb-4">Club Speed Trend (Last 6 Sessions)</p>
-                      <div className="h-48 flex items-end justify-between gap-2">
-                        {swingSnapshot.chartData.map((point, idx) => {
-                          const maxSpeed = Math.max(...swingSnapshot.chartData.map(p => p.speed));
-                          const minSpeed = Math.min(...swingSnapshot.chartData.map(p => p.speed));
-                          const range = maxSpeed - minSpeed || 1;
-                          const heightPercent = ((point.speed - minSpeed) / range) * 70 + 30;
-                          
-                          return (
-                            <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                              <div className="w-full flex flex-col items-center">
-                                <span className="text-gold text-xs font-semibold mb-1">{point.speed}</span>
-                                <div 
-                                  className="w-full bg-gold rounded-t-md transition-all duration-300"
-                                  style={{ height: `${heightPercent}%` }}
-                                />
-                              </div>
-                              <span className="text-white/50 text-xs">S{point.session}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right: Key Metrics */}
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-success/10 rounded-lg p-3">
-                          <Gauge className="h-6 w-6 text-success" />
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Avg Club Speed</p>
-                          <p className="text-3xl font-bold">{swingSnapshot.avgClubSpeed} <span className="text-lg text-muted-foreground">mph</span></p>
-                        </div>
-                      </div>
-                      <div className={`p-2 rounded-full ${
-                        swingSnapshot.speedTrend === "up" ? "bg-success/10" : 
-                        swingSnapshot.speedTrend === "down" ? "bg-destructive/10" : 
-                        "bg-muted"
-                      }`}>
-                        {swingSnapshot.speedTrend === "up" && <ArrowUp className="h-5 w-5 text-success" />}
-                        {swingSnapshot.speedTrend === "down" && <ArrowDown className="h-5 w-5 text-destructive" />}
-                        {swingSnapshot.speedTrend === "stable" && <Minus className="h-5 w-5 text-muted-foreground" />}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-gold/10 rounded-lg p-3">
-                          <Target className="h-6 w-6 text-gold" />
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Avg Carry Distance</p>
-                          <p className="text-3xl font-bold">{swingSnapshot.avgCarryDistance} <span className="text-lg text-muted-foreground">yds</span></p>
-                        </div>
-                      </div>
-                      <div className={`p-2 rounded-full ${
-                        swingSnapshot.distanceTrend === "up" ? "bg-success/10" : 
-                        swingSnapshot.distanceTrend === "down" ? "bg-destructive/10" : 
-                        "bg-muted"
-                      }`}>
-                        {swingSnapshot.distanceTrend === "up" && <ArrowUp className="h-5 w-5 text-success" />}
-                        {swingSnapshot.distanceTrend === "down" && <ArrowDown className="h-5 w-5 text-destructive" />}
-                        {swingSnapshot.distanceTrend === "stable" && <Minus className="h-5 w-5 text-muted-foreground" />}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-primary/10 rounded-lg p-3">
-                          <Activity className="h-6 w-6 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Recommended Flex</p>
-                          <p className="text-3xl font-bold">{swingSnapshot.recommendedFlex}</p>
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        Based on speed
-                      </Badge>
-                    </div>
-
-                    <div className="pt-4 border-t">
-                      <Link 
-                        href="/swing-analytics" 
-                        className="text-gold hover:text-gold/80 text-sm font-medium underline decoration-gold/30 hover:decoration-gold/60 transition-all inline-flex items-center gap-1"
-                      >
-                        View Full Analytics
-                        <TrendingUp className="h-4 w-4" />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="py-16 text-center">
-                  <div className="max-w-lg mx-auto">
-                    <div className="relative w-48 h-48 mx-auto mb-6">
-                      {/* Golfer Silhouette SVG */}
-                      <svg
-                        viewBox="0 0 200 200"
-                        className="w-full h-full text-muted-foreground/20"
-                        fill="currentColor"
-                      >
-                        <path d="M100 40 C85 40 75 50 75 65 C75 80 85 90 100 90 C115 90 125 80 125 65 C125 50 115 40 100 40 Z" />
-                        <path d="M100 95 L100 150 M100 115 L70 100 M100 115 L130 130 M100 150 L70 180 M100 150 L130 180" 
-                          stroke="currentColor" 
-                          strokeWidth="6" 
-                          strokeLinecap="round" 
-                          fill="none"
-                        />
-                        <path d="M130 130 L160 100 L165 95" 
-                          stroke="currentColor" 
-                          strokeWidth="4" 
-                          strokeLinecap="round" 
-                          fill="none"
-                        />
-                      </svg>
-                    </div>
-                    <h3 className="text-2xl font-bold mb-3 text-foreground">
-                      Complete your first fitting to see your swing data
-                    </h3>
-                    <p className="text-muted-foreground mb-6">
-                      Start tracking your club speed, carry distance, and get personalized recommendations to improve your game.
+          {/* Entry and Core Tier Dashboard - Fitting Focus Only */}
+          {(userTier === "entry" || userTier === "core") && (
+            <>
+              {/* Simplified Hero Banner */}
+              <div className="relative mb-8 h-[200px] overflow-hidden rounded-2xl">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-75"
+                  style={{ 
+                    backgroundImage: "url('https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop')",
+                    transform: `translateY(${parallaxOffset}px)`
+                  }}
+                />
+                <div 
+                  className="absolute inset-0"
+                  style={{ 
+                    background: "linear-gradient(135deg, rgba(27, 67, 50, 0.75) 0%, rgba(27, 67, 50, 0.45) 100%)"
+                  }}
+                />
+                <div className="relative h-full flex items-center justify-between px-8">
+                  <div className="flex-1">
+                    <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">
+                      Welcome back, {user?.user_metadata?.full_name || user?.email?.split("@")[0]}
+                    </h1>
+                    <p className="text-white/90 text-lg drop-shadow-md">
+                      Your personalized club fitting journey
                     </p>
-                    <Button asChild className="bg-gold hover:bg-gold/90">
-                      <Link href="/swing-data/import">
-                        <Play className="h-4 w-4 mr-2" />
-                        Import Swing Data
-                      </Link>
-                    </Button>
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* AI Weekly Summary - Core and Premium users only */}
-          {userTier !== "entry" && user && (
-            <div className="mb-8">
-              <WeeklySummary userId={user.id} />
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="bg-accent/10 rounded-full p-3">
-                    <Trophy className="h-6 w-6 text-accent" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Badges Earned</p>
-                    <p className="text-2xl font-bold">{stats.badges}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="bg-accent/10 rounded-full p-3">
-                    <Target className="h-6 w-6 text-accent" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Active Goals</p>
-                    <p className="text-2xl font-bold">{stats.activeGoals}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="bg-gold/10 rounded-full p-3">
-                    <Lightbulb className="h-6 w-6 text-gold" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">AI Insights</p>
-                    <p className="text-2xl font-bold">{stats.insights}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Swing Analytics Card */}
-          {userTier !== "entry" && swingStats && (
-            <Card className="mb-8 border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5 text-accent" />
-                    Swing Analytics
-                  </CardTitle>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href="/swing-analytics">
-                      View Full Dashboard
-                      <TrendingUp className="h-4 w-4 ml-2" />
+                  <Button 
+                    size="lg" 
+                    asChild 
+                    className="bg-gold hover:bg-gold/90 text-gold-foreground shadow-xl hover:shadow-2xl transition-all hover:scale-105 font-semibold"
+                  >
+                    <Link href="/fitting/new">
+                      <Play className="h-5 w-5 mr-2" />
+                      Start New Fitting
                     </Link>
                   </Button>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Last Session</p>
-                    <p className="text-lg font-semibold">
-                      {swingStats.lastSession 
-                        ? new Date(swingStats.lastSession).toLocaleDateString()
-                        : "No sessions yet"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Consistency Score</p>
-                    <p className="text-lg font-semibold">
-                      {swingStats.consistencyScore !== null ? `${swingStats.consistencyScore}%` : "—"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">Latest Achievement</p>
-                    <p className="text-lg font-semibold">
-                      {swingStats.latestBadge || "Keep practicing!"}
-                    </p>
-                  </div>
-                </div>
-                {swingStats.sessionCount === 0 && (
-                  <div className="mt-4 pt-4 border-t">
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Track your swing data to get personalized insights and recommendations.
-                    </p>
-                    <Button asChild size="sm">
-                      <Link href="/swing-data/import">
-                        Import Swing Data
-                      </Link>
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
+              </div>
 
-          {/* Upgrade prompt for Entry tier */}
-          {userTier === "entry" && (
-            <Card className="mb-8 border-gold/30 bg-gradient-to-br from-gold/10 to-transparent">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-gold">
-                  <Trophy className="h-5 w-5" />
-                  Unlock Swing Analytics
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Upgrade to Core or Premium to access advanced swing data tracking, AI insights, and personalized improvement goals.
-                </p>
-                <Button asChild className="bg-gold hover:bg-gold/90">
-                  <Link href="/pricing">
-                    View Premium Features
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          <Tabs defaultValue="sessions" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="sessions">Fitting Sessions</TabsTrigger>
-              <TabsTrigger value="badges">
-                <Trophy className="h-4 w-4 mr-2" />
-                Badges
-              </TabsTrigger>
-              <TabsTrigger value="goals">
-                <Target className="h-4 w-4 mr-2" />
-                Goals
-              </TabsTrigger>
-              <TabsTrigger value="insights">
-                <Lightbulb className="h-4 w-4 mr-2" />
-                Insights
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="sessions" className="mt-6">
-              {sessions.length === 0 ? (
-                <Card>
-                  <CardContent className="py-16 text-center">
-                    <div className="max-w-md mx-auto">
-                      <div className="bg-muted rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-                        <Target className="h-12 w-12 text-muted-foreground" />
+              {/* Fitting Summary Stats - Entry/Core */}
+              {fittingStats && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-success/10 rounded-lg p-3">
+                            <CheckCircle2 className="h-6 w-6 text-success" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Total Fittings</p>
+                            <p className="text-2xl font-bold">{fittingStats.totalFittings}</p>
+                          </div>
+                        </div>
                       </div>
-                      <h3 className="text-2xl font-bold mb-3">Start Your First Fitting</h3>
-                      <p className="text-muted-foreground mb-6">
-                        Get personalized club recommendations with Prime Swing Fits' guided fitting wizard.
+                    </CardContent>
+                  </Card>
+
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-gold/10 rounded-lg p-3">
+                            <Target className="h-6 w-6 text-gold" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Completion Rate</p>
+                            <p className="text-2xl font-bold">{fittingStats.completionRate}%</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-primary/10 rounded-lg p-3">
+                            <Activity className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Last 30 Days</p>
+                            <p className="text-2xl font-bold">{fittingStats.recentSessions}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Upgrade to Premium Banner */}
+              <Card className="mb-8 border-gold/30 bg-gradient-to-br from-gold/10 via-gold/5 to-transparent relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 rounded-full -translate-y-32 translate-x-32" />
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2 text-gold mb-2">
+                        <Trophy className="h-6 w-6" />
+                        Unlock Advanced Swing Analytics
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        Track every swing, get AI-powered insights, and improve your game with data-driven recommendations
                       </p>
-                      <Button size="lg" asChild>
-                        <Link href="/fitting/new">
-                          Begin Fitting Process
-                        </Link>
-                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-success/10 rounded-lg p-2 mt-1">
+                        <Activity className="h-5 w-5 text-success" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-sm mb-1">Import Swing Data</h4>
+                        <p className="text-xs text-muted-foreground">Track club speed, distance, and accuracy from launch monitors</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="bg-gold/10 rounded-lg p-2 mt-1">
+                        <TrendingUp className="h-5 w-5 text-gold" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-sm mb-1">AI Weekly Summary</h4>
+                        <p className="text-xs text-muted-foreground">Get personalized insights on improvements and focus areas</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="bg-primary/10 rounded-lg p-2 mt-1">
+                        <Target className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-sm mb-1">Advanced Analytics</h4>
+                        <p className="text-xs text-muted-foreground">Visualize trends, set goals, and track consistency over time</p>
+                      </div>
+                    </div>
+                  </div>
+                  <Button asChild size="lg" className="bg-gold hover:bg-gold/90">
+                    <Link href="/pricing">
+                      <Trophy className="h-5 w-5 mr-2" />
+                      Upgrade to Premium
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Gamification Stats - Core Tier Only */}
+              {userTier === "core" && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-4">
+                        <div className="bg-accent/10 rounded-full p-3">
+                          <Trophy className="h-6 w-6 text-accent" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Badges Earned</p>
+                          <p className="text-2xl font-bold">{stats.badges}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-4">
+                        <div className="bg-accent/10 rounded-full p-3">
+                          <Target className="h-6 w-6 text-accent" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Active Goals</p>
+                          <p className="text-2xl font-bold">{stats.activeGoals}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="flex items-center gap-4">
+                        <div className="bg-gold/10 rounded-full p-3">
+                          <Lightbulb className="h-6 w-6 text-gold" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">AI Insights</p>
+                          <p className="text-2xl font-bold">{stats.insights}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Fitting Sessions - Entry/Core */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Fitting Sessions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {sessions.length === 0 ? (
+                    <div className="py-16 text-center">
+                      <div className="max-w-md mx-auto">
+                        <div className="bg-muted rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                          <Target className="h-12 w-12 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-2xl font-bold mb-3">Start Your First Fitting</h3>
+                        <p className="text-muted-foreground mb-6">
+                          Get personalized club recommendations with Prime Swing Fits' guided fitting wizard.
+                        </p>
+                        <Button size="lg" asChild>
+                          <Link href="/fitting/new">
+                            Begin Fitting Process
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {sessions.map((session) => (
+                        <Card key={session.id} className="hover:shadow-md transition-shadow">
+                          <CardContent className="pt-6">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h3 className="text-lg font-semibold">
+                                    Fitting Session
+                                  </h3>
+                                  {session.status === "in_progress" ? (
+                                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                                      <Clock className="h-3 w-3 mr-1" />
+                                      In Progress
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="success" className="bg-success/10 text-success border-success/20">
+                                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                                      Completed
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="text-sm text-muted-foreground space-y-1">
+                                  <p>Created: {new Date(session.created_at).toLocaleDateString()}</p>
+                                  {session.completed_at && (
+                                    <p>Completed: {new Date(session.completed_at).toLocaleDateString()}</p>
+                                  )}
+                                  {session.status === "in_progress" && (
+                                    <p>Current Step: {session.current_step} of 6</p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                {session.status === "in_progress" ? (
+                                  <Button asChild>
+                                    <Link href={`/fitting/${session.id}/step/${session.current_step}`}>
+                                      <Play className="h-4 w-4 mr-2" />
+                                      Resume
+                                    </Link>
+                                  </Button>
+                                ) : (
+                                  <>
+                                    <Button asChild>
+                                      <Link href={`/fitting/${session.id}/results`}>
+                                        <Eye className="h-4 w-4 mr-2" />
+                                        View Results
+                                      </Link>
+                                    </Button>
+                                    <Button variant="outline" asChild>
+                                      <Link href={`/fitting/${session.id}/report`}>
+                                        <Download className="h-4 w-4 mr-2" />
+                                        Report
+                                      </Link>
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Core Tier: Badges and Goals Tabs */}
+              {userTier === "core" && (
+                <div className="mt-8">
+                  <Tabs defaultValue="badges" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="badges">
+                        <Trophy className="h-4 w-4 mr-2" />
+                        Badges
+                      </TabsTrigger>
+                      <TabsTrigger value="goals">
+                        <Target className="h-4 w-4 mr-2" />
+                        Goals
+                      </TabsTrigger>
+                      <TabsTrigger value="insights">
+                        <Lightbulb className="h-4 w-4 mr-2" />
+                        Insights
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="badges" className="mt-6">
+                      {user && <BadgeShelf userId={user.id} />}
+                    </TabsContent>
+
+                    <TabsContent value="goals" className="mt-6">
+                      {user && <GoalsList userId={user.id} />}
+                    </TabsContent>
+
+                    <TabsContent value="insights" className="mt-6">
+                      {user && <InsightsPanel userId={user.id} />}
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Premium Tier Dashboard - Full Features */}
+          {userTier === "premium" && (
+            <>
+              {/* Hero Banner with Parallax Effect */}
+              <div className="relative mb-8 h-[200px] overflow-hidden rounded-2xl">
+                {/* Background Image with Parallax */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-75"
+                  style={{ 
+                    backgroundImage: "url('https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop')",
+                    transform: `translateY(${parallaxOffset}px)`
+                  }}
+                />
+                
+                {/* Dark Green Gradient Overlay (60% opacity) */}
+                <div 
+                  className="absolute inset-0"
+                  style={{ 
+                    background: "linear-gradient(135deg, rgba(27, 67, 50, 0.75) 0%, rgba(27, 67, 50, 0.45) 100%)"
+                  }}
+                />
+                
+                {/* Content */}
+                <div className="relative h-full flex items-center justify-between px-8">
+                  <div className="flex-1">
+                    <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">
+                      Welcome back, {user?.user_metadata?.full_name || user?.email?.split("@")[0]}
+                    </h1>
+                    <p className="text-white/90 text-lg drop-shadow-md">
+                      Track your progress and manage your fitting sessions
+                    </p>
+                  </div>
+                  
+                  {/* Prominent CTA Button */}
+                  <Button 
+                    size="lg" 
+                    asChild 
+                    className="bg-gold hover:bg-gold/90 text-gold-foreground shadow-xl hover:shadow-2xl transition-all hover:scale-105 font-semibold"
+                  >
+                    <Link href="/fitting/new">
+                      <Play className="h-5 w-5 mr-2" />
+                      Start New Fitting
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Fitting Summary Stats */}
+              {fittingStats && (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-success/10 rounded-lg p-3">
+                            <CheckCircle2 className="h-6 w-6 text-success" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Total Fittings</p>
+                            <p className="text-2xl font-bold">{fittingStats.totalFittings}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-gold/10 rounded-lg p-3">
+                            <Target className="h-6 w-6 text-gold" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Completion Rate</p>
+                            <p className="text-2xl font-bold">{fittingStats.completionRate}%</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-primary/10 rounded-lg p-3">
+                            <Activity className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Last 30 Days</p>
+                            <p className="text-2xl font-bold">{fittingStats.recentSessions}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`rounded-lg p-3 ${
+                            fittingStats.trend === "up" ? "bg-success/10" : 
+                            fittingStats.trend === "down" ? "bg-destructive/10" : 
+                            "bg-muted"
+                          }`}>
+                            {fittingStats.trend === "up" && <ArrowUp className="h-6 w-6 text-success" />}
+                            {fittingStats.trend === "down" && <ArrowDown className="h-6 w-6 text-destructive" />}
+                            {fittingStats.trend === "stable" && <Minus className="h-6 w-6 text-muted-foreground" />}
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1">Activity Trend</p>
+                            <p className="text-lg font-semibold">
+                              {fittingStats.trend === "up" && <Badge variant="success" className="text-xs">Growing</Badge>}
+                              {fittingStats.trend === "down" && <Badge variant="destructive" className="text-xs">Declining</Badge>}
+                              {fittingStats.trend === "stable" && <Badge variant="secondary" className="text-xs">Steady</Badge>}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Your Swing Snapshot Widget */}
+              <Card className="mb-8">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5 text-success" />
+                    Your Swing Snapshot
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {swingSnapshot ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      {/* Left: Line Chart */}
+                      <div className="bg-primary rounded-xl p-6 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
+                        <div className="relative">
+                          <p className="text-white/70 text-sm mb-4">Club Speed Trend (Last 6 Sessions)</p>
+                          <div className="h-48 flex items-end justify-between gap-2">
+                            {swingSnapshot.chartData.map((point, idx) => {
+                              const maxSpeed = Math.max(...swingSnapshot.chartData.map(p => p.speed));
+                              const minSpeed = Math.min(...swingSnapshot.chartData.map(p => p.speed));
+                              const range = maxSpeed - minSpeed || 1;
+                              const heightPercent = ((point.speed - minSpeed) / range) * 70 + 30;
+                              
+                              return (
+                                <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                                  <div className="w-full flex flex-col items-center">
+                                    <span className="text-gold text-xs font-semibold mb-1">{point.speed}</span>
+                                    <div 
+                                      className="w-full bg-gold rounded-t-md transition-all duration-300"
+                                      style={{ height: `${heightPercent}%` }}
+                                    />
+                                  </div>
+                                  <span className="text-white/50 text-xs">S{point.session}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right: Key Metrics */}
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="bg-success/10 rounded-lg p-3">
+                              <Gauge className="h-6 w-6 text-success" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Avg Club Speed</p>
+                              <p className="text-3xl font-bold">{swingSnapshot.avgClubSpeed} <span className="text-lg text-muted-foreground">mph</span></p>
+                            </div>
+                          </div>
+                          <div className={`p-2 rounded-full ${
+                            swingSnapshot.speedTrend === "up" ? "bg-success/10" : 
+                            swingSnapshot.speedTrend === "down" ? "bg-destructive/10" : 
+                            "bg-muted"
+                          }`}>
+                            {swingSnapshot.speedTrend === "up" && <ArrowUp className="h-5 w-5 text-success" />}
+                            {swingSnapshot.speedTrend === "down" && <ArrowDown className="h-5 w-5 text-destructive" />}
+                            {swingSnapshot.speedTrend === "stable" && <Minus className="h-5 w-5 text-muted-foreground" />}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="bg-gold/10 rounded-lg p-3">
+                              <Target className="h-6 w-6 text-gold" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Avg Carry Distance</p>
+                              <p className="text-3xl font-bold">{swingSnapshot.avgCarryDistance} <span className="text-lg text-muted-foreground">yds</span></p>
+                            </div>
+                          </div>
+                          <div className={`p-2 rounded-full ${
+                            swingSnapshot.distanceTrend === "up" ? "bg-success/10" : 
+                            swingSnapshot.distanceTrend === "down" ? "bg-destructive/10" : 
+                            "bg-muted"
+                          }`}>
+                            {swingSnapshot.distanceTrend === "up" && <ArrowUp className="h-5 w-5 text-success" />}
+                            {swingSnapshot.distanceTrend === "down" && <ArrowDown className="h-5 w-5 text-destructive" />}
+                            {swingSnapshot.distanceTrend === "stable" && <Minus className="h-5 w-5 text-muted-foreground" />}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="bg-primary/10 rounded-lg p-3">
+                              <Activity className="h-6 w-6 text-primary" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground mb-1">Recommended Flex</p>
+                              <p className="text-3xl font-bold">{swingSnapshot.recommendedFlex}</p>
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            Based on speed
+                          </Badge>
+                        </div>
+
+                        <div className="pt-4 border-t">
+                          <Link 
+                            href="/swing-analytics" 
+                            className="text-gold hover:text-gold/80 text-sm font-medium underline decoration-gold/30 hover:decoration-gold/60 transition-all inline-flex items-center gap-1"
+                          >
+                            View Full Analytics
+                            <TrendingUp className="h-4 w-4" />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="py-16 text-center">
+                      <div className="max-w-lg mx-auto">
+                        <div className="relative w-48 h-48 mx-auto mb-6">
+                          {/* Golfer Silhouette SVG */}
+                          <svg
+                            viewBox="0 0 200 200"
+                            className="w-full h-full text-muted-foreground/20"
+                            fill="currentColor"
+                          >
+                            <path d="M100 40 C85 40 75 50 75 65 C75 80 85 90 100 90 C115 90 125 80 125 65 C125 50 115 40 100 40 Z" />
+                            <path d="M100 95 L100 150 M100 115 L70 100 M100 115 L130 130 M100 150 L70 180 M100 150 L130 180" 
+                              stroke="currentColor" 
+                              strokeWidth="6" 
+                              strokeLinecap="round" 
+                              fill="none"
+                            />
+                            <path d="M130 130 L160 100 L165 95" 
+                              stroke="currentColor" 
+                              strokeWidth="4" 
+                              strokeLinecap="round" 
+                              fill="none"
+                            />
+                          </svg>
+                        </div>
+                        <h3 className="text-2xl font-bold mb-3 text-foreground">
+                          Complete your first fitting to see your swing data
+                        </h3>
+                        <p className="text-muted-foreground mb-6">
+                          Start tracking your club speed, carry distance, and get personalized recommendations to improve your game.
+                        </p>
+                        <Button asChild className="bg-gold hover:bg-gold/90">
+                          <Link href="/swing-data/import">
+                            <Play className="h-4 w-4 mr-2" />
+                            Import Swing Data
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* AI Weekly Summary - Core and Premium users only */}
+              {userTier !== "entry" && user && (
+                <div className="mb-8">
+                  <WeeklySummary userId={user.id} />
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-accent/10 rounded-full p-3">
+                        <Trophy className="h-6 w-6 text-accent" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Badges Earned</p>
+                        <p className="text-2xl font-bold">{stats.badges}</p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              ) : (
-                <div className="space-y-4">
-                  {sessions.map((session) => (
-                    <Card key={session.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="pt-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h3 className="text-lg font-semibold">
-                                Fitting Session
-                              </h3>
-                              {session.status === "in_progress" ? (
-                                <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                                  <Clock className="h-3 w-3 mr-1" />
-                                  In Progress
-                                </Badge>
-                              ) : (
-                                <Badge variant="success" className="bg-success/10 text-success border-success/20">
-                                  <CheckCircle2 className="h-3 w-3 mr-1" />
-                                  Completed
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-sm text-muted-foreground space-y-1">
-                              <p>Created: {new Date(session.created_at).toLocaleDateString()}</p>
-                              {session.completed_at && (
-                                <p>Completed: {new Date(session.completed_at).toLocaleDateString()}</p>
-                              )}
-                              {session.status === "in_progress" && (
-                                <p>Current Step: {session.current_step} of 6</p>
-                              )}
-                            </div>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-accent/10 rounded-full p-3">
+                        <Target className="h-6 w-6 text-accent" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Active Goals</p>
+                        <p className="text-2xl font-bold">{stats.activeGoals}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-gold/10 rounded-full p-3">
+                        <Lightbulb className="h-6 w-6 text-gold" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">AI Insights</p>
+                        <p className="text-2xl font-bold">{stats.insights}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Swing Analytics Card */}
+              {userTier !== "entry" && swingStats && (
+                <Card className="mb-8 border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Activity className="h-5 w-5 text-accent" />
+                        Swing Analytics
+                      </CardTitle>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href="/swing-analytics">
+                          View Full Dashboard
+                          <TrendingUp className="h-4 w-4 ml-2" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Last Session</p>
+                        <p className="text-lg font-semibold">
+                          {swingStats.lastSession 
+                            ? new Date(swingStats.lastSession).toLocaleDateString()
+                            : "No sessions yet"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Consistency Score</p>
+                        <p className="text-lg font-semibold">
+                          {swingStats.consistencyScore !== null ? `${swingStats.consistencyScore}%` : "—"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-1">Latest Achievement</p>
+                        <p className="text-lg font-semibold">
+                          {swingStats.latestBadge || "Keep practicing!"}
+                        </p>
+                      </div>
+                    </div>
+                    {swingStats.sessionCount === 0 && (
+                      <div className="mt-4 pt-4 border-t">
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Track your swing data to get personalized insights and recommendations.
+                        </p>
+                        <Button asChild size="sm">
+                          <Link href="/swing-data/import">
+                            Import Swing Data
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Upgrade prompt for Entry tier */}
+              {userTier === "entry" && (
+                <Card className="mb-8 border-gold/30 bg-gradient-to-br from-gold/10 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-gold">
+                      <Trophy className="h-5 w-5" />
+                      Unlock Swing Analytics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Upgrade to Core or Premium to access advanced swing data tracking, AI insights, and personalized improvement goals.
+                    </p>
+                    <Button asChild className="bg-gold hover:bg-gold/90">
+                      <Link href="/pricing">
+                        View Premium Features
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
+              <Tabs defaultValue="sessions" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="sessions">Fitting Sessions</TabsTrigger>
+                  <TabsTrigger value="badges">
+                    <Trophy className="h-4 w-4 mr-2" />
+                    Badges
+                  </TabsTrigger>
+                  <TabsTrigger value="goals">
+                    <Target className="h-4 w-4 mr-2" />
+                    Goals
+                  </TabsTrigger>
+                  <TabsTrigger value="insights">
+                    <Lightbulb className="h-4 w-4 mr-2" />
+                    Insights
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="sessions" className="mt-6">
+                  {sessions.length === 0 ? (
+                    <Card>
+                      <CardContent className="py-16 text-center">
+                        <div className="max-w-md mx-auto">
+                          <div className="bg-muted rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                            <Target className="h-12 w-12 text-muted-foreground" />
                           </div>
-                          <div className="flex gap-2">
-                            {session.status === "in_progress" ? (
-                              <Button asChild>
-                                <Link href={`/fitting/${session.id}/step/${session.current_step}`}>
-                                  <Play className="h-4 w-4 mr-2" />
-                                  Resume
-                                </Link>
-                              </Button>
-                            ) : (
-                              <>
-                                <Button asChild>
-                                  <Link href={`/fitting/${session.id}/results`}>
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    View Results
-                                  </Link>
-                                </Button>
-                                <Button variant="outline" asChild>
-                                  <Link href={`/fitting/${session.id}/report`}>
-                                    <Download className="h-4 w-4 mr-2" />
-                                    Report
-                                  </Link>
-                                </Button>
-                              </>
-                            )}
-                          </div>
+                          <h3 className="text-2xl font-bold mb-3">Start Your First Fitting</h3>
+                          <p className="text-muted-foreground mb-6">
+                            Get personalized club recommendations with Prime Swing Fits' guided fitting wizard.
+                          </p>
+                          <Button size="lg" asChild>
+                            <Link href="/fitting/new">
+                              Begin Fitting Process
+                            </Link>
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+                  ) : (
+                    <div className="space-y-4">
+                      {sessions.map((session) => (
+                        <Card key={session.id} className="hover:shadow-md transition-shadow">
+                          <CardContent className="pt-6">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h3 className="text-lg font-semibold">
+                                    Fitting Session
+                                  </h3>
+                                  {session.status === "in_progress" ? (
+                                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                                      <Clock className="h-3 w-3 mr-1" />
+                                      In Progress
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="success" className="bg-success/10 text-success border-success/20">
+                                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                                      Completed
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="text-sm text-muted-foreground space-y-1">
+                                  <p>Created: {new Date(session.created_at).toLocaleDateString()}</p>
+                                  {session.completed_at && (
+                                    <p>Completed: {new Date(session.completed_at).toLocaleDateString()}</p>
+                                  )}
+                                  {session.status === "in_progress" && (
+                                    <p>Current Step: {session.current_step} of 6</p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                {session.status === "in_progress" ? (
+                                  <Button asChild>
+                                    <Link href={`/fitting/${session.id}/step/${session.current_step}`}>
+                                      <Play className="h-4 w-4 mr-2" />
+                                      Resume
+                                    </Link>
+                                  </Button>
+                                ) : (
+                                  <>
+                                    <Button asChild>
+                                      <Link href={`/fitting/${session.id}/results`}>
+                                        <Eye className="h-4 w-4 mr-2" />
+                                        View Results
+                                      </Link>
+                                    </Button>
+                                    <Button variant="outline" asChild>
+                                      <Link href={`/fitting/${session.id}/report`}>
+                                        <Download className="h-4 w-4 mr-2" />
+                                        Report
+                                      </Link>
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
 
-            <TabsContent value="badges" className="mt-6">
-              {user && <BadgeShelf userId={user.id} />}
-            </TabsContent>
+                <TabsContent value="badges" className="mt-6">
+                  {user && <BadgeShelf userId={user.id} />}
+                </TabsContent>
 
-            <TabsContent value="goals" className="mt-6">
-              {user && <GoalsList userId={user.id} />}
-            </TabsContent>
+                <TabsContent value="goals" className="mt-6">
+                  {user && <GoalsList userId={user.id} />}
+                </TabsContent>
 
-            <TabsContent value="insights" className="mt-6">
-              {user && <InsightsPanel userId={user.id} />}
-            </TabsContent>
-          </Tabs>
+                <TabsContent value="insights" className="mt-6">
+                  {user && <InsightsPanel userId={user.id} />}
+                </TabsContent>
+              </Tabs>
+            </>
+          )}
         </div>
       </AppLayout>
     </ProtectedRoute>
