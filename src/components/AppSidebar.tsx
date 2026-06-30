@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   LayoutDashboard,
   User,
@@ -116,15 +117,22 @@ export function AppSidebar() {
 
       {/* User Profile Section */}
       <div className="p-4 border-t border-sidebar-border">
-        <div className="mb-3">
-          <p className="text-sm font-medium text-sidebar-foreground truncate">
-            {user?.email?.split("@")[0]}
-          </p>
-          <p className="text-xs text-sidebar-foreground/60 truncate">{user?.email}</p>
+        <div className="flex items-center gap-3 mb-3">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback className="bg-gold/20 text-gold font-semibold">
+              {user?.email?.charAt(0).toUpperCase() || "U"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-sidebar-foreground truncate">
+              {user?.email?.split("@")[0]}
+            </p>
+            <p className="text-xs text-sidebar-foreground/60 truncate">{user?.email}</p>
+          </div>
         </div>
         <Button
           onClick={handleSignOut}
-          className="w-full justify-center bg-gold text-gold-foreground hover:bg-gold/90"
+          className="w-full bg-gold text-gold-foreground hover:bg-gold/90"
         >
           Sign Out
         </Button>
