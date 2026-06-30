@@ -216,15 +216,39 @@ function AccountDetailsSection({
       const [first, ...lastParts] = displayName.split(" ");
       const last = lastParts.join(" ");
 
-      const { error } = await supabase
+      // Check if profile exists
+      const { data: existingProfile } = await supabase
         .from("user_profiles")
-        .upsert({
-          user_id: user.id,
-          first_name: first,
-          last_name: last,
-        });
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (existingProfile?.id) {
+        // Update existing profile
+        const { error } = await supabase
+          .from("user_profiles")
+          .update({
+            first_name: first,
+            last_name: last,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existingProfile.id);
+
+        if (error) throw error;
+      } else {
+        // Create new profile
+        const { error } = await supabase
+          .from("user_profiles")
+          .insert({
+            user_id: user.id,
+            first_name: first,
+            last_name: last,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+
+        if (error) throw error;
+      }
 
       toast({
         title: "Saved",
@@ -232,6 +256,7 @@ function AccountDetailsSection({
       });
       onUpdate();
     } catch (error) {
+      console.error("Save error:", error);
       toast({
         title: "Error",
         description: "Failed to update display name",

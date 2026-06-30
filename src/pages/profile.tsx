@@ -176,40 +176,61 @@ function ProfileContent() {
   const saveSection = async (section: string, data: Partial<UserProfile>) => {
     setSaving(true);
     try {
-      // First, check if profile exists to get the id
-      const { data: existingProfile } = await supabase
+      // First, check if profile exists
+      const { data: existingProfile, error: fetchError } = await supabase
         .from("user_profiles")
-        .select("id")
+        .select("id, user_id")
         .eq("user_id", user!.id)
         .maybeSingle();
 
-      // Build upsert data with ONLY the fields being updated
-      const upsertData: any = {
-        user_id: user!.id,
-        updated_at: new Date().toISOString(),
-      };
+      if (fetchError) {
+        console.error("Fetch error:", fetchError);
+        throw fetchError;
+      }
 
-      // Add only the fields from data parameter (not spreading entire profile)
-      Object.keys(data).forEach(key => {
-        if (data[key as keyof UserProfile] !== undefined) {
-          upsertData[key] = data[key as keyof UserProfile];
+      // Clean the data - remove undefined values and ensure proper types
+      const cleanData: any = {};
+      Object.entries(data).forEach(([key, value]) => {
+        // Skip undefined values
+        if (value === undefined) return;
+        
+        // Convert empty strings to null for optional fields
+        if (value === "" && key !== "first_name" && key !== "last_name") {
+          cleanData[key] = null;
+        } else {
+          cleanData[key] = value;
         }
       });
 
-      // Include id if profile exists (required for update)
+      // If profile exists, update it
       if (existingProfile?.id) {
-        upsertData.id = existingProfile.id;
-      }
+        const { error: updateError } = await supabase
+          .from("user_profiles")
+          .update({
+            ...cleanData,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existingProfile.id);
 
-      const { error } = await supabase
-        .from("user_profiles")
-        .upsert(upsertData, {
-          onConflict: "user_id"
-        });
+        if (updateError) {
+          console.error("Update error details:", updateError);
+          throw updateError;
+        }
+      } else {
+        // Create new profile
+        const { error: insertError } = await supabase
+          .from("user_profiles")
+          .insert({
+            user_id: user!.id,
+            ...cleanData,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
 
-      if (error) {
-        console.error("Upsert error details:", error);
-        throw error;
+        if (insertError) {
+          console.error("Insert error details:", insertError);
+          throw insertError;
+        }
       }
 
       // Update localStorage for swing profile sections
@@ -228,7 +249,7 @@ function ProfileContent() {
       }
 
       // Update local state with saved data
-      setProfile(prev => ({ ...prev, ...data }));
+      setProfile(prev => ({ ...prev, ...cleanData }));
       
       toast({
         title: "Saved",
