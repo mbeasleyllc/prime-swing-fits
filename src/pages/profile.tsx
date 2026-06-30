@@ -97,12 +97,12 @@ function ProfileContent() {
   const fetchAvatarUrl = async () => {
     try {
       const { data, error } = await supabase
-        .from("users")
+        .from("profiles")
         .select("avatar_url")
         .eq("id", user!.id)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error && error.code !== "PGRST116") throw error;
       setAvatarUrl(data?.avatar_url || null);
     } catch (error) {
       console.error("Error fetching avatar:", error);
@@ -319,9 +319,11 @@ function ProfileContent() {
 
       // Update profile with avatar URL
       const { error: updateError } = await supabase
-        .from("users")
-        .update({ avatar_url: publicUrl })
-        .eq("id", user.id);
+        .from("profiles")
+        .upsert({
+          id: user.id,
+          avatar_url: publicUrl,
+        });
 
       if (updateError) throw updateError;
 
