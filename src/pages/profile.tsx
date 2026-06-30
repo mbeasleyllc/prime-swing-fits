@@ -1128,8 +1128,341 @@ function MeasurementsSection({
   );
 }
 
-function SwingProfileSection({ profile, saving, onSave }: any) {
-  return <div>Swing profile section placeholder</div>;
+function SwingProfileSection({
+  profile,
+  saving,
+  onSave,
+}: {
+  profile: Partial<UserProfile>;
+  saving: boolean;
+  onSave: (data: Partial<UserProfile>) => void;
+}) {
+  const [formData, setFormData] = useState({
+    swing_speed_range: profile.swing_speed_range || "",
+    ball_flight: profile.ball_flight || "",
+    miss_direction: profile.miss_direction || "",
+    attack_angle: profile.attack_angle || "",
+    club_path: profile.club_path || "",
+    driver_distance: profile.driver_distance?.toString() || "",
+  });
+
+  useEffect(() => {
+    setFormData({
+      swing_speed_range: profile.swing_speed_range || "",
+      ball_flight: profile.ball_flight || "",
+      miss_direction: profile.miss_direction || "",
+      attack_angle: profile.attack_angle || "",
+      club_path: profile.club_path || "",
+      driver_distance: profile.driver_distance?.toString() || "",
+    });
+  }, [profile]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({
+      swing_speed_range: formData.swing_speed_range || null,
+      ball_flight: formData.ball_flight || null,
+      miss_direction: formData.miss_direction || null,
+      attack_angle: formData.attack_angle || null,
+      club_path: formData.club_path || null,
+      driver_distance: formData.driver_distance ? parseInt(formData.driver_distance) : null,
+    } as Partial<UserProfile>);
+  };
+
+  const getFlexRecommendation = (speedRange: string): string => {
+    switch (speedRange) {
+      case "under_70":
+        return "Senior Flex (A) or Ladies Flex (L)";
+      case "70-80":
+        return "Senior Flex (A) or Regular Flex (R)";
+      case "80-90":
+        return "Regular Flex (R)";
+      case "90-100":
+        return "Stiff Flex (S)";
+      case "100-110":
+        return "Stiff Flex (S) or Extra Stiff (X)";
+      case "110_plus":
+        return "Extra Stiff Flex (X)";
+      default:
+        return "—";
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Trophy className="h-5 w-5 text-accent" />
+          Swing Profile & Characteristics
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="mb-6 p-4 bg-accent/10 rounded-lg border border-accent/30">
+          <p className="text-sm text-foreground flex items-start gap-2">
+            <Info className="h-4 w-4 text-accent flex-shrink-0 mt-0.5" />
+            <span>
+              Your swing characteristics help us recommend the perfect club specs. If you don't know these values yet, 
+              visit a launch monitor or complete a fitting session — we'll populate this automatically from your swing data.
+            </span>
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <Label htmlFor="swing_speed_range" className="flex items-center gap-2">
+              Swing Speed (Driver)
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-0.5 bg-accent/20 rounded text-xs font-medium text-accent">
+                      <TrendingUp className="h-3 w-3" />
+                      CRITICAL
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">
+                      Most important factor for shaft flex selection. Measured in MPH with driver. 
+                      Can be measured at any launch monitor facility or driving range with TrackMan/FlightScope.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Label>
+            <Select
+              value={formData.swing_speed_range}
+              onValueChange={(value) => setFormData({ ...formData, swing_speed_range: value })}
+            >
+              <SelectTrigger id="swing_speed_range" className="text-base">
+                <SelectValue placeholder="Select your driver swing speed" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="under_70">Under 70 mph (Senior/Junior)</SelectItem>
+                <SelectItem value="70-80">70–80 mph (Beginner/Senior)</SelectItem>
+                <SelectItem value="80-90">80–90 mph (Average Golfer)</SelectItem>
+                <SelectItem value="90-100">90–100 mph (Above Average)</SelectItem>
+                <SelectItem value="100-110">100–110 mph (Advanced Player)</SelectItem>
+                <SelectItem value="110_plus">110+ mph (Tour/Elite Level)</SelectItem>
+              </SelectContent>
+            </Select>
+            {formData.swing_speed_range && (
+              <div className="mt-3 p-3 bg-muted rounded-lg">
+                <p className="text-sm text-foreground">
+                  <strong>Recommended Shaft Flex:</strong> {getFlexRecommendation(formData.swing_speed_range)}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="driver_distance" className="flex items-center gap-2">
+              Average Driver Distance (yards)
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Your typical driver carry + roll distance on a flat fairway</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Label>
+            <Input
+              id="driver_distance"
+              type="number"
+              min="100"
+              max="400"
+              step="5"
+              inputMode="numeric"
+              value={formData.driver_distance}
+              onChange={(e) => setFormData({ ...formData, driver_distance: e.target.value })}
+              placeholder="e.g., 250"
+              className="text-lg"
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              Total distance (carry + roll). Average PGA Tour: 295 yards. Average male amateur: 220 yards.
+            </p>
+          </div>
+
+          <div>
+            <Label htmlFor="ball_flight" className="flex items-center gap-2">
+              Typical Ball Flight Pattern
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>The predominant curve shape your shots take when hit solidly</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Label>
+            <Select
+              value={formData.ball_flight}
+              onValueChange={(value) => setFormData({ ...formData, ball_flight: value })}
+            >
+              <SelectTrigger id="ball_flight">
+                <SelectValue placeholder="Select your ball flight" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draw">Draw (right-to-left for RH golfer)</SelectItem>
+                <SelectItem value="straight">Straight</SelectItem>
+                <SelectItem value="fade">Fade (left-to-right for RH golfer)</SelectItem>
+                <SelectItem value="hook">Hook (strong right-to-left)</SelectItem>
+                <SelectItem value="slice">Slice (strong left-to-right)</SelectItem>
+                <SelectItem value="variable">Variable (inconsistent)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-2">
+              This affects lie angle and face angle recommendations
+            </p>
+          </div>
+
+          <div>
+            <Label htmlFor="miss_direction" className="flex items-center gap-2">
+              Miss Tendency
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>When you miss, which direction do your shots typically go?</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Label>
+            <Select
+              value={formData.miss_direction}
+              onValueChange={(value) => setFormData({ ...formData, miss_direction: value })}
+            >
+              <SelectTrigger id="miss_direction">
+                <SelectValue placeholder="Select your miss direction" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="left">Left (Pull/Hook for RH)</SelectItem>
+                <SelectItem value="right">Right (Push/Slice for RH)</SelectItem>
+                <SelectItem value="both">Both Sides</SelectItem>
+                <SelectItem value="none">Consistent (Rare Misses)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="attack_angle" className="flex items-center gap-2">
+              Attack Angle (Driver)
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">
+                      The vertical direction your clubhead moves through impact. Positive = ascending (hitting up), 
+                      Negative = descending (hitting down). Affects optimal driver loft.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Label>
+            <Select
+              value={formData.attack_angle}
+              onValueChange={(value) => setFormData({ ...formData, attack_angle: value })}
+            >
+              <SelectTrigger id="attack_angle">
+                <SelectValue placeholder="Select your attack angle" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="steep_down">Steep Down (−5° or more)</SelectItem>
+                <SelectItem value="slightly_down">Slightly Down (−2° to −5°)</SelectItem>
+                <SelectItem value="level">Level (±1°)</SelectItem>
+                <SelectItem value="slightly_up">Slightly Up (+2° to +5°)</SelectItem>
+                <SelectItem value="steep_up">Steep Up (+5° or more)</SelectItem>
+                <SelectItem value="unknown">Unknown</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-2">
+              Tour average: +1° to +3° (hitting slightly up). Affects driver loft recommendation.
+            </p>
+          </div>
+
+          <div>
+            <Label htmlFor="club_path" className="flex items-center gap-2">
+              Club Path
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">
+                      The horizontal direction your club travels through impact relative to target line. 
+                      In-to-out produces draws, out-to-in produces fades. Affects lie angle fitting.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Label>
+            <Select
+              value={formData.club_path}
+              onValueChange={(value) => setFormData({ ...formData, club_path: value })}
+            >
+              <SelectTrigger id="club_path">
+                <SelectValue placeholder="Select your club path" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="in_to_in">In-to-In (Straight)</SelectItem>
+                <SelectItem value="in_to_out_slight">In-to-Out Slight (1-4°)</SelectItem>
+                <SelectItem value="in_to_out_strong">In-to-Out Strong (5°+)</SelectItem>
+                <SelectItem value="out_to_in_slight">Out-to-In Slight (1-4°)</SelectItem>
+                <SelectItem value="out_to_in_strong">Out-to-In Strong (5°+)</SelectItem>
+                <SelectItem value="unknown">Unknown</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-2">
+              Measured with launch monitor. Neutral path = 0°. Positive = in-to-out (draw), Negative = out-to-in (fade).
+            </p>
+          </div>
+
+          <div className="pt-4 border-t">
+            <div className="mb-4 p-4 bg-muted/50 rounded-lg">
+              <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                <Target className="h-4 w-4 text-accent" />
+                How to Get Accurate Data
+              </h4>
+              <ul className="text-sm text-muted-foreground space-y-2">
+                <li className="flex items-start gap-2">
+                  <span className="text-accent">•</span>
+                  <span><strong>Launch Monitor Session:</strong> Visit a facility with TrackMan, FlightScope, or Foresight GCQuad (30-60 min, $30-$75)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent">•</span>
+                  <span><strong>Golf Simulator:</strong> Many indoor simulators provide swing data (TopGolf, X-Golf, Full Swing)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent">•</span>
+                  <span><strong>Pro Shop Fitting:</strong> Quick 15-min assessment at most golf retailers (often free with purchase)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-accent">•</span>
+                  <span><strong>Best Guess:</strong> If unavailable, estimate based on typical distances and ball flight</span>
+                </li>
+              </ul>
+            </div>
+
+            <Button 
+              type="submit" 
+              disabled={saving} 
+              className="w-full bg-gold text-gold-foreground hover:bg-gold/90"
+            >
+              {saving ? "Saving..." : "Save Swing Profile"}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
 }
 
 function PreferencesSection({ profile, saving, onSave }: any) {
