@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -31,7 +31,8 @@ import {
   Download,
   TrendingUp,
   Trophy,
-  BarChart
+  BarChart,
+  SettingsIcon
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,11 +58,19 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useRouter } from "next/navigation";
 
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 type FittingSession = Database["public"]["Tables"]["fitting_sessions"]["Row"];
 
 export default function Profile() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [profile, setProfile] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState("info");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   return (
     <ProtectedRoute>
       <ProfileContent />
@@ -259,7 +268,60 @@ function ProfileContent() {
   const completion = calculateCompletion();
   const userInitials = user?.email?.substring(0, 2).toUpperCase() || "U";
 
-  if (loading) {
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Please upload an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("Image must be less than 5MB");
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      // Upload to Supabase Storage
+      const fileExt = file.name.split(".").pop();
+      const filePath = `${user.id}/avatar.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+      // Update profile with avatar URL
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({ avatar_url: publicUrl })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      // Refresh profile data
+      await fetchProfile();
+    } catch (error: any) {
+      console.error("Avatar upload error:", error);
+      setUploadError(error.message || "Failed to upload avatar");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  if (isLoading) {
     return (
       <AppLayout>
         <div className="flex items-center justify-center h-[60vh]">
@@ -280,18 +342,43 @@ function ProfileContent() {
             <div className="sticky top-24 space-y-6">
               <Card>
                 <CardContent className="pt-6 text-center">
-                  <div className="relative inline-block mb-4">
-                    <Avatar className="w-24 h-24">
-                      <AvatarFallback className="bg-accent text-white text-2xl">
-                        {userInitials}
-                      </AvatarFallback>
-                    </Avatar>
-                    <Button
-                      size="icon"
-                      className="absolute bottom-0 right-0 rounded-full h-8 w-8 bg-gold text-gold-foreground hover:bg-gold/90"
-                    >
-                      <Camera className="h-4 w-4" />
-                    </Button>
+                  {/* Avatar Section */}
+                  <div className="flex items-center gap-6 mb-8">
+                    <div className="relative">
+                      <Avatar className="h-24 w-24">
+                        <AvatarImage src={profile?.avatar_url} />
+                        <AvatarFallback className="text-2xl bg-gold/20 text-gold font-semibold">
+                          {user?.email?.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <label
+                        htmlFor="avatar-upload"
+                        className="absolute bottom-0 right-0 p-2 bg-gold text-gold-foreground rounded-full cursor-pointer hover:bg-gold/90 transition-colors shadow-lg"
+                        title="Upload new avatar"
+                      >
+                        <Camera className="h-4 w-4" />
+                      </label>
+                      <input
+                        id="avatar-upload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarUpload}
+                        disabled={isUploading}
+                      />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-foreground">
+                        {profile?.first_name} {profile?.last_name}
+                      </h2>
+                      <p className="text-muted-foreground">{user?.email}</p>
+                      {isUploading && (
+                        <p className="text-sm text-gold mt-2">Uploading avatar...</p>
+                      )}
+                      {uploadError && (
+                        <p className="text-sm text-destructive mt-2">{uploadError}</p>
+                      )}
+                    </div>
                   </div>
                   
                   <h2 className="font-bold text-xl text-foreground mb-1">
@@ -444,6 +531,48 @@ function ProfileContent() {
                 History
               </Button>
             </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-6">
+            <Button
+              variant={activeTab === "info" ? "default" : "outline"}
+              onClick={() => setActiveTab("info")}
+              className={activeTab === "info" ? "bg-gold hover:bg-gold/90" : ""}
+            >
+              <User className="h-4 w-4 mr-2" />
+              Profile Info
+            </Button>
+            <Button
+              variant={activeTab === "measurements" ? "default" : "outline"}
+              onClick={() => setActiveTab("measurements")}
+              className={activeTab === "measurements" ? "bg-gold hover:bg-gold/90" : ""}
+            >
+              <Ruler className="h-4 w-4 mr-2" />
+              Measurements
+            </Button>
+            <Button
+              variant={activeTab === "swing" ? "default" : "outline"}
+              onClick={() => setActiveTab("swing")}
+              className={activeTab === "swing" ? "bg-gold hover:bg-gold/90" : ""}
+            >
+              <Target className="h-4 w-4 mr-2" />
+              Swing Profile
+            </Button>
+            <Button
+              variant={activeTab === "goals" ? "default" : "outline"}
+              onClick={() => setActiveTab("goals")}
+              className={activeTab === "goals" ? "bg-gold hover:bg-gold/90" : ""}
+            >
+              <Trophy className="h-4 w-4 mr-2" />
+              Goals
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => router.push("/profile/settings")}
+            >
+              <SettingsIcon className="h-4 w-4 mr-2" />
+              Settings
+            </Button>
           </div>
 
           <main className="flex-1 space-y-8">
