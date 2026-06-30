@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Play, Eye, Download, Clock, CheckCircle2, Target, Trophy, TrendingUp, Lightbulb, Activity, ArrowUp, ArrowDown, Minus, Gauge, Share2 } from "lucide-react";
 import { BadgeShelf } from "@/components/gamification/BadgeShelf";
 import { GoalsList } from "@/components/gamification/GoalsList";
@@ -310,6 +311,55 @@ export default function Dashboard() {
     }
   };
 
+  const getClubTechSpecs = (clubType: string) => {
+    const specs: Record<string, { cor: string; moi: string; forgiveness: string; launch: string; spin: string; }> = {
+      "Driver": {
+        cor: "0.830 (USGA Limit)",
+        moi: "5,200 g·cm²",
+        forgiveness: "9.5/10",
+        launch: "Mid-High",
+        spin: "2,400-2,800 RPM",
+      },
+      "3-Wood": {
+        cor: "0.825",
+        moi: "4,100 g·cm²",
+        forgiveness: "8.5/10",
+        launch: "Mid",
+        spin: "3,200-3,800 RPM",
+      },
+      "Hybrid": {
+        cor: "0.815",
+        moi: "3,800 g·cm²",
+        forgiveness: "9.0/10",
+        launch: "Mid-High",
+        spin: "4,000-4,800 RPM",
+      },
+      "Irons (5-PW)": {
+        cor: "0.795",
+        moi: "2,900 g·cm² (7i)",
+        forgiveness: "8.0/10",
+        launch: "Mid",
+        spin: "5,500-7,000 RPM",
+      },
+      "Wedges": {
+        cor: "0.780",
+        moi: "2,500 g·cm²",
+        forgiveness: "7.5/10",
+        launch: "High",
+        spin: "8,000-10,000 RPM",
+      },
+      "Putter": {
+        cor: "0.720",
+        moi: "5,500 g·cm²",
+        forgiveness: "9.5/10",
+        launch: "Low",
+        spin: "1,200-1,800 RPM",
+      },
+    };
+    
+    return specs[clubType] || specs["Driver"];
+  };
+
   if (isLoading) {
     return (
       <ProtectedRoute>
@@ -476,48 +526,86 @@ export default function Dashboard() {
 
                       {/* Right: Club List */}
                       <div className="lg:col-span-2 space-y-3">
-                        {recommendedBag.clubs.map((club, idx) => (
-                          <div
-                            key={idx}
-                            className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
-                              club.isRecent
-                                ? 'border-gold bg-gold/5 shadow-md'
-                                : 'border-border bg-muted/30'
-                            }`}
-                          >
-                            <div className="flex items-center gap-4 flex-1">
-                              <div className={`rounded-lg p-2 ${
-                                club.isRecent ? 'bg-gold/10' : 'bg-muted'
-                              }`}>
-                                <svg
-                                  viewBox="0 0 24 24"
-                                  className={`w-6 h-6 ${
-                                    club.isRecent ? 'text-gold' : 'text-muted-foreground'
-                                  }`}
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                >
-                                  <path d="M12 2 L12 18 M12 18 L8 16 M12 18 L16 16 M9 22 L15 22" />
-                                </svg>
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="font-semibold text-sm mb-1">{club.type}</h4>
-                                <p className="text-xs text-muted-foreground">{club.name}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm font-medium">{club.flex}</p>
-                              <p className="text-xs text-muted-foreground">{club.loft}</p>
-                            </div>
-                            {club.isRecent && (
-                              <Badge className="ml-3 bg-gold/20 text-gold border-gold/30">
-                                Latest
-                              </Badge>
-                            )}
-                          </div>
-                        ))}
+                        <TooltipProvider>
+                          {recommendedBag.clubs.map((club, idx) => {
+                            const specs = getClubTechSpecs(club.type);
+                            return (
+                              <Tooltip key={idx}>
+                                <TooltipTrigger asChild>
+                                  <div
+                                    className={`flex items-center justify-between p-4 rounded-lg border transition-all cursor-help ${
+                                      club.isRecent
+                                        ? 'border-gold bg-gold/5 shadow-md hover:shadow-lg'
+                                        : 'border-border bg-muted/30 hover:bg-muted/50'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-4 flex-1">
+                                      <div className={`rounded-lg p-2 ${
+                                        club.isRecent ? 'bg-gold/10' : 'bg-muted'
+                                      }`}>
+                                        <svg
+                                          viewBox="0 0 24 24"
+                                          className={`w-6 h-6 ${
+                                            club.isRecent ? 'text-gold' : 'text-muted-foreground'
+                                          }`}
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                        >
+                                          <path d="M12 2 L12 18 M12 18 L8 16 M12 18 L16 16 M9 22 L15 22" />
+                                        </svg>
+                                      </div>
+                                      <div className="flex-1">
+                                        <h4 className="font-semibold text-sm mb-1">{club.type}</h4>
+                                        <p className="text-xs text-muted-foreground">{club.name}</p>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-sm font-medium">{club.flex}</p>
+                                      <p className="text-xs text-muted-foreground">{club.loft}</p>
+                                    </div>
+                                    {club.isRecent && (
+                                      <Badge className="ml-3 bg-gold/20 text-gold border-gold/30">
+                                        Latest
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="w-80 p-4 bg-card border-gold/20">
+                                  <div className="space-y-3">
+                                    <div>
+                                      <h4 className="font-bold text-sm mb-2 text-gold">{club.type} Tech Specs</h4>
+                                      <p className="text-xs text-muted-foreground mb-3">{club.name}</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 text-xs">
+                                      <div>
+                                        <p className="text-muted-foreground mb-1">COR Rating</p>
+                                        <p className="font-semibold">{specs.cor}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-muted-foreground mb-1">MOI</p>
+                                        <p className="font-semibold">{specs.moi}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-muted-foreground mb-1">Forgiveness</p>
+                                        <p className="font-semibold text-success">{specs.forgiveness}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-muted-foreground mb-1">Launch Angle</p>
+                                        <p className="font-semibold">{specs.launch}</p>
+                                      </div>
+                                      <div className="col-span-2">
+                                        <p className="text-muted-foreground mb-1">Spin Rate</p>
+                                        <p className="font-semibold">{specs.spin}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            );
+                          })}
+                        </TooltipProvider>
                         {recommendedBag.fittingDate && (
                           <p className="text-xs text-muted-foreground text-center pt-4 border-t">
                             Based on fitting completed {new Date(recommendedBag.fittingDate).toLocaleDateString()}
@@ -1124,48 +1212,86 @@ export default function Dashboard() {
 
                       {/* Right: Club List */}
                       <div className="lg:col-span-2 space-y-3">
-                        {recommendedBag.clubs.map((club, idx) => (
-                          <div
-                            key={idx}
-                            className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
-                              club.isRecent
-                                ? 'border-gold bg-gold/5 shadow-md'
-                                : 'border-border bg-muted/30'
-                            }`}
-                          >
-                            <div className="flex items-center gap-4 flex-1">
-                              <div className={`rounded-lg p-2 ${
-                                club.isRecent ? 'bg-gold/10' : 'bg-muted'
-                              }`}>
-                                <svg
-                                  viewBox="0 0 24 24"
-                                  className={`w-6 h-6 ${
-                                    club.isRecent ? 'text-gold' : 'text-muted-foreground'
-                                  }`}
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                >
-                                  <path d="M12 2 L12 18 M12 18 L8 16 M12 18 L16 16 M9 22 L15 22" />
-                                </svg>
-                              </div>
-                              <div className="flex-1">
-                                <h4 className="font-semibold text-sm mb-1">{club.type}</h4>
-                                <p className="text-xs text-muted-foreground">{club.name}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm font-medium">{club.flex}</p>
-                              <p className="text-xs text-muted-foreground">{club.loft}</p>
-                            </div>
-                            {club.isRecent && (
-                              <Badge className="ml-3 bg-gold/20 text-gold border-gold/30">
-                                Latest
-                              </Badge>
-                            )}
-                          </div>
-                        ))}
+                        <TooltipProvider>
+                          {recommendedBag.clubs.map((club, idx) => {
+                            const specs = getClubTechSpecs(club.type);
+                            return (
+                              <Tooltip key={idx}>
+                                <TooltipTrigger asChild>
+                                  <div
+                                    className={`flex items-center justify-between p-4 rounded-lg border transition-all cursor-help ${
+                                      club.isRecent
+                                        ? 'border-gold bg-gold/5 shadow-md hover:shadow-lg'
+                                        : 'border-border bg-muted/30 hover:bg-muted/50'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-4 flex-1">
+                                      <div className={`rounded-lg p-2 ${
+                                        club.isRecent ? 'bg-gold/10' : 'bg-muted'
+                                      }`}>
+                                        <svg
+                                          viewBox="0 0 24 24"
+                                          className={`w-6 h-6 ${
+                                            club.isRecent ? 'text-gold' : 'text-muted-foreground'
+                                          }`}
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                        >
+                                          <path d="M12 2 L12 18 M12 18 L8 16 M12 18 L16 16 M9 22 L15 22" />
+                                        </svg>
+                                      </div>
+                                      <div className="flex-1">
+                                        <h4 className="font-semibold text-sm mb-1">{club.type}</h4>
+                                        <p className="text-xs text-muted-foreground">{club.name}</p>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-sm font-medium">{club.flex}</p>
+                                      <p className="text-xs text-muted-foreground">{club.loft}</p>
+                                    </div>
+                                    {club.isRecent && (
+                                      <Badge className="ml-3 bg-gold/20 text-gold border-gold/30">
+                                        Latest
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="w-80 p-4 bg-card border-gold/20">
+                                  <div className="space-y-3">
+                                    <div>
+                                      <h4 className="font-bold text-sm mb-2 text-gold">{club.type} Tech Specs</h4>
+                                      <p className="text-xs text-muted-foreground mb-3">{club.name}</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 text-xs">
+                                      <div>
+                                        <p className="text-muted-foreground mb-1">COR Rating</p>
+                                        <p className="font-semibold">{specs.cor}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-muted-foreground mb-1">MOI</p>
+                                        <p className="font-semibold">{specs.moi}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-muted-foreground mb-1">Forgiveness</p>
+                                        <p className="font-semibold text-success">{specs.forgiveness}</p>
+                                      </div>
+                                      <div>
+                                        <p className="text-muted-foreground mb-1">Launch Angle</p>
+                                        <p className="font-semibold">{specs.launch}</p>
+                                      </div>
+                                      <div className="col-span-2">
+                                        <p className="text-muted-foreground mb-1">Spin Rate</p>
+                                        <p className="font-semibold">{specs.spin}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            );
+                          })}
+                        </TooltipProvider>
                         {recommendedBag.fittingDate && (
                           <p className="text-xs text-muted-foreground text-center pt-4 border-t">
                             Based on fitting completed {new Date(recommendedBag.fittingDate).toLocaleDateString()}
