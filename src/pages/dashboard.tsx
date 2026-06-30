@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,6 +24,7 @@ import { WeeklySummary } from "@/components/analytics/WeeklySummary";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { theme } = useTheme();
   const parallaxOffset = useParallax({ speed: 0.3, direction: "down" });
   const [sessions, setSessions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -438,14 +440,18 @@ export default function Dashboard() {
                 <div 
                   className="absolute inset-0 bg-cover bg-center transition-transform duration-75"
                   style={{ 
-                    backgroundImage: "url('https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop')",
+                    backgroundImage: theme === 'dark' 
+                      ? "url('https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=2070&auto=format&fit=crop')" 
+                      : "url('https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop')",
                     transform: `translateY(${parallaxOffset}px)`
                   }}
                 />
                 <div 
                   className="absolute inset-0"
                   style={{ 
-                    background: "linear-gradient(135deg, rgba(27, 67, 50, 0.75) 0%, rgba(27, 67, 50, 0.45) 100%)"
+                    background: theme === 'dark'
+                      ? "linear-gradient(135deg, rgba(15, 26, 20, 0.75) 0%, rgba(22, 34, 24, 0.45) 100%)"
+                      : "linear-gradient(135deg, rgba(27, 67, 50, 0.75) 0%, rgba(27, 67, 50, 0.45) 100%)"
                   }}
                 />
                 <div className="relative h-full flex items-center justify-between px-8">
@@ -1030,21 +1036,22 @@ export default function Dashboard() {
           {userTier === "premium" && (
             <>
               {/* Hero Banner with Parallax Effect */}
-              <div className="relative mb-8 h-[200px] overflow-hidden rounded-2xl">
-                {/* Background Image with Parallax */}
+              <div className="relative mb-8 h-[300px] overflow-hidden rounded-2xl">
                 <div 
                   className="absolute inset-0 bg-cover bg-center transition-transform duration-75"
                   style={{ 
-                    backgroundImage: "url('https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop')",
+                    backgroundImage: theme === 'dark'
+                      ? "url('https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=2070&auto=format&fit=crop')"
+                      : "url('https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?q=80&w=2070&auto=format&fit=crop')",
                     transform: `translateY(${parallaxOffset}px)`
                   }}
                 />
-                
-                {/* Dark Green Gradient Overlay (60% opacity) */}
                 <div 
                   className="absolute inset-0"
                   style={{ 
-                    background: "linear-gradient(135deg, rgba(27, 67, 50, 0.75) 0%, rgba(27, 67, 50, 0.45) 100%)"
+                    background: theme === 'dark'
+                      ? "linear-gradient(135deg, rgba(15, 26, 20, 0.75) 0%, rgba(22, 34, 24, 0.45) 100%)"
+                      : "linear-gradient(135deg, rgba(27, 67, 50, 0.75) 0%, rgba(27, 67, 50, 0.45) 100%)"
                   }}
                 />
                 
