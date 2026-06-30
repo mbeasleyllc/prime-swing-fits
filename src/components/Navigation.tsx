@@ -27,9 +27,9 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary hover:text-accent transition-colors group">
-            <div className="bg-accent/10 p-2 rounded-lg group-hover:bg-accent/20 transition-colors">
-              <Trophy className="h-6 w-6 text-accent" />
+          <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary hover:text-gold transition-colors group">
+            <div className="bg-gold/10 p-2 rounded-lg group-hover:bg-gold/20 transition-colors">
+              <Trophy className="h-6 w-6 text-gold" />
             </div>
             <span className="hidden sm:inline">Prime Swing Fits</span>
           </Link>
@@ -40,7 +40,7 @@ export function Navigation() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-accent hover:bg-accent/5 rounded-md transition-colors"
+                className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-gold hover:bg-gold/5 rounded-md transition-colors"
               >
                 {link.label}
               </Link>
@@ -53,7 +53,7 @@ export function Navigation() {
               <div className="w-20 h-9 bg-muted animate-pulse rounded" />
             ) : user ? (
               <>
-                <Button variant="ghost" asChild className="hover:text-accent">
+                <Button variant="ghost" asChild className="hover:text-gold">
                   <Link href="/dashboard">
                     <LayoutDashboard className="w-4 h-4 mr-2" />
                     Dashboard
@@ -67,17 +67,17 @@ export function Navigation() {
                     </Link>
                   </Button>
                 )}
-                <Button variant="outline" onClick={signOut} className="hover:border-accent hover:text-accent">
+                <Button variant="outline" onClick={signOut} className="hover:border-gold hover:text-gold">
                   <LogOut className="w-4 h-4 mr-2" />
                   Sign Out
                 </Button>
               </>
             ) : (
               <>
-                <Button variant="ghost" asChild className="hover:text-accent">
+                <Button variant="ghost" asChild className="hover:text-gold">
                   <Link href="/auth/login">Sign In</Link>
                 </Button>
-                <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-md">
+                <Button asChild className="bg-gold text-gold-foreground hover:bg-gold/90 shadow-md">
                   <Link href="/auth/register">Get Started</Link>
                 </Button>
               </>
@@ -109,7 +109,7 @@ export function Navigation() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="block px-4 py-2 text-base font-medium text-muted-foreground hover:text-accent hover:bg-accent/5 rounded-md transition-colors"
+                className="block px-4 py-2 text-base font-medium text-muted-foreground hover:text-gold hover:bg-gold/5 rounded-md transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.label}
@@ -123,7 +123,7 @@ export function Navigation() {
                 <>
                   <Link
                     href="/dashboard"
-                    className="flex items-center px-4 py-2 text-base font-medium text-muted-foreground hover:text-accent hover:bg-accent/5 rounded-md transition-colors"
+                    className="flex items-center px-4 py-2 text-base font-medium text-muted-foreground hover:text-gold hover:bg-gold/5 rounded-md transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <LayoutDashboard className="w-4 h-4 mr-2" />
@@ -144,7 +144,7 @@ export function Navigation() {
                       signOut();
                       setMobileMenuOpen(false);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-base font-medium text-muted-foreground hover:text-accent hover:bg-accent/5 rounded-md transition-colors"
+                    className="flex items-center w-full px-4 py-2 text-base font-medium text-muted-foreground hover:text-gold hover:bg-gold/5 rounded-md transition-colors"
                   >
                     <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
@@ -154,13 +154,13 @@ export function Navigation() {
                 <>
                   <Link
                     href="/auth/login"
-                    className="block px-4 py-2 text-base font-medium text-muted-foreground hover:text-accent hover:bg-accent/5 rounded-md transition-colors"
+                    className="block px-4 py-2 text-base font-medium text-muted-foreground hover:text-gold hover:bg-gold/5 rounded-md transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Sign In
                   </Link>
                   <div className="px-4">
-                    <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
+                    <Button asChild className="w-full bg-gold text-gold-foreground hover:bg-gold/90">
                       <Link href="/auth/register" onClick={() => setMobileMenuOpen(false)}>
                         Get Started
                       </Link>

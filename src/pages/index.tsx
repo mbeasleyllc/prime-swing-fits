@@ -89,7 +89,7 @@ export default function Home() {
               
               <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-6 tracking-tight leading-none">
                 Perfect Your
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-gold via-accent to-gold mt-3">
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-gold via-gold/80 to-gold mt-3">
                   Golf Game
                 </span>
               </h1>
@@ -150,7 +150,7 @@ export default function Home() {
           <div className="max-w-6xl mx-auto">
             <AnimatedSection>
               <div className="text-center mb-16">
-                <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full mb-4">
+                <div className="inline-flex items-center gap-2 bg-success/10 text-success px-4 py-2 rounded-full mb-4">
                   <Target className="h-4 w-4" />
                   <span className="text-sm font-semibold">Premium Fitting Experience</span>
                 </div>
@@ -166,7 +166,7 @@ export default function Home() {
               <AnimatedSection delay={0}>
                 <Card className="text-center hover:shadow-2xl transition-all duration-300 border-2 hover:border-accent/50 group h-full">
                   <CardContent className="pt-10 pb-8">
-                    <div className="bg-gradient-to-br from-accent to-accent/70 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                    <div className="bg-gradient-to-br from-success to-success/70 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
                       <Users className="h-10 w-10 text-white" />
                     </div>
                     <div className="bg-gold text-gold-foreground w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4 font-bold">
@@ -183,7 +183,7 @@ export default function Home() {
               <AnimatedSection delay={150}>
                 <Card className="text-center hover:shadow-2xl transition-all duration-300 border-2 hover:border-accent/50 group h-full">
                   <CardContent className="pt-10 pb-8">
-                    <div className="bg-gradient-to-br from-accent to-accent/70 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                    <div className="bg-gradient-to-br from-success to-success/70 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
                       <TrendingUp className="h-10 w-10 text-white" />
                     </div>
                     <div className="bg-gold text-gold-foreground w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4 font-bold">
@@ -200,7 +200,7 @@ export default function Home() {
               <AnimatedSection delay={300}>
                 <Card className="text-center hover:shadow-2xl transition-all duration-300 border-2 hover:border-accent/50 group h-full">
                   <CardContent className="pt-10 pb-8">
-                    <div className="bg-gradient-to-br from-accent to-accent/70 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                    <div className="bg-gradient-to-br from-success to-success/70 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
                       <Trophy className="h-10 w-10 text-white" />
                     </div>
                     <div className="bg-gold text-gold-foreground w-8 h-8 rounded-full flex items-center justify-center mx-auto mb-4 font-bold">
@@ -244,11 +244,11 @@ export default function Home() {
             </AnimatedSection>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <AnimatedSection delay={0}>
-                <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-accent h-full">
+                <Card className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-success h-full">
                   <CardContent className="pt-8">
                     <div className="flex items-start gap-4">
-                      <div className="bg-accent/10 p-4 rounded-xl flex-shrink-0">
-                        <Zap className="h-7 w-7 text-accent" />
+                      <div className="bg-success/10 p-4 rounded-xl flex-shrink-0">
+                        <Award className="h-7 w-7 text-success" />
                       </div>
                       <div>
                         <h3 className="text-xl font-semibold mb-3">Guided Wizard</h3>

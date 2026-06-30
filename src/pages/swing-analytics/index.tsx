@@ -254,7 +254,7 @@ export default function SwingAnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center text-sm">
-                  <Target className="w-4 h-4 mr-1 text-accent" />
+                  <Target className="w-4 h-4 mr-1 text-success" />
                   <span className="text-muted-foreground">Based on speed variance</span>
                 </div>
               </CardContent>
@@ -305,7 +305,7 @@ export default function SwingAnalyticsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-accent" />
+                <Activity className="h-5 w-5 text-success" />
                 Your Swing DNA Profile
               </CardTitle>
             </CardHeader>
