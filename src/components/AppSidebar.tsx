@@ -18,6 +18,8 @@ import {
   Tag,
   BarChart3,
   Crown,
+  LayoutDashboard,
+  Swords,
 } from "lucide-react";
 import {
   Sidebar,
@@ -110,112 +112,204 @@ export function AppSidebar() {
   ];
 
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <div className="flex items-center gap-3 px-4 py-3">
-          <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
-            <Crown className="h-5 w-5 text-white" />
+    <Sidebar className="border-r border-border bg-primary text-primary-foreground">
+      <SidebarHeader className="border-b border-border/50 px-4 py-4">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold">
+            <span className="text-lg font-bold text-gold-foreground">PSF</span>
           </div>
           <div>
-            <h2 className="font-bold text-foreground">Prime Swing Fits</h2>
-            <p className="text-xs text-muted-foreground">Pro Fitting System</p>
+            <h2 className="text-base font-semibold text-white">Prime Swing Fits</h2>
+            <p className="text-xs text-white/70">Professional Golf Fitting</p>
           </div>
-        </div>
+        </Link>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-3 py-4">
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={router.pathname === item.url}
-                  >
-                    <Link href={item.url}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {isAdmin && (
-          <>
-            <Separator className="my-2" />
-            <SidebarGroup>
-              <SidebarGroupLabel className="flex items-center gap-2 text-gold">
-                <Shield className="h-4 w-4" />
-                Admin Panel
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {adminNavItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={router.pathname === item.url}
-                      >
-                        <Link href={item.url}>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </>
-        )}
-
-        <Separator className="my-2" />
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Account</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/70 text-xs uppercase tracking-wider mb-2">
+            Main Menu
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={router.pathname === "/profile/settings"}>
-                  <Link href="/profile/settings">
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
+                <SidebarMenuButton 
+                  asChild 
+                  isActive={router.pathname === "/dashboard"}
+                  className="text-white hover:bg-white/10 data-[active=true]:bg-gold data-[active=true]:text-gold-foreground"
+                >
+                  <Link href="/dashboard">
+                    <LayoutDashboard className="h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild 
+                  isActive={router.pathname === "/profile"}
+                  className="text-white hover:bg-white/10 data-[active=true]:bg-gold data-[active=true]:text-gold-foreground"
+                >
+                  <Link href="/profile">
+                    <User className="h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild 
+                  isActive={router.pathname.startsWith("/fitting")}
+                  className="text-white hover:bg-white/10 data-[active=true]:bg-gold data-[active=true]:text-gold-foreground"
+                >
+                  <Link href="/fitting/new">
+                    <Target className="h-4 w-4" />
+                    <span>New Fitting</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild 
+                  isActive={router.pathname.startsWith("/swing-analytics")}
+                  className="text-white hover:bg-white/10 data-[active=true]:bg-gold data-[active=true]:text-gold-foreground"
+                >
+                  <Link href="/swing-analytics">
+                    <Activity className="h-4 w-4" />
+                    <span>Swing Analytics</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild 
+                  isActive={router.pathname.startsWith("/clubs")}
+                  className="text-white hover:bg-white/10 data-[active=true]:bg-gold data-[active=true]:text-gold-foreground"
+                >
+                  <Link href="/clubs">
+                    <Swords className="h-4 w-4" />
+                    <span>Club Database</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isAdmin && (
+          <SidebarGroup className="mt-6">
+            <SidebarGroupLabel className="text-gold text-xs uppercase tracking-wider mb-2 flex items-center gap-2">
+              <Shield className="h-3 w-3" />
+              Admin Panel
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={router.pathname === "/admin"}
+                    className="text-white hover:bg-white/10 data-[active=true]:bg-gold data-[active=true]:text-gold-foreground"
+                  >
+                    <Link href="/admin">
+                      <Shield className="h-4 w-4" />
+                      <span>Admin Dashboard</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={router.pathname === "/admin/users"}
+                    className="text-white hover:bg-white/10 data-[active=true]:bg-gold data-[active=true]:text-gold-foreground"
+                  >
+                    <Link href="/admin/users">
+                      <Users className="h-4 w-4" />
+                      <span>User Management</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={router.pathname === "/admin/sessions"}
+                    className="text-white hover:bg-white/10 data-[active=true]:bg-gold data-[active=true]:text-gold-foreground"
+                  >
+                    <Link href="/admin/sessions">
+                      <Activity className="h-4 w-4" />
+                      <span>Fitting Sessions</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={router.pathname === "/admin/coupons"}
+                    className="text-white hover:bg-white/10 data-[active=true]:bg-gold data-[active=true]:text-gold-foreground"
+                  >
+                    <Link href="/admin/coupons">
+                      <Tag className="h-4 w-4" />
+                      <span>Coupon Codes</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={router.pathname === "/admin/logs"}
+                    className="text-white hover:bg-white/10 data-[active=true]:bg-gold data-[active=true]:text-gold-foreground"
+                  >
+                    <Link href="/admin/logs">
+                      <BarChart3 className="h-4 w-4" />
+                      <span>Logs & Reports</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
-      <SidebarFooter>
-        <div className="p-4 border-t">
-          <div className="flex items-center gap-3 mb-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={userProfile?.avatar_url} />
-              <AvatarFallback className="bg-accent text-white">
-                {getInitials()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm text-foreground truncate">
-                {userProfile?.first_name && userProfile?.last_name
-                  ? `${userProfile.first_name} ${userProfile.last_name}`
-                  : user?.email?.split("@")[0]}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-            </div>
+      <SidebarFooter className="border-t border-border/50 p-4">
+        <div className="flex items-center gap-3 mb-4">
+          <Avatar className="h-10 w-10 border-2 border-gold">
+            <AvatarImage src={userProfile?.avatar_url || undefined} />
+            <AvatarFallback className="bg-gold text-gold-foreground font-semibold">
+              {userProfile?.first_name?.[0]}{userProfile?.last_name?.[0]}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white truncate">
+              {userProfile?.first_name} {userProfile?.last_name}
+            </p>
+            <p className="text-xs text-white/70 truncate">{user?.email}</p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
+        </div>
+        <div className="space-y-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full justify-start border-white/20 text-white hover:bg-white/10 hover:text-white" 
+            asChild
+          >
+            <Link href="/profile/settings">
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Link>
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full justify-start border-white/20 text-white hover:bg-white/10 hover:text-white" 
             onClick={handleSignOut}
-            className="w-full"
           >
             <LogOut className="h-4 w-4 mr-2" />
             Sign Out
