@@ -76,41 +76,64 @@
 
   .dark {
     --radius: 0.5rem;
-    --background: 152 43% 12%;
-    --foreground: 0 0% 95%;
-    --card: 152 40% 15%;
-    --card-foreground: 0 0% 95%;
-    --popover: 152 40% 15%;
-    --popover-foreground: 0 0% 95%;
+    /* Evening Round Mode - #0F1A14 */
+    --background: 150 28% 8%;
+    --foreground: 120 10% 91%;
+    
+    /* Cards - #162218 */
+    --card: 150 20% 11%;
+    --card-foreground: 120 10% 91%;
+    
+    --popover: 150 20% 11%;
+    --popover-foreground: 120 10% 91%;
+    
+    /* Gold Accent - #D4AF37 */
     --primary: 46 65% 52%;
     --primary-foreground: 0 0% 10%;
-    --secondary: 152 30% 20%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 152 30% 20%;
+    
+    /* Secondary - darker green tint */
+    --secondary: 150 20% 14%;
+    --secondary-foreground: 120 10% 91%;
+    
+    /* Muted - dark green gray */
+    --muted: 150 20% 14%;
     --muted-foreground: 0 0% 70%;
-    --accent: 44 53% 54%;
+    
+    /* Accent Gold */
+    --accent: 46 65% 52%;
     --accent-foreground: 0 0% 10%;
+    
+    /* Gold */
     --gold: 46 65% 52%;
     --gold-foreground: 0 0% 10%;
-    --success: 153 40% 40%;
-    --success-foreground: 0 0% 100%;
+    
+    /* Success - #4ADE80 */
+    --success: 142 71% 58%;
+    --success-foreground: 0 0% 10%;
+    
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 152 30% 25%;
-    --input: 152 30% 25%;
+    
+    /* Borders - #1E2E22 */
+    --border: 150 20% 15%;
+    --input: 150 20% 15%;
     --ring: 46 65% 52%;
-    --chart-1: 153 40% 40%;
+    
+    /* Charts - Dark mode palette */
+    --chart-1: 142 71% 58%;
     --chart-2: 46 65% 52%;
     --chart-3: 44 53% 54%;
     --chart-4: 0 0% 70%;
-    --chart-5: 152 40% 15%;
-    --sidebar: 152 43% 18%;
-    --sidebar-foreground: 0 0% 100%;
+    --chart-5: 150 20% 11%;
+    
+    /* Sidebar - #0A120E */
+    --sidebar: 150 28% 5%;
+    --sidebar-foreground: 120 10% 91%;
     --sidebar-primary: 46 65% 52%;
     --sidebar-primary-foreground: 0 0% 10%;
-    --sidebar-accent: 153 40% 30%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 152 30% 25%;
+    --sidebar-accent: 142 71% 58%;
+    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-border: 150 20% 15%;
     --sidebar-ring: 46 65% 52%;
   }
 }
@@ -118,6 +141,7 @@
 @layer base {
   * {
     @apply border-border;
+    transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease;
   }
   body {
     @apply bg-background text-foreground;
@@ -167,5 +191,34 @@
     );
     background-size: 200% 100%;
     animation: shimmer 3s linear infinite;
+  }
+
+  /* Animated Starfield for Dark Mode Navigation */
+  @keyframes starfield {
+    0% {
+      background-position: 0% 0%, 0% 0%, 0% 0%;
+    }
+    100% {
+      background-position: 100% 100%, -100% -100%, 50% 50%;
+    }
+  }
+
+  .starfield-bg {
+    background: 
+      radial-gradient(2px 2px at 20% 30%, white, transparent),
+      radial-gradient(2px 2px at 60% 70%, white, transparent),
+      radial-gradient(1px 1px at 50% 50%, white, transparent),
+      radial-gradient(1px 1px at 80% 10%, white, transparent),
+      radial-gradient(2px 2px at 90% 60%, white, transparent),
+      radial-gradient(1px 1px at 33% 80%, white, transparent),
+      radial-gradient(1px 1px at 75% 25%, white, transparent),
+      linear-gradient(135deg, #0F1A14 0%, #162218 50%, #0F1A14 100%);
+    background-size: 200% 200%, 200% 200%, 100% 100%, 100% 100%, 200% 200%, 100% 100%, 100% 100%, 100% 100%;
+    animation: starfield 120s linear infinite;
+  }
+
+  .dark .nav-gradient {
+    background: linear-gradient(135deg, rgba(15, 26, 20, 0.95) 0%, rgba(22, 34, 24, 0.95) 100%);
+    backdrop-filter: blur(10px);
   }
 }

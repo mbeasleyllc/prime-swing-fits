@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,9 @@ import {
   ChevronDown,
   ChevronUp,
   Laptop,
-  AlertCircle
+  AlertCircle,
+  Moon,
+  Sun
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -170,6 +173,7 @@ function SettingsContent() {
 
           <div className="space-y-8">
             <AccountDetailsSection user={user!} profile={profile} onUpdate={fetchProfile} />
+            <EveningRoundModeSection />
             <PasswordSecuritySection user={user!} />
             <NotificationPreferencesSection profile={profile} onUpdate={fetchProfile} />
             <SwingAnalyticsSubscriptionSection user={user!} />
@@ -400,6 +404,98 @@ function AccountDetailsSection({
             <Label>Account ID (for support reference)</Label>
             <Input value={user.id} disabled className="bg-muted font-mono text-xs" />
           </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// SECTION 1.5: Evening Round Mode
+function EveningRoundModeSection() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
+  return (
+    <Card className={theme === 'dark' ? 'border-gold/30 bg-gradient-to-br from-gold/5 to-transparent' : ''}>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          {theme === 'dark' ? (
+            <Moon className="h-5 w-5 text-gold" />
+          ) : (
+            <Sun className="h-5 w-5 text-accent" />
+          )}
+          Evening Round Mode
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h4 className="font-medium text-foreground mb-2">
+              Dark Theme for Late-Night Sessions
+            </h4>
+            <p className="text-sm text-muted-foreground mb-4">
+              Switch to a darker color scheme optimized for low-light environments. Perfect for evening practice sessions and nighttime golf planning.
+            </p>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-success" />
+                <span className={theme === 'dark' ? 'text-foreground' : 'text-muted-foreground'}>
+                  Twilight golf course imagery
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-success" />
+                <span className={theme === 'dark' ? 'text-foreground' : 'text-muted-foreground'}>
+                  Animated night sky navigation
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-success" />
+                <span className={theme === 'dark' ? 'text-foreground' : 'text-muted-foreground'}>
+                  Reduced eye strain with darker backgrounds
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-success" />
+                <span className={theme === 'dark' ? 'text-foreground' : 'text-muted-foreground'}>
+                  Gold accents for premium aesthetics
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="ml-6">
+            <Switch
+              checked={theme === "dark"}
+              onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+              className="data-[state=checked]:bg-gold"
+            />
+          </div>
+        </div>
+
+        {theme === 'dark' && (
+          <div className="p-4 border border-gold/30 rounded-lg bg-gold/5">
+            <p className="text-sm text-foreground flex items-center gap-2">
+              <Moon className="h-4 w-4 text-gold" />
+              <span className="font-medium">Evening Round Mode is active</span>
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Enjoy the twilight experience with optimized colors and atmospheric navigation.
+            </p>
+          </div>
+        )}
+
+        <div className="pt-4 border-t">
+          <p className="text-xs text-muted-foreground">
+            Your theme preference is saved automatically and syncs across devices.
+          </p>
         </div>
       </CardContent>
     </Card>

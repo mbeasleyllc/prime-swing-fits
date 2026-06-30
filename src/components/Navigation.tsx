@@ -2,17 +2,19 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "next-themes";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Trophy, LayoutDashboard, Shield, LogOut, Menu, X, ChevronDown } from "lucide-react";
+import { Trophy, LayoutDashboard, Shield, LogOut, Menu, X, ChevronDown, Moon, Sun } from "lucide-react";
 
 export function Navigation() {
   const { user, isLoading, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const navLinks = [
     { href: "/about", label: "About" },
@@ -23,7 +25,7 @@ export function Navigation() {
   ];
 
   return (
-    <nav className="border-b border-border bg-white shadow-sm sticky top-0 z-50">
+    <nav className={`border-b border-border bg-card shadow-sm sticky top-0 z-50 ${theme === 'dark' ? 'starfield-bg' : 'bg-white'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -49,6 +51,19 @@ export function Navigation() {
 
           {/* Auth Buttons - Desktop */}
           <div className="hidden lg:flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="hover:text-gold"
+              aria-label="Toggle Evening Round Mode"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5 text-gold" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
+            </Button>
             {isLoading ? (
               <div className="w-20 h-9 bg-muted animate-pulse rounded" />
             ) : user ? (
@@ -115,6 +130,27 @@ export function Navigation() {
                 {link.label}
               </Link>
             ))}
+
+            <div className="px-4 py-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="w-full justify-center"
+              >
+                {theme === "dark" ? (
+                  <>
+                    <Sun className="h-4 w-4 mr-2" />
+                    Light Mode
+                  </>
+                ) : (
+                  <>
+                    <Moon className="h-4 w-4 mr-2" />
+                    Evening Round Mode
+                  </>
+                )}
+              </Button>
+            </div>
 
             <div className="border-t border-border pt-4 mt-4 space-y-2">
               {isLoading ? (
