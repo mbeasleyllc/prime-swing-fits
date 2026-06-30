@@ -82,8 +82,7 @@ export function Navigation() {
                     </Link>
                   </Button>
                 )}
-                <Button variant="outline" onClick={signOut} className="hover:border-gold hover:text-gold">
-                  <LogOut className="w-4 h-4 mr-2" />
+                <Button variant="outline" onClick={signOut} className="bg-gold text-gold-foreground hover:bg-gold/90 border-gold">
                   Sign Out
                 </Button>
               </>
@@ -180,9 +179,8 @@ export function Navigation() {
                       signOut();
                       setMobileMenuOpen(false);
                     }}
-                    className="flex items-center w-full px-4 py-2 text-base font-medium text-muted-foreground hover:text-gold hover:bg-gold/5 rounded-md transition-colors"
+                    className="flex items-center justify-center w-full px-4 py-2 text-base font-medium bg-gold text-gold-foreground hover:bg-gold/90 rounded-md transition-colors"
                   >
-                    <LogOut className="w-4 h-4 mr-2" />
                     Sign Out
                   </button>
                 </>
