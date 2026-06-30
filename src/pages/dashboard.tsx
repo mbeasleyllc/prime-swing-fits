@@ -116,7 +116,7 @@ export default function Dashboard() {
       <AppLayout>
         <div className="max-w-7xl">
           {/* Hero Banner with Parallax Effect */}
-          <div className="relative -mx-8 mb-8 h-[200px] overflow-hidden rounded-2xl">
+          <div className="relative mb-8 h-[200px] overflow-hidden rounded-2xl">
             {/* Background Image with Parallax */}
             <div 
               className="absolute inset-0 bg-cover bg-center transition-transform duration-75"
