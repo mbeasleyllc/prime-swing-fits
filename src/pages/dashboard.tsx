@@ -826,7 +826,7 @@ export default function Dashboard() {
               </Card>
 
               {/* AI Weekly Summary - Core and Premium users only */}
-              {userTier !== "entry" && user && (
+              {user && (
                 <div className="mb-8">
                   <WeeklySummary userId={user.id} />
                 </div>
@@ -877,7 +877,7 @@ export default function Dashboard() {
               </div>
 
               {/* Swing Analytics Card */}
-              {userTier !== "entry" && swingStats && (
+              {swingStats && (
                 <Card className="mb-8 border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -928,28 +928,6 @@ export default function Dashboard() {
                         </Button>
                       </div>
                     )}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Upgrade prompt for Entry tier */}
-              {userTier === "entry" && (
-                <Card className="mb-8 border-gold/30 bg-gradient-to-br from-gold/10 to-transparent">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-gold">
-                      <Trophy className="h-5 w-5" />
-                      Unlock Swing Analytics
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Upgrade to Core or Premium to access advanced swing data tracking, AI insights, and personalized improvement goals.
-                    </p>
-                    <Button asChild className="bg-gold hover:bg-gold/90">
-                      <Link href="/pricing">
-                        View Premium Features
-                      </Link>
-                    </Button>
                   </CardContent>
                 </Card>
               )}
