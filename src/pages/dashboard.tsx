@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Play, Eye, Download, Clock, CheckCircle2, Target, Trophy, TrendingUp, Lightbulb, Activity } from "lucide-react";
+import { Play, Eye, Download, Clock, CheckCircle2, Target, Trophy, TrendingUp, Lightbulb, Activity, ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { BadgeShelf } from "@/components/gamification/BadgeShelf";
 import { GoalsList } from "@/components/gamification/GoalsList";
 import { InsightsPanel } from "@/components/gamification/InsightsPanel";
@@ -24,6 +24,12 @@ export default function Dashboard() {
   const [stats, setStats] = useState({ badges: 0, activeGoals: 0, insights: 0 });
   const [swingStats, setSwingStats] = useState<{ lastSession: string | null; consistencyScore: number | null; latestBadge: string | null; sessionCount: number } | null>(null);
   const [userTier, setUserTier] = useState<string | null>(null);
+  const [fittingStats, setFittingStats] = useState<{
+    totalFittings: number;
+    completionRate: number;
+    recentSessions: number;
+    trend: "up" | "down" | "stable";
+  } | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -70,6 +76,35 @@ export default function Dashboard() {
       ]);
 
       if (sessionsRes.data) setSessions(sessionsRes.data);
+      
+      // Calculate fitting statistics
+      const totalSessions = sessionsRes.data?.length || 0;
+      const completedSessions = sessionsRes.data?.filter(s => s.status === "completed").length || 0;
+      const completionRate = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
+      
+      // Recent sessions (last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const recentSessions = sessionsRes.data?.filter(s => new Date(s.created_at) > thirtyDaysAgo).length || 0;
+      
+      // Previous 30 days for trend
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+      const previousSessions = sessionsRes.data?.filter(s => {
+        const date = new Date(s.created_at);
+        return date > sixtyDaysAgo && date <= thirtyDaysAgo;
+      }).length || 0;
+      
+      let trend: "up" | "down" | "stable" = "stable";
+      if (recentSessions > previousSessions) trend = "up";
+      else if (recentSessions < previousSessions) trend = "down";
+      
+      setFittingStats({
+        totalFittings: completedSessions,
+        completionRate,
+        recentSessions,
+        trend,
+      });
       
       setStats({
         badges: badgesRes.count || 0,
@@ -158,6 +193,85 @@ export default function Dashboard() {
               </Button>
             </div>
           </div>
+
+          {/* Fitting Summary Stats */}
+          {fittingStats && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-success/10 rounded-lg p-3">
+                        <CheckCircle2 className="h-6 w-6 text-success" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Total Fittings</p>
+                        <p className="text-2xl font-bold">{fittingStats.totalFittings}</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-gold/10 rounded-lg p-3">
+                        <Target className="h-6 w-6 text-gold" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Completion Rate</p>
+                        <p className="text-2xl font-bold">{fittingStats.completionRate}%</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-primary/10 rounded-lg p-3">
+                        <Activity className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Last 30 Days</p>
+                        <p className="text-2xl font-bold">{fittingStats.recentSessions}</p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-md transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`rounded-lg p-3 ${
+                        fittingStats.trend === "up" ? "bg-success/10" : 
+                        fittingStats.trend === "down" ? "bg-destructive/10" : 
+                        "bg-muted"
+                      }`}>
+                        {fittingStats.trend === "up" && <ArrowUp className="h-6 w-6 text-success" />}
+                        {fittingStats.trend === "down" && <ArrowDown className="h-6 w-6 text-destructive" />}
+                        {fittingStats.trend === "stable" && <Minus className="h-6 w-6 text-muted-foreground" />}
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Activity Trend</p>
+                        <p className="text-lg font-semibold">
+                          {fittingStats.trend === "up" && <Badge variant="success" className="text-xs">Growing</Badge>}
+                          {fittingStats.trend === "down" && <Badge variant="destructive" className="text-xs">Declining</Badge>}
+                          {fittingStats.trend === "stable" && <Badge variant="secondary" className="text-xs">Steady</Badge>}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* AI Weekly Summary - Core and Premium users only */}
           {userTier !== "entry" && user && (
