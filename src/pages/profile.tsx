@@ -176,12 +176,29 @@ function ProfileContent() {
   const saveSection = async (section: string, data: Partial<UserProfile>) => {
     setSaving(true);
     try {
+      // First, check if profile exists to get the id
+      const { data: existingProfile } = await supabase
+        .from("user_profiles")
+        .select("id")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+
+      const upsertData = {
+        user_id: user!.id,
+        ...profile,
+        ...data,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Include id if profile exists (for update), omit for insert
+      if (existingProfile?.id) {
+        upsertData.id = existingProfile.id;
+      }
+
       const { error } = await supabase
         .from("user_profiles")
-        .upsert({
-          user_id: user!.id,
-          ...profile,
-          ...data,
+        .upsert(upsertData, {
+          onConflict: "user_id"
         });
 
       if (error) throw error;
@@ -212,7 +229,7 @@ function ProfileContent() {
       console.error("Error saving profile:", error);
       toast({
         title: "Error",
-        description: "Failed to save profile",
+        description: error instanceof Error ? error.message : "Failed to save profile",
         variant: "destructive",
       });
     } finally {
