@@ -540,6 +540,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          role: string | null
           updated_at: string | null
         }
         Insert: {
@@ -548,6 +549,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          role?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -556,6 +558,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          role?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -925,6 +928,7 @@ export type Database = {
           preferred_brands: string[] | null
           primary_goals: string[] | null
           state: string | null
+          subscription_tier: string | null
           swing_speed_range: string | null
           updated_at: string | null
           user_id: string
@@ -961,6 +965,7 @@ export type Database = {
           preferred_brands?: string[] | null
           primary_goals?: string[] | null
           state?: string | null
+          subscription_tier?: string | null
           swing_speed_range?: string | null
           updated_at?: string | null
           user_id: string
@@ -997,6 +1002,7 @@ export type Database = {
           preferred_brands?: string[] | null
           primary_goals?: string[] | null
           state?: string | null
+          subscription_tier?: string | null
           swing_speed_range?: string | null
           updated_at?: string | null
           user_id?: string
@@ -1015,7 +1021,9 @@ export type Database = {
           last_payment_date: string | null
           max_sessions_per_month: number | null
           next_payment_date: string | null
+          plan_id: string | null
           start_date: string
+          status: string | null
           stripe_subscription_id: string | null
           tier: string
           updated_at: string | null
@@ -1030,7 +1038,9 @@ export type Database = {
           last_payment_date?: string | null
           max_sessions_per_month?: number | null
           next_payment_date?: string | null
+          plan_id?: string | null
           start_date?: string
+          status?: string | null
           stripe_subscription_id?: string | null
           tier?: string
           updated_at?: string | null
@@ -1045,7 +1055,9 @@ export type Database = {
           last_payment_date?: string | null
           max_sessions_per_month?: number | null
           next_payment_date?: string | null
+          plan_id?: string | null
           start_date?: string
+          status?: string | null
           stripe_subscription_id?: string | null
           tier?: string
           updated_at?: string | null

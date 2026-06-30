@@ -87,14 +87,7 @@ function UsersContent() {
       setLoading(true);
       const { data, error } = await supabase
         .from("profiles")
-        .select(`
-          id,
-          email,
-          created_at,
-          role,
-          first_name,
-          last_name
-        `)
+        .select("id, email, created_at, role, avatar_url")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -105,7 +98,7 @@ function UsersContent() {
           const [userProfiles, swingSubs] = await Promise.all([
             supabase
               .from("user_profiles")
-              .select("subscription_tier")
+              .select("subscription_tier, first_name, last_name")
               .eq("id", profile.id)
               .maybeSingle(),
             supabase
@@ -121,8 +114,8 @@ function UsersContent() {
             created_at: profile.created_at || "",
             profiles: {
               role: profile.role || "user",
-              first_name: profile.first_name,
-              last_name: profile.last_name,
+              first_name: userProfiles.data?.first_name || null,
+              last_name: userProfiles.data?.last_name || null,
             },
             user_profiles: {
               subscription_tier: userProfiles.data?.subscription_tier || null,

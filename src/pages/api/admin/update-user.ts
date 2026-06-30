@@ -55,6 +55,7 @@ export default async function handler(
       const { error: tierError } = await supabase
         .from("user_profiles")
         .upsert({
+          user_id: userId,
           id: userId,
           subscription_tier: updates.subscription_tier,
           updated_at: new Date().toISOString(),
@@ -74,8 +75,9 @@ export default async function handler(
             status: "active",
             plan_id: "price_swing_analytics_monthly",
             current_period_start: new Date().toISOString(),
-            current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // 1 year
+            current_period_end: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
             cancel_at_period_end: false,
+            created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           });
 
