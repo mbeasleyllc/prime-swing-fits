@@ -809,8 +809,323 @@ function PersonalInfoSection({
   );
 }
 
-function MeasurementsSection({ profile, saving, showMeasureGuide, onToggleGuide, onSave }: any) {
-  return <div>Measurements section placeholder</div>;
+function MeasurementsSection({
+  profile,
+  saving,
+  showMeasureGuide,
+  onToggleGuide,
+  onSave,
+}: {
+  profile: Partial<UserProfile>;
+  saving: boolean;
+  showMeasureGuide: boolean;
+  onToggleGuide: () => void;
+  onSave: (data: Partial<UserProfile>) => void;
+}) {
+  const [formData, setFormData] = useState({
+    height_ft: profile.height_ft?.toString() || "",
+    height_in: profile.height_in?.toString() || "",
+    wrist_to_floor: profile.wrist_to_floor?.toString() || "",
+    hand_size: profile.hand_size || "",
+    dominant_hand: profile.dominant_hand || "",
+  });
+
+  useEffect(() => {
+    setFormData({
+      height_ft: profile.height_ft?.toString() || "",
+      height_in: profile.height_in?.toString() || "",
+      wrist_to_floor: profile.wrist_to_floor?.toString() || "",
+      hand_size: profile.hand_size || "",
+      dominant_hand: profile.dominant_hand || "",
+    });
+  }, [profile]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave({
+      height_ft: formData.height_ft ? parseInt(formData.height_ft) : null,
+      height_in: formData.height_in ? parseInt(formData.height_in) : null,
+      wrist_to_floor: formData.wrist_to_floor ? parseFloat(formData.wrist_to_floor) : null,
+      hand_size: formData.hand_size || null,
+      dominant_hand: formData.dominant_hand || null,
+    } as Partial<UserProfile>);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <span>Body Measurements</span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onToggleGuide}
+          >
+            <Info className="h-4 w-4 mr-2" />
+            {showMeasureGuide ? "Hide" : "Show"} Guide
+          </Button>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Collapsible open={showMeasureGuide}>
+          <CollapsibleContent>
+            <div className="mb-6 p-6 bg-muted/50 rounded-lg border border-border">
+              <h4 className="font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Ruler className="h-5 w-5 text-accent" />
+                How to Measure for Club Fitting
+              </h4>
+              
+              <div className="space-y-4">
+                <div>
+                  <h5 className="font-medium text-foreground mb-2">📏 Height</h5>
+                  <p className="text-sm text-muted-foreground">
+                    Stand with your back against a wall, barefoot. Mark the top of your head and measure from floor to mark. Enter feet and inches separately.
+                  </p>
+                </div>
+
+                <div>
+                  <h5 className="font-medium text-foreground mb-2">📐 Wrist-to-Floor</h5>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    <strong>CRITICAL for club length fitting.</strong> Wear golf shoes or dress shoes (1" heel). Stand straight with arms relaxed at sides.
+                  </p>
+                  <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
+                    <li>Have someone measure from the crease of your wrist (where watch sits)</li>
+                    <li>Straight down to the floor</li>
+                    <li>Do NOT bend arms or wrists</li>
+                    <li>Measure in inches (decimal is OK, e.g., 34.5")</li>
+                  </ol>
+                </div>
+
+                <div>
+                  <h5 className="font-medium text-foreground mb-2">✋ Hand Size</h5>
+                  <p className="text-sm text-muted-foreground">
+                    Measure from the base of your palm to the tip of your middle finger:
+                  </p>
+                  <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1 mt-2">
+                    <li><strong>Small:</strong> Less than 7 inches</li>
+                    <li><strong>Medium:</strong> 7–8.5 inches</li>
+                    <li><strong>Large:</strong> 8.5–9.5 inches</li>
+                    <li><strong>Extra Large:</strong> Over 9.5 inches</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h5 className="font-medium text-foreground mb-2">🎯 Dominant Hand</h5>
+                  <p className="text-sm text-muted-foreground">
+                    Select the hand you swing with (the hand lower on the grip). Right-handed golfers swing right-handed clubs.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 p-3 bg-accent/10 rounded border border-accent/30">
+                <p className="text-sm text-foreground flex items-start gap-2">
+                  <Info className="h-4 w-4 text-accent flex-shrink-0 mt-0.5" />
+                  <span>
+                    <strong>Pro Tip:</strong> Wrist-to-floor is the single most important measurement for club length. 
+                    Get it accurate to within ±0.25" for best fitting results. Have someone help you measure.
+                  </span>
+                </p>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <Label className="flex items-center gap-2">
+              Height
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Your total height affects club length recommendations</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="height_ft" className="text-xs text-muted-foreground">
+                  Feet
+                </Label>
+                <Select
+                  value={formData.height_ft}
+                  onValueChange={(value) => setFormData({ ...formData, height_ft: value })}
+                >
+                  <SelectTrigger id="height_ft">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="4">4 ft</SelectItem>
+                    <SelectItem value="5">5 ft</SelectItem>
+                    <SelectItem value="6">6 ft</SelectItem>
+                    <SelectItem value="7">7 ft</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="height_in" className="text-xs text-muted-foreground">
+                  Inches
+                </Label>
+                <Select
+                  value={formData.height_in}
+                  onValueChange={(value) => setFormData({ ...formData, height_in: value })}
+                >
+                  <SelectTrigger id="height_in">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[...Array(12)].map((_, i) => (
+                      <SelectItem key={i} value={i.toString()}>
+                        {i} in
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            {formData.height_ft && formData.height_in && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Total: {formData.height_ft}'{formData.height_in}" (
+                {parseInt(formData.height_ft) * 12 + parseInt(formData.height_in)} inches)
+              </p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="wrist_to_floor" className="flex items-center gap-2">
+              Wrist-to-Floor Measurement (inches)
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-0.5 bg-accent/20 rounded text-xs font-medium text-accent">
+                      <TrendingUp className="h-3 w-3" />
+                      CRITICAL
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">
+                      Most important measurement for club length fitting. Stand straight with arms relaxed, 
+                      measure from wrist crease to floor. Accuracy to ±0.25" is ideal.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Label>
+            <Input
+              id="wrist_to_floor"
+              type="number"
+              min="20"
+              max="50"
+              step="0.25"
+              inputMode="decimal"
+              value={formData.wrist_to_floor}
+              onChange={(e) => setFormData({ ...formData, wrist_to_floor: e.target.value })}
+              placeholder="e.g., 34.5"
+              className="text-lg"
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              Typical range: Men 32-37", Women 29-34". Click "Show Guide" above for measurement instructions.
+            </p>
+          </div>
+
+          <div>
+            <Label htmlFor="hand_size" className="flex items-center gap-2">
+              Hand Size
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Determines proper grip thickness and club feel</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Label>
+            <Select
+              value={formData.hand_size}
+              onValueChange={(value) => setFormData({ ...formData, hand_size: value })}
+            >
+              <SelectTrigger id="hand_size">
+                <SelectValue placeholder="Select hand size" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="small">Small (under 7")</SelectItem>
+                <SelectItem value="medium">Medium (7–8.5")</SelectItem>
+                <SelectItem value="large">Large (8.5–9.5")</SelectItem>
+                <SelectItem value="extra_large">Extra Large (over 9.5")</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-2">
+              Measure from base of palm to middle fingertip
+            </p>
+          </div>
+
+          <div>
+            <Label className="flex items-center gap-2 mb-3">
+              Dominant Hand / Swing Direction
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>The hand lower on the grip determines your swing direction</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Label>
+            <RadioGroup
+              value={formData.dominant_hand}
+              onValueChange={(value) => setFormData({ ...formData, dominant_hand: value })}
+            >
+              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                <RadioGroupItem value="right" id="right_hand" />
+                <Label htmlFor="right_hand" className="font-normal cursor-pointer flex-1">
+                  <div>
+                    <div className="font-medium">Right-Handed</div>
+                    <div className="text-xs text-muted-foreground">Right hand lower on grip, face target on right</div>
+                  </div>
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                <RadioGroupItem value="left" id="left_hand" />
+                <Label htmlFor="left_hand" className="font-normal cursor-pointer flex-1">
+                  <div>
+                    <div className="font-medium">Left-Handed</div>
+                    <div className="text-xs text-muted-foreground">Left hand lower on grip, face target on left</div>
+                  </div>
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
+            <Button 
+              type="submit" 
+              disabled={saving} 
+              className="flex-1 bg-gold text-gold-foreground hover:bg-gold/90"
+            >
+              {saving ? "Saving..." : "Save Measurements"}
+            </Button>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onToggleGuide}
+              className="flex-1 sm:flex-initial"
+            >
+              <Info className="h-4 w-4 mr-2" />
+              {showMeasureGuide ? "Hide" : "Show"} Guide
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
 }
 
 function SwingProfileSection({ profile, saving, onSave }: any) {
