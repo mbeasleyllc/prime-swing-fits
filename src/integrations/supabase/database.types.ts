@@ -198,6 +198,9 @@ export type Database = {
       fitting_recommendations: {
         Row: {
           advisory_notes: string | null
+          ball_compression: number | null
+          ball_optimal_swing_speed: string | null
+          ball_spin_rating: string | null
           club_length_adj: string | null
           club_type_rec: string | null
           driver_confidence: number | null
@@ -205,6 +208,7 @@ export type Database = {
           fairway_woods: string | null
           gaps_identified: string[] | null
           generated_at: string | null
+          golf_ball_rec: string | null
           grip_size_rec: string | null
           hybrids: string | null
           id: string
@@ -227,6 +231,9 @@ export type Database = {
         }
         Insert: {
           advisory_notes?: string | null
+          ball_compression?: number | null
+          ball_optimal_swing_speed?: string | null
+          ball_spin_rating?: string | null
           club_length_adj?: string | null
           club_type_rec?: string | null
           driver_confidence?: number | null
@@ -234,6 +241,7 @@ export type Database = {
           fairway_woods?: string | null
           gaps_identified?: string[] | null
           generated_at?: string | null
+          golf_ball_rec?: string | null
           grip_size_rec?: string | null
           hybrids?: string | null
           id?: string
@@ -256,6 +264,9 @@ export type Database = {
         }
         Update: {
           advisory_notes?: string | null
+          ball_compression?: number | null
+          ball_optimal_swing_speed?: string | null
+          ball_spin_rating?: string | null
           club_length_adj?: string | null
           club_type_rec?: string | null
           driver_confidence?: number | null
@@ -263,6 +274,7 @@ export type Database = {
           fairway_woods?: string | null
           gaps_identified?: string[] | null
           generated_at?: string | null
+          golf_ball_rec?: string | null
           grip_size_rec?: string | null
           hybrids?: string | null
           id?: string
