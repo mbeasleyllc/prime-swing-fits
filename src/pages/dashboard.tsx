@@ -225,74 +225,121 @@ export default function Dashboard() {
       }
 
       // Fetch recommended bag from most recent completed fitting
-      // TODO: Verify fitting_sessions schema has recommendations column
-      // const { data: recentFitting, error: fittingError } = await supabase
-      //   .from("fitting_sessions")
-      //   .select("id, recommendations, completed_at")
-      //   .eq("user_id", user.id)
-      //   .eq("status", "completed")
-      //   .not("recommendations", "is", null)
-      //   .order("completed_at", { ascending: false })
-      //   .limit(1)
-      //   .maybeSingle();
+      const { data: completedSessions } = await supabase
+        .from("fitting_sessions")
+        .select(`
+          id, 
+          completed_at,
+          fitting_recommendations (
+            driver_spec,
+            fairway_woods,
+            hybrids,
+            irons_spec,
+            wedges_spec,
+            putter_spec,
+            shaft_flex_rec
+          )
+        `)
+        .eq("user_id", user.id)
+        .eq("status", "completed")
+        .not("completed_at", "is", null)
+        .order("completed_at", { ascending: false })
+        .limit(1);
 
-      // if (recentFitting && recentFitting.recommendations) {
-      //   const recs = recentFitting.recommendations as any;
-      //   const clubs = [
-      //     {
-      //       type: "Driver",
-      //       name: recs.driver?.model || "TaylorMade Stealth 2",
-      //       flex: recs.driver?.shaft_flex || "Stiff",
-      //       loft: recs.driver?.loft || "10.5°",
-      //       isRecent: true,
-      //     },
-      //     {
-      //       type: "3-Wood",
-      //       name: "Callaway Paradym",
-      //       flex: recs.driver?.shaft_flex || "Stiff",
-      //       loft: "15°",
-      //       isRecent: true,
-      //     },
-      //     {
-      //       type: "Hybrid",
-      //       name: "Ping G430",
-      //       flex: recs.driver?.shaft_flex || "Stiff",
-      //       loft: "19°",
-      //       isRecent: true,
-      //     },
-      //     {
-      //       type: "Irons (5-PW)",
-      //       name: recs.iron?.model || "Titleist T200",
-      //       flex: recs.iron?.shaft_flex || "Regular",
-      //       loft: "5i-PW",
-      //       isRecent: true,
-      //     },
-      //     {
-      //       type: "Wedges",
-      //       name: "Vokey SM9",
-      //       flex: "Wedge",
-      //       loft: "52°, 56°, 60°",
-      //       isRecent: false,
-      //     },
-      //     {
-      //       type: "Putter",
-      //       name: recs.putter?.model || "Scotty Cameron Special Select",
-      //       flex: "—",
-      //       loft: recs.putter?.lie_angle || "71°",
-      //       isRecent: true,
-      //     },
-      //   ];
+      if (completedSessions && completedSessions.length > 0 && completedSessions[0].fitting_recommendations) {
+        const session = completedSessions[0];
+        const recs = session.fitting_recommendations[0] as any;
+        
+        // Parse recommendations into club list
+        const clubs = [];
+        
+        // Driver
+        if (recs.driver_spec) {
+          clubs.push({
+            type: "Driver",
+            name: recs.driver_spec || "TaylorMade Stealth 2",
+            flex: recs.shaft_flex_rec || "Stiff",
+            loft: "10.5°",
+            isRecent: true,
+          });
+        }
+        
+        // Fairway Woods
+        if (recs.fairway_woods) {
+          clubs.push({
+            type: "3-Wood",
+            name: recs.fairway_woods || "Callaway Paradym",
+            flex: recs.shaft_flex_rec || "Stiff",
+            loft: "15°",
+            isRecent: true,
+          });
+        }
+        
+        // Hybrids
+        if (recs.hybrids) {
+          clubs.push({
+            type: "Hybrid",
+            name: recs.hybrids || "Ping G430",
+            flex: recs.shaft_flex_rec || "Stiff",
+            loft: "19°",
+            isRecent: true,
+          });
+        }
+        
+        // Irons
+        if (recs.irons_spec) {
+          clubs.push({
+            type: "Irons (5-PW)",
+            name: recs.irons_spec || "Titleist T200",
+            flex: recs.shaft_flex_rec || "Regular",
+            loft: "5i-PW",
+            isRecent: true,
+          });
+        }
+        
+        // Wedges
+        if (recs.wedges_spec) {
+          clubs.push({
+            type: "Wedges",
+            name: recs.wedges_spec || "Vokey SM9",
+            flex: "Wedge",
+            loft: "52°, 56°, 60°",
+            isRecent: true,
+          });
+        }
+        
+        // Putter
+        if (recs.putter_spec) {
+          clubs.push({
+            type: "Putter",
+            name: recs.putter_spec || "Scotty Cameron Special Select",
+            flex: "—",
+            loft: "3° lie 71°",
+            isRecent: true,
+          });
+        }
 
-      //   setRecommendedBag({
-      //     clubs,
-      //     fittingDate: recentFitting.completed_at,
-      //   });
-      // } else {
-      //   setRecommendedBag(null);
-      // }
-      
-      // Show empty state until schema is verified
-      setRecommendedBag(null);
+        // Load user preferences from localStorage
+        const savedPreferences = localStorage.getItem(`club_preferences_${user.id}`);
+        if (savedPreferences) {
+          const prefs = JSON.parse(savedPreferences);
+          setClubPreferences(prefs);
+          
+          // Apply preferences to clubs
+          clubs.forEach(club => {
+            if (prefs[club.type]) {
+              Object.assign(club, prefs[club.type]);
+            }
+          });
+        }
+
+        setRecommendedBag({
+          clubs,
+          fittingDate: session.completed_at,
+        });
+      } else {
+        setRecommendedBag(null);
+      }
 
       setIsLoading(false);
     };
