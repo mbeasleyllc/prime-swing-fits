@@ -1165,7 +1165,7 @@ function SwingProfileSection({
       miss_direction: formData.miss_direction || null,
       attack_angle: formData.attack_angle || null,
       club_path: formData.club_path || null,
-      driver_distance: formData.driver_distance ? parseInt(formData.driver_distance) : null,
+      driver_distance: formData.driver_distance || null,
     } as Partial<UserProfile>);
   };
 
