@@ -344,7 +344,7 @@ function UserEditForm({
 }) {
   const [role, setRole] = useState(user.profiles?.role || "user");
   const [subscriptionTier, setSubscriptionTier] = useState(
-    user.user_profiles?.subscription_tier || ""
+    user.user_profiles?.subscription_tier || "none"
   );
   const [swingAnalytics, setSwingAnalytics] = useState(
     user.user_swing_subscriptions.length > 0
@@ -354,7 +354,7 @@ function UserEditForm({
     e.preventDefault();
     onSave(user.id, {
       role,
-      subscription_tier: subscriptionTier || null,
+      subscription_tier: subscriptionTier === "none" ? null : subscriptionTier,
       swing_analytics: swingAnalytics,
     });
   };
@@ -388,7 +388,7 @@ function UserEditForm({
             <SelectValue placeholder="Select tier" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">None (No Access)</SelectItem>
+            <SelectItem value="none">None (No Access)</SelectItem>
             <SelectItem value="entry">Entry - Single Club Fitting</SelectItem>
             <SelectItem value="core">Core - Full Bag Fitting</SelectItem>
             <SelectItem value="premium">Premium - Advanced Full Bag</SelectItem>
