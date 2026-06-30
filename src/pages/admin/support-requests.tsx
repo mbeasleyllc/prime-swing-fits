@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +34,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
 import type { Database } from "@/integrations/supabase/database.types";
 
 type SupportRequest = Database["public"]["Tables"]["support_requests"]["Row"];
@@ -178,20 +176,14 @@ function SupportRequestsContent() {
   const resolvedCount = requests.filter(r => r.status === "resolved").length;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-
-      <div className="container py-12">
-        <div className="mb-8">
-          <Link href="/admin" className="text-accent hover:underline mb-4 inline-block">
-            ← Back to Admin Dashboard
-          </Link>
-          <h1 className="text-4xl font-bold mb-2 text-foreground">Support Requests</h1>
+    <AppLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Support Requests</h1>
           <p className="text-muted-foreground">Manage customer support inquiries</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="border-l-4 border-l-amber-500">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -200,7 +192,7 @@ function SupportRequestsContent() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{pendingCount}</div>
+              <div className="text-3xl font-bold">{pendingCount}</div>
             </CardContent>
           </Card>
 
@@ -212,7 +204,7 @@ function SupportRequestsContent() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{resolvedCount}</div>
+              <div className="text-3xl font-bold">{resolvedCount}</div>
             </CardContent>
           </Card>
 
@@ -224,13 +216,12 @@ function SupportRequestsContent() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{requests.length}</div>
+              <div className="text-3xl font-bold">{requests.length}</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2">
           <Button
             variant={filter === "all" ? "default" : "outline"}
             onClick={() => setFilter("all")}
@@ -254,7 +245,6 @@ function SupportRequestsContent() {
           </Button>
         </div>
 
-        {/* Requests Table */}
         <Card>
           <CardContent className="p-0">
             {loading ? (
@@ -342,7 +332,6 @@ function SupportRequestsContent() {
         </Card>
       </div>
 
-      {/* Request Details Dialog */}
       <Dialog open={!!selectedRequest} onOpenChange={() => setSelectedRequest(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -368,7 +357,6 @@ function SupportRequestsContent() {
 
           {selectedRequest && (
             <div className="space-y-6 mt-4">
-              {/* Contact Info */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
@@ -412,7 +400,6 @@ function SupportRequestsContent() {
                 </CardContent>
               </Card>
 
-              {/* Message */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-2">
@@ -425,7 +412,6 @@ function SupportRequestsContent() {
                 </CardContent>
               </Card>
 
-              {/* Admin Notes */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Admin Notes</CardTitle>
@@ -444,7 +430,6 @@ function SupportRequestsContent() {
                 </CardContent>
               </Card>
 
-              {/* Actions */}
               <div className="flex flex-wrap gap-3">
                 {selectedRequest.status === "pending" && (
                   <Button
@@ -485,8 +470,6 @@ function SupportRequestsContent() {
           )}
         </DialogContent>
       </Dialog>
-
-      <Footer />
-    </div>
+    </AppLayout>
   );
 }

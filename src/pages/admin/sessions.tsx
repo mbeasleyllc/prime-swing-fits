@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
+import { AppLayout } from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Eye, Flag, Download, ArrowLeft } from "lucide-react";
+import { Eye, Flag, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 export default function AdminSessions() {
   const { user } = useAuth();
@@ -119,38 +118,24 @@ export default function AdminSessions() {
   if (isLoading) {
     return (
       <ProtectedRoute adminOnly>
-        <div className="min-h-screen bg-background">
-          <Navigation />
-          <div className="container mx-auto px-4 py-8 max-w-7xl">
-            <Skeleton className="h-12 w-64 mb-8" />
-            <Skeleton className="h-96" />
-          </div>
-          <Footer />
-        </div>
+        <AppLayout>
+          <Skeleton className="h-12 w-64 mb-8" />
+          <Skeleton className="h-96" />
+        </AppLayout>
       </ProtectedRoute>
     );
   }
 
   return (
     <ProtectedRoute adminOnly>
-      <div className="min-h-screen bg-background">
-        <Navigation />
-
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-          <div className="mb-8 flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Session Management</h1>
-              <p className="text-muted-foreground">View and manage all fitting sessions</p>
-            </div>
-            <Button variant="outline" asChild>
-              <Link href="/admin">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Admin
-              </Link>
-            </Button>
+      <AppLayout>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Session Management</h1>
+            <p className="text-muted-foreground">View and manage all fitting sessions</p>
           </div>
 
-          <Card className="mb-6">
+          <Card>
             <CardHeader>
               <CardTitle>Filters</CardTitle>
             </CardHeader>
@@ -183,84 +168,84 @@ export default function AdminSessions() {
 
           <Card>
             <CardContent className="pt-6">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>User Email</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Handicap</TableHead>
-                    <TableHead>Hand</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredSessions.length === 0 ? (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                        No sessions found
-                      </TableCell>
+                      <TableHead>User Email</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Handicap</TableHead>
+                      <TableHead>Hand</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
-                  ) : (
-                    filteredSessions.map((session) => (
-                      <TableRow
-                        key={session.id}
-                        className={session.flagged ? "bg-amber-50/50" : ""}
-                      >
-                        <TableCell className="font-medium">
-                          {session.users?.email || "Unknown"}
-                        </TableCell>
-                        <TableCell>
-                          {new Date(session.created_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={
-                              session.status === "completed"
-                                ? "bg-green-50 text-green-700 border-green-200"
-                                : "bg-yellow-50 text-yellow-700 border-yellow-200"
-                            }
-                          >
-                            {session.status === "completed" ? "Completed" : "In Progress"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {session.player_profile?.[0]?.handicap || "N/A"}
-                        </TableCell>
-                        <TableCell className="capitalize">
-                          {session.player_profile?.[0]?.dominant_hand || "N/A"}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            {session.status === "completed" && (
-                              <Button variant="outline" size="sm" asChild>
-                                <Link href={`/fitting/${session.id}/results`}>
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  View
-                                </Link>
-                              </Button>
-                            )}
-                            <Button
-                              variant={session.flagged ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => handleFlagSession(session.id, session.flagged)}
-                            >
-                              <Flag className="h-4 w-4" />
-                            </Button>
-                          </div>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSessions.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                          No sessions found
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    ) : (
+                      filteredSessions.map((session) => (
+                        <TableRow
+                          key={session.id}
+                          className={session.flagged ? "bg-amber-50/50" : ""}
+                        >
+                          <TableCell className="font-medium">
+                            {session.users?.email || "Unknown"}
+                          </TableCell>
+                          <TableCell>
+                            {new Date(session.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={
+                                session.status === "completed"
+                                  ? "bg-green-50 text-green-700 border-green-200"
+                                  : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                              }
+                            >
+                              {session.status === "completed" ? "Completed" : "In Progress"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {session.player_profile?.[0]?.handicap || "N/A"}
+                          </TableCell>
+                          <TableCell className="capitalize">
+                            {session.player_profile?.[0]?.dominant_hand || "N/A"}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              {session.status === "completed" && (
+                                <Button variant="outline" size="sm" asChild>
+                                  <Link href={`/fitting/${session.id}/results`}>
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    View
+                                  </Link>
+                                </Button>
+                              )}
+                              <Button
+                                variant={session.flagged ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => handleFlagSession(session.id, session.flagged)}
+                              >
+                                <Flag className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </div>
-
-        <Footer />
-      </div>
+      </AppLayout>
     </ProtectedRoute>
   );
 }
