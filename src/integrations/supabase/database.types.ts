@@ -1013,7 +1013,10 @@ export type Database = {
       }
       user_swing_subscriptions: {
         Row: {
+          cancel_at_period_end: boolean | null
           created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
           data_retention_months: number | null
           end_date: string | null
           id: string
@@ -1030,7 +1033,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cancel_at_period_end?: boolean | null
           created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
           data_retention_months?: number | null
           end_date?: string | null
           id?: string
@@ -1047,7 +1053,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cancel_at_period_end?: boolean | null
           created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
           data_retention_months?: number | null
           end_date?: string | null
           id?: string
