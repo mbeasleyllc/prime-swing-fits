@@ -302,11 +302,11 @@ export function WeeklySummary({ userId }: WeeklySummaryProps) {
     switch (type) {
       case "improvement":
       case "achievement":
-        return "default";
+        return "success";
       case "decline":
         return "destructive";
       case "focus":
-        return "secondary";
+        return "default";
     }
   };
 

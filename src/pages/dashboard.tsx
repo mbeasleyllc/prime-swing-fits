@@ -311,7 +311,7 @@ export default function Dashboard() {
                                   In Progress
                                 </Badge>
                               ) : (
-                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                <Badge variant="success" className="bg-success/10 text-success border-success/20">
                                   <CheckCircle2 className="h-3 w-3 mr-1" />
                                   Completed
                                 </Badge>
