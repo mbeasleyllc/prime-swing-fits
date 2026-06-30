@@ -237,7 +237,11 @@ export default function Dashboard() {
             irons_spec,
             wedges_spec,
             putter_spec,
-            shaft_flex_rec
+            shaft_flex_rec,
+            golf_ball_rec,
+            ball_compression,
+            ball_spin_rating,
+            ball_optimal_swing_speed
           )
         `)
         .eq("user_id", user.id)
@@ -315,6 +319,17 @@ export default function Dashboard() {
             name: recs.putter_spec || "Scotty Cameron Special Select",
             flex: "—",
             loft: "3° lie 71°",
+            isRecent: true,
+          });
+        }
+
+        // Golf Ball
+        if (recs.golf_ball_rec) {
+          clubs.push({
+            type: "Golf Ball",
+            name: recs.golf_ball_rec || "Titleist Pro V1",
+            flex: `Compression ${recs.ball_compression || 90}`,
+            loft: `${recs.ball_spin_rating || "Mid"} Spin`,
             isRecent: true,
           });
         }
@@ -410,6 +425,13 @@ export default function Dashboard() {
         forgiveness: "9.5/10",
         launch: "Low",
         spin: "1,200-1,800 RPM",
+      },
+      "Golf Ball": {
+        cor: "0.830 (Tour Level)",
+        moi: "N/A",
+        forgiveness: "Variable",
+        launch: "Dependent on Club",
+        spin: "Variable by Design",
       },
     };
     
@@ -747,18 +769,42 @@ export default function Dashboard() {
                                       <div className={`rounded-lg p-2 ${
                                         club.isRecent ? 'bg-gold/10' : 'bg-muted'
                                       }`}>
-                                        <svg
-                                          viewBox="0 0 24 24"
-                                          className={`w-6 h-6 ${
-                                            club.isRecent ? 'text-gold' : 'text-muted-foreground'
-                                          }`}
-                                          fill="none"
-                                          stroke="currentColor"
-                                          strokeWidth="2"
-                                          strokeLinecap="round"
-                                        >
-                                          <path d="M12 2 L12 18 M12 18 L8 16 M12 18 L16 16 M9 22 L15 22" />
-                                        </svg>
+                                        {club.type === "Golf Ball" ? (
+                                          <svg
+                                            viewBox="0 0 24 24"
+                                            className={`w-6 h-6 ${
+                                              club.isRecent ? 'text-gold' : 'text-muted-foreground'
+                                            }`}
+                                            fill="currentColor"
+                                          >
+                                            <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2" />
+                                            <circle cx="7" cy="7" r="1" />
+                                            <circle cx="12" cy="7" r="1" />
+                                            <circle cx="17" cy="7" r="1" />
+                                            <circle cx="7" cy="12" r="1" />
+                                            <circle cx="17" cy="12" r="1" />
+                                            <circle cx="7" cy="17" r="1" />
+                                            <circle cx="12" cy="17" r="1" />
+                                            <circle cx="17" cy="17" r="1" />
+                                            <circle cx="9.5" cy="9.5" r="0.8" />
+                                            <circle cx="14.5" cy="9.5" r="0.8" />
+                                            <circle cx="9.5" cy="14.5" r="0.8" />
+                                            <circle cx="14.5" cy="14.5" r="0.8" />
+                                          </svg>
+                                        ) : (
+                                          <svg
+                                            viewBox="0 0 24 24"
+                                            className={`w-6 h-6 ${
+                                              club.isRecent ? 'text-gold' : 'text-muted-foreground'
+                                            }`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                          >
+                                            <path d="M12 2 L12 18 M12 18 L8 16 M12 18 L16 16 M9 22 L15 22" />
+                                          </svg>
+                                        )}
                                       </div>
                                       <div className="flex-1">
                                         <h4 className="font-semibold text-sm mb-1">{club.type}</h4>
@@ -1434,18 +1480,42 @@ export default function Dashboard() {
                                       <div className={`rounded-lg p-2 ${
                                         club.isRecent ? 'bg-gold/10' : 'bg-muted'
                                       }`}>
-                                        <svg
-                                          viewBox="0 0 24 24"
-                                          className={`w-6 h-6 ${
-                                            club.isRecent ? 'text-gold' : 'text-muted-foreground'
-                                          }`}
-                                          fill="none"
-                                          stroke="currentColor"
-                                          strokeWidth="2"
-                                          strokeLinecap="round"
-                                        >
-                                          <path d="M12 2 L12 18 M12 18 L8 16 M12 18 L16 16 M9 22 L15 22" />
-                                        </svg>
+                                        {club.type === "Golf Ball" ? (
+                                          <svg
+                                            viewBox="0 0 24 24"
+                                            className={`w-6 h-6 ${
+                                              club.isRecent ? 'text-gold' : 'text-muted-foreground'
+                                            }`}
+                                            fill="currentColor"
+                                          >
+                                            <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.2" />
+                                            <circle cx="7" cy="7" r="1" />
+                                            <circle cx="12" cy="7" r="1" />
+                                            <circle cx="17" cy="7" r="1" />
+                                            <circle cx="7" cy="12" r="1" />
+                                            <circle cx="17" cy="12" r="1" />
+                                            <circle cx="7" cy="17" r="1" />
+                                            <circle cx="12" cy="17" r="1" />
+                                            <circle cx="17" cy="17" r="1" />
+                                            <circle cx="9.5" cy="9.5" r="0.8" />
+                                            <circle cx="14.5" cy="9.5" r="0.8" />
+                                            <circle cx="9.5" cy="14.5" r="0.8" />
+                                            <circle cx="14.5" cy="14.5" r="0.8" />
+                                          </svg>
+                                        ) : (
+                                          <svg
+                                            viewBox="0 0 24 24"
+                                            className={`w-6 h-6 ${
+                                              club.isRecent ? 'text-gold' : 'text-muted-foreground'
+                                            }`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                          >
+                                            <path d="M12 2 L12 18 M12 18 L8 16 M12 18 L16 16 M9 22 L15 22" />
+                                          </svg>
+                                        )}
                                       </div>
                                       <div className="flex-1">
                                         <h4 className="font-semibold text-sm mb-1">{club.type}</h4>

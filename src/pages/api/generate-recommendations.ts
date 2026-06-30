@@ -104,6 +104,74 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       shaftWeight = "heavy (90g+)";
     }
 
+    // Golf Ball Recommendation
+    let golfBallRec = "Titleist Pro V1";
+    let ballCompression = 90;
+    let ballSpinRating = "High";
+    let ballOptimalSwingSpeed = "95-105 mph";
+
+    if (usedSwingData && latestSwingData?.club_speed_mph) {
+      const clubSpeed = latestSwingData.club_speed_mph;
+      
+      if (clubSpeed >= 105) {
+        golfBallRec = "Titleist Pro V1x";
+        ballCompression = 100;
+        ballSpinRating = "High";
+        ballOptimalSwingSpeed = "105+ mph";
+      } else if (clubSpeed >= 95) {
+        golfBallRec = "Titleist Pro V1";
+        ballCompression = 90;
+        ballSpinRating = "High";
+        ballOptimalSwingSpeed = "95-105 mph";
+      } else if (clubSpeed >= 85) {
+        golfBallRec = "TaylorMade TP5";
+        ballCompression = 85;
+        ballSpinRating = "Mid-High";
+        ballOptimalSwingSpeed = "85-95 mph";
+      } else if (clubSpeed >= 75) {
+        golfBallRec = "Callaway Chrome Soft";
+        ballCompression = 75;
+        ballSpinRating = "Mid";
+        ballOptimalSwingSpeed = "75-85 mph";
+      } else {
+        golfBallRec = "Srixon Soft Feel";
+        ballCompression = 60;
+        ballSpinRating = "Low";
+        ballOptimalSwingSpeed = "60-75 mph";
+      }
+    } else {
+      // Fallback based on swing profile
+      if (swing.swing_strength === "strong" && swing.swing_tempo === "fast") {
+        golfBallRec = "Titleist Pro V1x";
+        ballCompression = 100;
+        ballSpinRating = "High";
+        ballOptimalSwingSpeed = "105+ mph";
+      } else if (swing.swing_strength === "moderate" || swing.swing_tempo === "moderate") {
+        golfBallRec = "TaylorMade TP5";
+        ballCompression = 85;
+        ballSpinRating = "Mid-High";
+        ballOptimalSwingSpeed = "85-95 mph";
+      } else {
+        golfBallRec = "Callaway Chrome Soft";
+        ballCompression = 75;
+        ballSpinRating = "Mid";
+        ballOptimalSwingSpeed = "75-85 mph";
+      }
+    }
+
+    // Adjust ball for player goals
+    if (profile.primary_goal === "distance") {
+      if (ballCompression < 85) {
+        golfBallRec = "Callaway Supersoft";
+        ballCompression = 38;
+        ballSpinRating = "Low";
+      }
+    } else if (profile.primary_goal === "control") {
+      if (ballCompression > 85) {
+        ballSpinRating = "High";
+      }
+    }
+
     let clubTypeRec = "game improvement";
     if (profile.experience === "beginner" || profile.handicap === "26+") {
       clubTypeRec = "game improvement";
@@ -190,6 +258,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         irons_spec: ironsSpec,
         wedges_spec: wedgesSpec,
         putter_spec: putterSpec,
+        golf_ball_rec: golfBallRec,
+        ball_compression: ballCompression,
+        ball_spin_rating: ballSpinRating,
+        ball_optimal_swing_speed: ballOptimalSwingSpeed,
       })
       .select()
       .single();
