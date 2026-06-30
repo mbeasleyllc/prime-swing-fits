@@ -1479,7 +1479,6 @@ function PreferencesSection({
     club_budget: profile.club_budget || "",
     preferred_brands: profile.preferred_brands || [],
     club_priorities: profile.club_priorities || [],
-    fitting_preferences: profile.fitting_preferences || "",
   });
 
   useEffect(() => {
@@ -1488,7 +1487,6 @@ function PreferencesSection({
       club_budget: profile.club_budget || "",
       preferred_brands: profile.preferred_brands || [],
       club_priorities: profile.club_priorities || [],
-      fitting_preferences: profile.fitting_preferences || "",
     });
   }, [profile]);
 
@@ -1499,7 +1497,6 @@ function PreferencesSection({
       club_budget: formData.club_budget || null,
       preferred_brands: formData.preferred_brands.length > 0 ? formData.preferred_brands : null,
       club_priorities: formData.club_priorities.length > 0 ? formData.club_priorities : null,
-      fitting_preferences: formData.fitting_preferences || null,
     } as Partial<UserProfile>);
   };
 
@@ -1679,22 +1676,6 @@ function PreferencesSection({
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="fitting_preferences" className="text-base font-semibold">
-              Additional Notes (optional)
-            </Label>
-            <p className="text-sm text-muted-foreground mb-3">
-              Any other preferences, concerns, or information that might help with your fitting?
-            </p>
-            <textarea
-              id="fitting_preferences"
-              value={formData.fitting_preferences}
-              onChange={(e) => setFormData({ ...formData, fitting_preferences: e.target.value })}
-              placeholder="Example: I have a bad back so I need lighter clubs, or I prefer blade-style irons..."
-              className="w-full min-h-[100px] p-3 border rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-accent"
-            />
-          </div>
-
           <div className="pt-4 border-t">
             <Button 
               type="submit" 
@@ -1790,7 +1771,6 @@ function FittingHistorySection({ sessions }: { sessions: FittingSession[] }) {
                 <TableHead>Date Completed</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="hidden md:table-cell">Clubs Fitted</TableHead>
-                <TableHead className="hidden lg:table-cell">Primary Goal</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -1804,11 +1784,6 @@ function FittingHistorySection({ sessions }: { sessions: FittingSession[] }) {
                   <TableCell className="hidden md:table-cell">
                     <div className="text-sm text-muted-foreground">
                       Full Bag
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    <div className="text-sm text-muted-foreground capitalize">
-                      {session.primary_goal?.replace(/_/g, " ") || "—"}
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
