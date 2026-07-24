@@ -41,10 +41,12 @@ export default function Login() {
       });
       
       // Wait for the auth state change event to confirm session is established
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
           subscription.unsubscribe();
-          // Session is now fully established, safe to redirect
+          // Add delay to ensure session cookie is fully persisted to browser storage
+          await new Promise(resolve => setTimeout(resolve, 500));
+          // Session is now fully established and persisted, safe to redirect
           window.location.href = "/dashboard";
         }
       });
