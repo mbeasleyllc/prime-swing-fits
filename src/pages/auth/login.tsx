@@ -40,12 +40,20 @@ export default function Login() {
         description: "You've successfully signed in.",
       });
       
-      // Wait for auth state change to propagate through the app
-      // This ensures useAuth hook updates before redirect
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Wait for the auth state change event to confirm session is established
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          subscription.unsubscribe();
+          // Session is now fully established, safe to redirect
+          window.location.href = "/dashboard";
+        }
+      });
       
-      // Force a full page reload to ensure clean auth state initialization
-      window.location.href = "/dashboard";
+      // Fallback timeout in case event doesn't fire (shouldn't happen)
+      setTimeout(() => {
+        subscription.unsubscribe();
+        window.location.href = "/dashboard";
+      }, 3000);
     }
   };
 
