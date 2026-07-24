@@ -46,7 +46,8 @@ export default function Login() {
           title: "Welcome back!",
           description: "You've successfully signed in.",
         });
-        router.push("/dashboard");
+        // Use full page reload to ensure auth state is properly initialized
+        window.location.href = "/dashboard";
       } else {
         toast({
           title: "Login error",
