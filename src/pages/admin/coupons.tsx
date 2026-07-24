@@ -22,6 +22,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Coupon {
   id: string;
@@ -43,6 +53,8 @@ function CouponsContent() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+  const [deletingCoupon, setDeletingCoupon] = useState<Coupon | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -76,31 +88,14 @@ function CouponsContent() {
   const fetchCoupons = async () => {
     try {
       setLoading(true);
-      const mockCoupons: Coupon[] = [
-        {
-          id: "1",
-          code: "WELCOME20",
-          discount_type: "percentage",
-          discount_value: 20,
-          max_uses: 100,
-          times_used: 45,
-          expires_at: "2026-12-31T23:59:59Z",
-          is_active: true,
-          created_at: "2026-06-01T00:00:00Z",
-        },
-        {
-          id: "2",
-          code: "SUMMER50",
-          discount_type: "fixed",
-          discount_value: 50,
-          max_uses: null,
-          times_used: 12,
-          expires_at: null,
-          is_active: true,
-          created_at: "2026-06-15T00:00:00Z",
-        },
-      ];
-      setCoupons(mockCoupons);
+      const { data, error } = await supabase
+        .from("coupons")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      setCoupons(data || []);
     } catch (error) {
       console.error("Error fetching coupons:", error);
       toast({
@@ -119,6 +114,34 @@ function CouponsContent() {
       title: "Copied!",
       description: `Coupon code "${code}" copied to clipboard`,
     });
+  };
+
+  const handleDeleteCoupon = async () => {
+    if (!deletingCoupon) return;
+
+    try {
+      const { error } = await supabase
+        .from("coupons")
+        .delete()
+        .eq("id", deletingCoupon.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Coupon Deleted",
+        description: `Coupon code "${deletingCoupon.code}" has been deleted`,
+      });
+
+      fetchCoupons();
+      setDeletingCoupon(null);
+    } catch (error: any) {
+      console.error("Error deleting coupon:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete coupon",
+        variant: "destructive",
+      });
+    }
   };
 
   const formatDate = (dateString: string | null) => {
@@ -238,10 +261,18 @@ function CouponsContent() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setEditingCoupon(coupon)}
+                            >
                               <Edit2 className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="sm">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setDeletingCoupon(coupon)}
+                            >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           </div>
@@ -269,25 +300,65 @@ function CouponsContent() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={!!editingCoupon} onOpenChange={(open) => !open && setEditingCoupon(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Coupon</DialogTitle>
+            <DialogDescription>
+              Update coupon code settings
+            </DialogDescription>
+          </DialogHeader>
+          {editingCoupon && (
+            <CouponForm
+              coupon={editingCoupon}
+              onClose={() => setEditingCoupon(null)}
+              onSuccess={fetchCoupons}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!deletingCoupon} onOpenChange={(open) => !open && setDeletingCoupon(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Coupon</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete coupon code "{deletingCoupon?.code}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCoupon}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
 
 function CouponForm({
+  coupon,
   onClose,
   onSuccess,
 }: {
+  coupon?: Coupon;
   onClose: () => void;
   onSuccess: () => void;
 }) {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    code: "",
-    discount_type: "percentage" as "percentage" | "fixed",
-    discount_value: "",
-    max_uses: "",
-    expires_at: "",
-    is_active: true,
+    code: coupon?.code || "",
+    discount_type: (coupon?.discount_type || "percentage") as "percentage" | "fixed",
+    discount_value: coupon?.discount_value?.toString() || "",
+    max_uses: coupon?.max_uses?.toString() || "",
+    expires_at: coupon?.expires_at ? coupon.expires_at.split("T")[0] : "",
+    is_active: coupon?.is_active ?? true,
   });
   const [saving, setSaving] = useState(false);
 
@@ -296,20 +367,47 @@ function CouponForm({
     setSaving(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const couponData = {
+        code: formData.code.toUpperCase(),
+        discount_type: formData.discount_type,
+        discount_value: parseFloat(formData.discount_value),
+        max_uses: formData.max_uses ? parseInt(formData.max_uses) : null,
+        expires_at: formData.expires_at ? new Date(formData.expires_at).toISOString() : null,
+        is_active: formData.is_active,
+      };
 
-      toast({
-        title: "Coupon Created",
-        description: `Coupon code "${formData.code}" has been created successfully`,
-      });
+      if (coupon) {
+        const { error } = await supabase
+          .from("coupons")
+          .update(couponData)
+          .eq("id", coupon.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Coupon Updated",
+          description: `Coupon code "${formData.code}" has been updated successfully`,
+        });
+      } else {
+        const { error } = await supabase
+          .from("coupons")
+          .insert([couponData]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Coupon Created",
+          description: `Coupon code "${formData.code}" has been created successfully`,
+        });
+      }
 
       onSuccess();
       onClose();
     } catch (error: any) {
-      console.error("Error creating coupon:", error);
+      console.error("Error saving coupon:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create coupon",
+        description: error.message || "Failed to save coupon",
         variant: "destructive",
       });
     } finally {
@@ -333,18 +431,20 @@ function CouponForm({
             maxLength={20}
             className="font-mono"
           />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() =>
-              setFormData({
-                ...formData,
-                code: `PROMO${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-              })
-            }
-          >
-            Generate
-          </Button>
+          {!coupon && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                setFormData({
+                  ...formData,
+                  code: `PROMO${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+                })
+              }
+            >
+              Generate
+            </Button>
+          )}
         </div>
       </div>
 
@@ -443,7 +543,7 @@ function CouponForm({
           disabled={saving}
           className="flex-1 bg-gold text-gold-foreground hover:bg-gold/90"
         >
-          {saving ? "Creating..." : "Create Coupon"}
+          {saving ? "Saving..." : coupon ? "Update Coupon" : "Create Coupon"}
         </Button>
       </div>
     </form>
