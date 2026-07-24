@@ -9,13 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle2, Mail } from "lucide-react";
 
 export default function Register() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -23,30 +24,61 @@ export default function Register() {
     e.preventDefault();
     setIsLoading(true);
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          role: "user",
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: "user",
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
+      if (error) throw error;
+
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        // Email confirmation required - show message
+        setEmailSent(true);
+        toast({
+          title: "Check your email",
+          description: "We've sent you a confirmation link. Please verify your email to continue.",
+        });
+      } else if (data.session) {
+        // Auto-login enabled - wait for profile creation then redirect
+        // Add a small delay to ensure trigger completes
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Verify profile was created
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", data.user.id)
+          .single();
+
+        if (profileError || !profile) {
+          // Profile not ready yet, wait a bit more
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+
+        toast({
+          title: "Account created!",
+          description: "Welcome to Prime Swing Fits. Redirecting to your dashboard...",
+        });
+        
+        router.push("/dashboard");
+      }
+    } catch (error: any) {
+      console.error("Registration error:", error);
       toast({
         title: "Registration failed",
-        description: error.message,
+        description: error.message || "An error occurred during registration",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
-    } else {
-      toast({
-        title: "Account created!",
-        description: "Welcome to Prime Swing Fits. Redirecting to your dashboard...",
-      });
-      router.push("/dashboard");
     }
   };
 
@@ -68,6 +100,44 @@ export default function Register() {
       setIsLoading(false);
     }
   };
+
+  // Show email confirmation message if needed
+  if (emailSent) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navigation />
+        <div className="flex-1 flex items-center justify-center px-4 py-12">
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center space-y-4">
+              <div className="mx-auto w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
+                <Mail className="h-8 w-8 text-accent" />
+              </div>
+              <div>
+                <CardTitle className="text-2xl mb-2">Check Your Email</CardTitle>
+                <CardDescription>
+                  We've sent a confirmation link to <strong>{email}</strong>
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3 text-sm text-muted-foreground text-center">
+                <p>Click the link in the email to verify your account and complete registration.</p>
+                <p>Can't find the email? Check your spam folder.</p>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setEmailSent(false)}
+              >
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
