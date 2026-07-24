@@ -22,12 +22,34 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
 
+    // Set up listener BEFORE login to catch the SIGNED_IN event
+    let redirectTimeout: NodeJS.Timeout;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // Session is confirmed established, safe to redirect
+        subscription.unsubscribe();
+        clearTimeout(redirectTimeout);
+        
+        // Small delay to ensure cookie is written
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        toast({
+          title: "Welcome back!",
+          description: "You've successfully signed in.",
+        });
+        
+        window.location.href = "/dashboard";
+      }
+    });
+
+    // Now perform the login
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
+      subscription.unsubscribe();
       toast({
         title: "Login failed",
         description: error.message,
@@ -35,31 +57,11 @@ export default function Login() {
       });
       setIsLoading(false);
     } else {
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully signed in.",
-      });
-      
-      // Poll for session to be fully established (max 3 seconds)
-      let attempts = 0;
-      const maxAttempts = 6;
-      
-      while (attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) {
-          // Session confirmed, safe to redirect
-          window.location.href = "/dashboard";
-          return;
-        }
-        
-        attempts++;
-      }
-      
-      // Fallback if session not confirmed after 3 seconds
-      window.location.href = "/dashboard";
+      // Fallback timeout in case SIGNED_IN event doesn't fire within 5 seconds
+      redirectTimeout = setTimeout(() => {
+        subscription.unsubscribe();
+        window.location.href = "/dashboard";
+      }, 5000);
     }
   };
 
