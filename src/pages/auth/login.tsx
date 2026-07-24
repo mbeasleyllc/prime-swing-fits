@@ -35,27 +35,17 @@ export default function Login() {
       });
       setIsLoading(false);
     } else {
-      // Wait for session to be fully established
-      await new Promise(resolve => setTimeout(resolve, 500));
+      toast({
+        title: "Welcome back!",
+        description: "You've successfully signed in.",
+      });
       
-      // Verify session is available
-      const { data: { session } } = await supabase.auth.getSession();
+      // Wait for auth state change to propagate through the app
+      // This ensures useAuth hook updates before redirect
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      if (session) {
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully signed in.",
-        });
-        // Use full page reload to ensure auth state is properly initialized
-        window.location.href = "/dashboard";
-      } else {
-        toast({
-          title: "Login error",
-          description: "Session could not be established. Please try again.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-      }
+      // Force a full page reload to ensure clean auth state initialization
+      window.location.href = "/dashboard";
     }
   };
 
