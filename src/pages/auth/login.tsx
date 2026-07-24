@@ -40,22 +40,26 @@ export default function Login() {
         description: "You've successfully signed in.",
       });
       
-      // Wait for the auth state change event to confirm session is established
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          subscription.unsubscribe();
-          // Add delay to ensure session cookie is fully persisted to browser storage
-          await new Promise(resolve => setTimeout(resolve, 500));
-          // Session is now fully established and persisted, safe to redirect
-          window.location.href = "/dashboard";
-        }
-      });
+      // Poll for session to be fully established (max 3 seconds)
+      let attempts = 0;
+      const maxAttempts = 6;
       
-      // Fallback timeout in case event doesn't fire (shouldn't happen)
-      setTimeout(() => {
-        subscription.unsubscribe();
-        window.location.href = "/dashboard";
-      }, 3000);
+      while (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          // Session confirmed, safe to redirect
+          window.location.href = "/dashboard";
+          return;
+        }
+        
+        attempts++;
+      }
+      
+      // Fallback if session not confirmed after 3 seconds
+      window.location.href = "/dashboard";
     }
   };
 
