@@ -35,11 +35,26 @@ export default function Login() {
       });
       setIsLoading(false);
     } else {
-      toast({
-        title: "Welcome back!",
-        description: "You've successfully signed in.",
-      });
-      router.push("/dashboard");
+      // Wait for session to be fully established
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Verify session is available
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        toast({
+          title: "Welcome back!",
+          description: "You've successfully signed in.",
+        });
+        router.push("/dashboard");
+      } else {
+        toast({
+          title: "Login error",
+          description: "Session could not be established. Please try again.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+      }
     }
   };
 
