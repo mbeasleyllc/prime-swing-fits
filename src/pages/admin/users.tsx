@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Search, Shield, Crown, Zap, Check, X } from "lucide-react";
+import { Users, Search, Shield, Crown, Zap, Check, X, Archive, ArchiveRestore, XCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -39,10 +39,12 @@ interface UserWithSubscription {
   id: string;
   email: string;
   created_at: string;
+  archived?: boolean;
   profiles: {
     role: string;
     first_name: string | null;
     last_name: string | null;
+    archived?: boolean;
   } | null;
   user_profiles: {
     subscription_tier: string | null;
@@ -60,9 +62,15 @@ function UsersContent() {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<UserWithSubscription[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithSubscription | null>(null);
   const [saving, setSaving] = useState(false);
+  
+  // Confirmation dialogs
+  const [confirmArchive, setConfirmArchive] = useState<UserWithSubscription | null>(null);
+  const [confirmUnarchive, setConfirmUnarchive] = useState<UserWithSubscription | null>(null);
+  const [confirmCancelSubs, setConfirmCancelSubs] = useState<UserWithSubscription | null>(null);
   
   // Bulk update state
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
@@ -105,7 +113,7 @@ function UsersContent() {
       setLoading(true);
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, email, created_at, role, avatar_url")
+        .select("id, email, created_at, role, avatar_url, archived")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -129,10 +137,12 @@ function UsersContent() {
             id: profile.id,
             email: profile.email || "",
             created_at: profile.created_at || "",
+            archived: profile.archived || false,
             profiles: {
               role: profile.role || "user",
               first_name: userProfiles.data?.first_name || null,
               last_name: userProfiles.data?.last_name || null,
+              archived: profile.archived || false,
             },
             user_profiles: {
               subscription_tier: userProfiles.data?.subscription_tier || null,
@@ -186,6 +196,123 @@ function UsersContent() {
       toast({
         title: "Error",
         description: error.message || "Failed to update user",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleArchiveUser = async (userId: string) => {
+    setSaving(true);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      
+      const response = await fetch("/api/admin/update-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId, action: "archive" }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to archive user");
+      }
+
+      toast({
+        title: "User Archived",
+        description: "The user account has been archived and access disabled",
+      });
+
+      fetchUsers();
+      setConfirmArchive(null);
+      setEditingUser(null);
+    } catch (error: any) {
+      console.error("Error archiving user:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to archive user",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUnarchiveUser = async (userId: string) => {
+    setSaving(true);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      
+      const response = await fetch("/api/admin/update-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId, action: "unarchive" }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to restore user");
+      }
+
+      toast({
+        title: "User Restored",
+        description: "The user account has been restored and access re-enabled",
+      });
+
+      fetchUsers();
+      setConfirmUnarchive(null);
+      setEditingUser(null);
+    } catch (error: any) {
+      console.error("Error restoring user:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to restore user",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancelSubscriptions = async (userId: string) => {
+    setSaving(true);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      
+      const response = await fetch("/api/admin/update-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId, action: "cancel_subscriptions" }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to cancel subscriptions");
+      }
+
+      toast({
+        title: "Subscriptions Canceled",
+        description: "All user subscriptions have been canceled",
+      });
+
+      fetchUsers();
+      setConfirmCancelSubs(null);
+      setEditingUser(null);
+    } catch (error: any) {
+      console.error("Error canceling subscriptions:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel subscriptions",
         variant: "destructive",
       });
     } finally {
@@ -292,11 +419,15 @@ function UsersContent() {
     setShowBulkDialog(true);
   };
 
-  const filteredUsers = users.filter((u) =>
-    u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.profiles?.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    u.profiles?.last_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredUsers = users.filter((u) => {
+    const matchesSearch = u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.profiles?.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.profiles?.last_name?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesArchived = showArchived ? true : !u.archived;
+    
+    return matchesSearch && matchesArchived;
+  });
 
   const getRoleBadge = (role: string) => {
     return role === "admin" ? (
@@ -348,7 +479,7 @@ function UsersContent() {
         <div>
           <h1 className="text-3xl font-bold mb-2">User Management</h1>
           <p className="text-muted-foreground">
-            Manage user roles and subscription access
+            Manage user roles, subscriptions, and account status
           </p>
         </div>
 
@@ -356,10 +487,22 @@ function UsersContent() {
           <CardHeader>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-accent" />
-                  All Users ({filteredUsers.length})
-                </CardTitle>
+                <div className="flex items-center gap-4">
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-accent" />
+                    All Users ({filteredUsers.length})
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="show-archived"
+                      checked={showArchived}
+                      onCheckedChange={setShowArchived}
+                    />
+                    <Label htmlFor="show-archived" className="text-sm text-muted-foreground cursor-pointer">
+                      Show Archived
+                    </Label>
+                  </div>
+                </div>
                 <div className="relative w-full sm:w-64">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -427,6 +570,7 @@ function UsersContent() {
                           onCheckedChange={toggleSelectAll}
                         />
                       </TableHead>
+                      <TableHead>Status</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Role</TableHead>
@@ -438,12 +582,22 @@ function UsersContent() {
                   </TableHeader>
                   <TableBody>
                     {filteredUsers.map((u) => (
-                      <TableRow key={u.id}>
+                      <TableRow key={u.id} className={u.archived ? "opacity-60" : ""}>
                         <TableCell>
                           <Checkbox
                             checked={selectedUsers.has(u.id)}
                             onCheckedChange={() => toggleUserSelection(u.id)}
                           />
+                        </TableCell>
+                        <TableCell>
+                          {u.archived ? (
+                            <Badge variant="destructive">
+                              <Archive className="h-3 w-3 mr-1" />
+                              Archived
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-accent text-white">Active</Badge>
+                          )}
                         </TableCell>
                         <TableCell className="font-medium">{u.email}</TableCell>
                         <TableCell>
@@ -480,12 +634,15 @@ function UsersContent() {
                               <DialogHeader>
                                 <DialogTitle>Manage User Access</DialogTitle>
                                 <DialogDescription>
-                                  Update roles and subscription tiers for {u.email}
+                                  Update roles, subscriptions, and account status for {u.email}
                                 </DialogDescription>
                               </DialogHeader>
                               <UserEditForm
                                 user={u}
                                 onSave={handleUpdateUser}
+                                onArchive={() => setConfirmArchive(u)}
+                                onUnarchive={() => setConfirmUnarchive(u)}
+                                onCancelSubscriptions={() => setConfirmCancelSubs(u)}
                                 saving={saving}
                               />
                             </DialogContent>
@@ -568,6 +725,72 @@ function UsersContent() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Archive Confirmation */}
+      <AlertDialog open={!!confirmArchive} onOpenChange={() => setConfirmArchive(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive User Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will archive {confirmArchive?.email} and disable their login access. All data will be preserved and the account can be restored later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => confirmArchive && handleArchiveUser(confirmArchive.id)}
+              disabled={saving}
+              className="bg-red-500 text-white hover:bg-red-600"
+            >
+              {saving ? "Archiving..." : "Archive Account"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Unarchive Confirmation */}
+      <AlertDialog open={!!confirmUnarchive} onOpenChange={() => setConfirmUnarchive(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Restore User Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will restore {confirmUnarchive?.email} and re-enable their login access.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => confirmUnarchive && handleUnarchiveUser(confirmUnarchive.id)}
+              disabled={saving}
+              className="bg-accent text-white hover:bg-accent/90"
+            >
+              {saving ? "Restoring..." : "Restore Account"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancel Subscriptions Confirmation */}
+      <AlertDialog open={!!confirmCancelSubs} onOpenChange={() => setConfirmCancelSubs(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel All Subscriptions</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will cancel both Club Fitting and Swing Analytics subscriptions for {confirmCancelSubs?.email}. The user will lose access to premium features.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={saving}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => confirmCancelSubs && handleCancelSubscriptions(confirmCancelSubs.id)}
+              disabled={saving}
+              className="bg-red-500 text-white hover:bg-red-600"
+            >
+              {saving ? "Canceling..." : "Cancel Subscriptions"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
@@ -575,10 +798,16 @@ function UsersContent() {
 function UserEditForm({
   user,
   onSave,
+  onArchive,
+  onUnarchive,
+  onCancelSubscriptions,
   saving,
 }: {
   user: UserWithSubscription;
   onSave: (userId: string, updates: any) => void;
+  onArchive: () => void;
+  onUnarchive: () => void;
+  onCancelSubscriptions: () => void;
   saving: boolean;
 }) {
   const [role, setRole] = useState(user.profiles?.role || "user");
@@ -598,73 +827,115 @@ function UserEditForm({
     });
   };
 
+  const hasActiveSubscriptions = subscriptionTier !== "none" || swingAnalytics;
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-      <div>
-        <Label htmlFor="role" className="text-base font-semibold mb-3 block">
-          User Role
-        </Label>
-        <Select value={role} onValueChange={setRole}>
-          <SelectTrigger id="role">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="user">User (Standard Access)</SelectItem>
-            <SelectItem value="admin">Admin (Full Access)</SelectItem>
-          </SelectContent>
-        </Select>
-        <p className="text-xs text-muted-foreground mt-2">
-          Admins can access admin panel and manage all users
-        </p>
-      </div>
-
-      <div>
-        <Label htmlFor="tier" className="text-base font-semibold mb-3 block">
-          Club Fitting Tier
-        </Label>
-        <Select value={subscriptionTier} onValueChange={setSubscriptionTier}>
-          <SelectTrigger id="tier">
-            <SelectValue placeholder="Select tier" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">None (No Access)</SelectItem>
-            <SelectItem value="entry">Entry - Single Club Fitting</SelectItem>
-            <SelectItem value="core">Core - Full Bag Fitting</SelectItem>
-            <SelectItem value="premium">Premium - Advanced Full Bag</SelectItem>
-            <SelectItem value="premium_plus">Premium Plus - Complete Pro Setup</SelectItem>
-          </SelectContent>
-        </Select>
-        <p className="text-xs text-muted-foreground mt-2">
-          Controls access to club fitting features and equipment database
-        </p>
-      </div>
-
-      <div className="flex items-center justify-between p-4 border rounded-lg">
-        <div className="flex-1">
-          <Label htmlFor="swing" className="font-semibold">
-            Swing Analytics Access
+    <div className="space-y-6 mt-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <Label htmlFor="role" className="text-base font-semibold mb-3 block">
+            User Role
           </Label>
-          <p className="text-xs text-muted-foreground mt-1">
-            Import swing data, track progress, view analytics
+          <Select value={role} onValueChange={setRole}>
+            <SelectTrigger id="role">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="user">User (Standard Access)</SelectItem>
+              <SelectItem value="admin">Admin (Full Access)</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-2">
+            Admins can access admin panel and manage all users
           </p>
         </div>
-        <Switch
-          id="swing"
-          checked={swingAnalytics}
-          onCheckedChange={setSwingAnalytics}
-        />
-      </div>
 
-      <div className="pt-4 border-t flex gap-3">
-        <Button
-          type="submit"
-          disabled={saving}
-          className="flex-1 bg-gold text-gold-foreground hover:bg-gold/90"
-        >
-          {saving ? "Saving..." : "Save Changes"}
-        </Button>
+        <div>
+          <Label htmlFor="tier" className="text-base font-semibold mb-3 block">
+            Club Fitting Tier
+          </Label>
+          <Select value={subscriptionTier} onValueChange={setSubscriptionTier}>
+            <SelectTrigger id="tier">
+              <SelectValue placeholder="Select tier" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">None (No Access)</SelectItem>
+              <SelectItem value="entry">Entry - Single Club Fitting</SelectItem>
+              <SelectItem value="core">Core - Full Bag Fitting</SelectItem>
+              <SelectItem value="premium">Premium - Advanced Full Bag</SelectItem>
+              <SelectItem value="premium_plus">Premium Plus - Complete Pro Setup</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-2">
+            Controls access to club fitting features and equipment database
+          </p>
+        </div>
+
+        <div className="flex items-center justify-between p-4 border rounded-lg">
+          <div className="flex-1">
+            <Label htmlFor="swing" className="font-semibold">
+              Swing Analytics Access
+            </Label>
+            <p className="text-xs text-muted-foreground mt-1">
+              Import swing data, track progress, view analytics
+            </p>
+          </div>
+          <Switch
+            id="swing"
+            checked={swingAnalytics}
+            onCheckedChange={setSwingAnalytics}
+          />
+        </div>
+
+        <div className="pt-4 border-t flex gap-3">
+          <Button
+            type="submit"
+            disabled={saving}
+            className="flex-1 bg-gold text-gold-foreground hover:bg-gold/90"
+          >
+            {saving ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      </form>
+
+      <div className="pt-4 border-t space-y-3">
+        <p className="text-sm font-semibold text-muted-foreground">Account Actions</p>
+        
+        {hasActiveSubscriptions && (
+          <Button
+            variant="outline"
+            className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+            onClick={onCancelSubscriptions}
+            disabled={saving}
+          >
+            <XCircle className="h-4 w-4 mr-2" />
+            Cancel All Subscriptions
+          </Button>
+        )}
+        
+        {user.archived ? (
+          <Button
+            variant="outline"
+            className="w-full justify-start text-accent border-accent/20 hover:bg-accent/10"
+            onClick={onUnarchive}
+            disabled={saving}
+          >
+            <ArchiveRestore className="h-4 w-4 mr-2" />
+            Restore Account
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+            onClick={onArchive}
+            disabled={saving}
+          >
+            <Archive className="h-4 w-4 mr-2" />
+            Archive Account
+          </Button>
+        )}
       </div>
-    </form>
+    </div>
   );
 }
 
