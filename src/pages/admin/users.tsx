@@ -116,7 +116,7 @@ function UsersContent() {
             supabase
               .from("user_profiles")
               .select("subscription_tier, first_name, last_name")
-              .eq("id", profile.id)
+              .eq("user_id", profile.id)
               .maybeSingle(),
             supabase
               .from("user_swing_subscriptions")
