@@ -10,8 +10,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Activity, Award, TrendingUp, FileText, BarChart3, Download, RefreshCw, Shield, Tag } from "lucide-react";
+import { Users, Activity, Award, TrendingUp, FileText, BarChart3, Download, RefreshCw, Shield, Tag, Calendar as CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 
 interface ActivityLog {
   id: string;
@@ -20,6 +23,11 @@ interface ActivityLog {
   user_email: string;
   details: string;
   severity: "info" | "warning" | "error";
+}
+
+interface DateRange {
+  from: Date | undefined;
+  to: Date | undefined;
 }
 
 export default function AdminDashboard() {
@@ -38,6 +46,11 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [severityFilter, setSeverityFilter] = useState("all");
   const [timeRange, setTimeRange] = useState("7d");
+  const [customDateRange, setCustomDateRange] = useState<DateRange>({
+    from: undefined,
+    to: undefined,
+  });
+  const [exportFormat, setExportFormat] = useState<"json" | "csv">("json");
 
   useEffect(() => {
     if (!user) return;
@@ -100,10 +113,11 @@ export default function AdminDashboard() {
   };
 
   const loadLogs = async () => {
+    const now = new Date();
     const mockLogs: ActivityLog[] = [
       {
         id: "1",
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(now.getTime() - 1000 * 60 * 30).toISOString(),
         action: "User Registration",
         user_email: "john@example.com",
         details: "New user account created",
@@ -111,7 +125,7 @@ export default function AdminDashboard() {
       },
       {
         id: "2",
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
+        timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 2).toISOString(),
         action: "Fitting Completed",
         user_email: "jane@example.com",
         details: "Full bag fitting session completed successfully",
@@ -119,7 +133,7 @@ export default function AdminDashboard() {
       },
       {
         id: "3",
-        timestamp: new Date(Date.now() - 7200000).toISOString(),
+        timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 5).toISOString(),
         action: "Payment Failed",
         user_email: "bob@example.com",
         details: "Subscription payment declined",
@@ -127,42 +141,141 @@ export default function AdminDashboard() {
       },
       {
         id: "4",
-        timestamp: new Date(Date.now() - 10800000).toISOString(),
+        timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 12).toISOString(),
         action: "Database Error",
         user_email: "system",
         details: "Connection timeout on swing_metrics query",
         severity: "error",
       },
+      {
+        id: "5",
+        timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+        action: "Bulk Import",
+        user_email: "admin@example.com",
+        details: "Imported 150 swing data records",
+        severity: "info",
+      },
+      {
+        id: "6",
+        timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 5).toISOString(),
+        action: "Server Restart",
+        user_email: "system",
+        details: "Scheduled maintenance completed",
+        severity: "warning",
+      },
+      {
+        id: "7",
+        timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 10).toISOString(),
+        action: "Security Alert",
+        user_email: "system",
+        details: "Multiple failed login attempts detected",
+        severity: "error",
+      },
+      {
+        id: "8",
+        timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 15).toISOString(),
+        action: "Feature Enabled",
+        user_email: "admin@example.com",
+        details: "Swing DNA feature activated for premium users",
+        severity: "info",
+      },
     ];
     setLogs(mockLogs);
   };
 
+  const getDateRangeFilter = () => {
+    const now = new Date();
+    
+    if (timeRange === "custom" && customDateRange.from && customDateRange.to) {
+      return {
+        start: customDateRange.from,
+        end: customDateRange.to,
+      };
+    }
+
+    let start: Date;
+    switch (timeRange) {
+      case "24h":
+        start = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        break;
+      case "7d":
+        start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case "30d":
+        start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    }
+
+    return { start, end: now };
+  };
+
   const handleExportReport = async () => {
     try {
-      const reportData = {
-        generatedAt: new Date().toISOString(),
-        stats,
-        logs: logs.map((log) => ({
-          timestamp: log.timestamp,
-          action: log.action,
-          user: log.user_email,
-          severity: log.severity,
-        })),
-      };
+      const dateRange = getDateRangeFilter();
+      const filteredData = getFilteredLogs();
 
-      const blob = new Blob([JSON.stringify(reportData, null, 2)], {
-        type: "application/json",
-      });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `prime-swing-fits-report-${new Date().toISOString().split("T")[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
+      if (exportFormat === "json") {
+        const reportData = {
+          exportDate: new Date().toISOString(),
+          dateRange: {
+            from: format(dateRange.start, "yyyy-MM-dd"),
+            to: format(dateRange.end, "yyyy-MM-dd"),
+          },
+          filters: {
+            severity: severityFilter,
+            timeRange,
+          },
+          stats,
+          logs: filteredData.map((log) => ({
+            timestamp: log.timestamp,
+            action: log.action,
+            user: log.user_email,
+            details: log.details,
+            severity: log.severity,
+          })),
+          totalRecords: filteredData.length,
+        };
+
+        const blob = new Blob([JSON.stringify(reportData, null, 2)], {
+          type: "application/json",
+        });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `psf-report-${format(dateRange.start, "yyyy-MM-dd")}-to-${format(dateRange.end, "yyyy-MM-dd")}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } else {
+        const csvHeader = "Timestamp,Action,User,Details,Severity\n";
+        const csvRows = filteredData
+          .map((log) => {
+            const timestamp = format(new Date(log.timestamp), "yyyy-MM-dd HH:mm:ss");
+            const action = log.action.replace(/,/g, ";");
+            const user = log.user_email.replace(/,/g, ";");
+            const details = log.details.replace(/,/g, ";");
+            return `${timestamp},${action},${user},${details},${log.severity}`;
+          })
+          .join("\n");
+        
+        const csvContent = csvHeader + csvRows;
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `psf-report-${format(dateRange.start, "yyyy-MM-dd")}-to-${format(dateRange.end, "yyyy-MM-dd")}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      }
 
       toast({
         title: "Report Exported",
-        description: "System report downloaded successfully",
+        description: `${filteredData.length} records exported as ${exportFormat.toUpperCase()}`,
       });
     } catch (error) {
       toast({
@@ -193,9 +306,26 @@ export default function AdminDashboard() {
     });
   };
 
-  const filteredLogs = logs.filter((log) =>
-    severityFilter === "all" ? true : log.severity === severityFilter
-  );
+  const getFilteredLogs = () => {
+    const dateRange = getDateRangeFilter();
+    
+    return logs.filter((log) => {
+      const logDate = new Date(log.timestamp);
+      const inDateRange = logDate >= dateRange.start && logDate <= dateRange.end;
+      const matchesSeverity = severityFilter === "all" || log.severity === severityFilter;
+      
+      return inDateRange && matchesSeverity;
+    });
+  };
+
+  const filteredLogs = getFilteredLogs();
+
+  const handleTimeRangeChange = (value: string) => {
+    setTimeRange(value);
+    if (value !== "custom") {
+      setCustomDateRange({ from: undefined, to: undefined });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -304,40 +434,108 @@ export default function AdminDashboard() {
           {/* Activity Logs & Reports - Primary Admin Feature */}
           <Card>
             <CardHeader>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-accent" />
-                  Activity Logs & Reports
-                </CardTitle>
-                <div className="flex gap-2">
-                  <Select value={timeRange} onValueChange={setTimeRange}>
-                    <SelectTrigger className="w-32">
+              <div className="flex flex-col space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-accent" />
+                    Activity Logs & Reports
+                  </CardTitle>
+                </div>
+                
+                {/* Filter Controls */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Select value={timeRange} onValueChange={handleTimeRangeChange}>
+                    <SelectTrigger className="w-40">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="24h">Last 24h</SelectItem>
+                      <SelectItem value="24h">Last 24 hours</SelectItem>
                       <SelectItem value="7d">Last 7 days</SelectItem>
                       <SelectItem value="30d">Last 30 days</SelectItem>
+                      <SelectItem value="custom">Custom Range</SelectItem>
                     </SelectContent>
                   </Select>
+
+                  {timeRange === "custom" && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-64 justify-start text-left font-normal">
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {customDateRange.from && customDateRange.to ? (
+                            <>
+                              {format(customDateRange.from, "MMM dd, yyyy")} - {format(customDateRange.to, "MMM dd, yyyy")}
+                            </>
+                          ) : (
+                            <span>Pick a date range</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="range"
+                          selected={{
+                            from: customDateRange.from,
+                            to: customDateRange.to,
+                          }}
+                          onSelect={(range) => {
+                            setCustomDateRange({
+                              from: range?.from,
+                              to: range?.to,
+                            });
+                          }}
+                          numberOfMonths={2}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  )}
+
                   <Select value={severityFilter} onValueChange={setSeverityFilter}>
                     <SelectTrigger className="w-32">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Logs</SelectItem>
+                      <SelectItem value="all">All Levels</SelectItem>
                       <SelectItem value="info">Info</SelectItem>
                       <SelectItem value="warning">Warning</SelectItem>
                       <SelectItem value="error">Error</SelectItem>
                     </SelectContent>
                   </Select>
+
+                  <div className="flex-1" />
+
+                  <Select value={exportFormat} onValueChange={(value: "json" | "csv") => setExportFormat(value)}>
+                    <SelectTrigger className="w-28">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="json">JSON</SelectItem>
+                      <SelectItem value="csv">CSV</SelectItem>
+                    </SelectContent>
+                  </Select>
+
                   <Button variant="outline" size="sm" onClick={loadLogs}>
                     <RefreshCw className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm" onClick={handleExportReport}>
+
+                  <Button variant="default" size="sm" onClick={handleExportReport} className="bg-accent hover:bg-accent/90">
                     <Download className="h-4 w-4 mr-2" />
-                    Export
+                    Export {exportFormat.toUpperCase()}
                   </Button>
+                </div>
+
+                {/* Date Range Display */}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CalendarIcon className="h-4 w-4" />
+                  <span>
+                    Showing {filteredLogs.length} {filteredLogs.length === 1 ? "record" : "records"} from{" "}
+                    {timeRange === "custom" && customDateRange.from && customDateRange.to
+                      ? `${format(customDateRange.from, "MMM dd, yyyy")} to ${format(customDateRange.to, "MMM dd, yyyy")}`
+                      : timeRange === "24h"
+                      ? "the last 24 hours"
+                      : timeRange === "7d"
+                      ? "the last 7 days"
+                      : "the last 30 days"}
+                  </span>
                 </div>
               </div>
             </CardHeader>
@@ -357,7 +555,7 @@ export default function AdminDashboard() {
                     {filteredLogs.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                          No logs found
+                          No logs found for the selected date range and filters
                         </TableCell>
                       </TableRow>
                     ) : (
