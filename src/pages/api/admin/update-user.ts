@@ -52,16 +52,37 @@ export default async function handler(
 
     // Update club fitting tier in user_profiles if provided
     if (updates.subscription_tier !== undefined) {
-      const { error: tierError } = await supabase
+      // First check if profile exists
+      const { data: existingProfile } = await supabase
         .from("user_profiles")
-        .upsert({
-          user_id: userId,
-          id: userId,
-          subscription_tier: updates.subscription_tier,
-          updated_at: new Date().toISOString(),
-        });
+        .select("id")
+        .eq("user_id", userId)
+        .single();
 
-      if (tierError) throw tierError;
+      if (existingProfile) {
+        // Update existing profile
+        const { error: tierError } = await supabase
+          .from("user_profiles")
+          .update({
+            subscription_tier: updates.subscription_tier,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId);
+
+        if (tierError) throw tierError;
+      } else {
+        // Insert new profile
+        const { error: tierError } = await supabase
+          .from("user_profiles")
+          .insert({
+            user_id: userId,
+            subscription_tier: updates.subscription_tier,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+
+        if (tierError) throw tierError;
+      }
     }
 
     // Update Swing Analytics subscription if provided
