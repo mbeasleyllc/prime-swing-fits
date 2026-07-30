@@ -969,7 +969,16 @@ function UserEditForm({
 
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSaveProfile(user.id, profile);
+    
+    // Sanitize numeric fields: convert empty strings to null
+    const sanitizedProfile = {
+      ...profile,
+      handicap_index: profile.handicap_index === "" ? null : profile.handicap_index,
+      height_ft: profile.height_ft === "" ? null : profile.height_ft,
+      height_in: profile.height_in === "" ? null : profile.height_in,
+    };
+    
+    onSaveProfile(user.id, sanitizedProfile);
   };
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
