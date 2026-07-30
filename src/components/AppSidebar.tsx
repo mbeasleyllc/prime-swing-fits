@@ -108,7 +108,6 @@ export function AppSidebar() {
     { title: "User Management", icon: Users, url: "/admin/users" },
     { title: "Fitting Sessions", icon: Activity, url: "/admin/sessions" },
     { title: "Coupon Codes", icon: Tag, url: "/admin/coupons" },
-    { title: "Logs & Reports", icon: BarChart3, url: "/admin/logs" },
   ];
 
   return (
@@ -256,19 +255,6 @@ export function AppSidebar() {
                     <Link href="/admin/coupons">
                       <Tag className="h-4 w-4" />
                       <span>Coupon Codes</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={router.pathname === "/admin/logs"}
-                    className="text-white hover:bg-white/10 data-[active=true]:bg-gold data-[active=true]:text-gold-foreground"
-                  >
-                    <Link href="/admin/logs">
-                      <BarChart3 className="h-4 w-4" />
-                      <span>Logs & Reports</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -1151,6 +1151,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      backfill_user_profiles: { Args: never; Returns: undefined }
       calculate_consistency_score: {
         Args: { p_session_id: string }
         Returns: number
