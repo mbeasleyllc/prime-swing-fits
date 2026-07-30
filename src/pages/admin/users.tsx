@@ -970,12 +970,19 @@ function UserEditForm({
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Sanitize numeric fields: convert empty strings to null
+    // Sanitize numeric and enum fields: convert empty strings to null
     const sanitizedProfile = {
       ...profile,
+      // Numeric fields
       handicap_index: profile.handicap_index === "" ? null : profile.handicap_index,
       height_ft: profile.height_ft === "" ? null : profile.height_ft,
       height_in: profile.height_in === "" ? null : profile.height_in,
+      // Enum fields (database has check constraints requiring specific values or null)
+      years_playing: profile.years_playing === "" ? null : profile.years_playing,
+      dominant_hand: profile.dominant_hand === "" ? null : profile.dominant_hand,
+      swing_speed_range: profile.swing_speed_range === "" ? null : profile.swing_speed_range,
+      ball_flight: profile.ball_flight === "" ? null : profile.ball_flight,
+      driver_distance: profile.driver_distance === "" ? null : profile.driver_distance,
     };
     
     onSaveProfile(user.id, sanitizedProfile);
