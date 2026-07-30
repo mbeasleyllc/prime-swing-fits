@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { supabase } from "@/integrations/supabase/client";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export default async function handler(
   req: NextApiRequest,
@@ -23,7 +24,7 @@ export default async function handler(
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // Verify admin role
+    // Verify admin role using regular client
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("role")
@@ -40,9 +41,11 @@ export default async function handler(
       return res.status(400).json({ error: "Missing required fields" });
     }
 
+    // Use admin client for all database operations (bypasses RLS)
+    
     // Update user role in profiles table if provided
     if (updates.role !== undefined) {
-      const { error: roleError } = await supabase
+      const { error: roleError } = await supabaseAdmin
         .from("profiles")
         .update({ role: updates.role, updated_at: new Date().toISOString() })
         .eq("id", userId);
@@ -53,7 +56,7 @@ export default async function handler(
     // Update club fitting tier in user_profiles if provided
     if (updates.subscription_tier !== undefined) {
       // First check if profile exists
-      const { data: existingProfile } = await supabase
+      const { data: existingProfile } = await supabaseAdmin
         .from("user_profiles")
         .select("id")
         .eq("user_id", userId)
@@ -61,7 +64,7 @@ export default async function handler(
 
       if (existingProfile) {
         // Update existing profile
-        const { error: tierError } = await supabase
+        const { error: tierError } = await supabaseAdmin
           .from("user_profiles")
           .update({
             subscription_tier: updates.subscription_tier,
@@ -72,7 +75,7 @@ export default async function handler(
         if (tierError) throw tierError;
       } else {
         // Insert new profile
-        const { error: tierError } = await supabase
+        const { error: tierError } = await supabaseAdmin
           .from("user_profiles")
           .insert({
             user_id: userId,
@@ -89,7 +92,7 @@ export default async function handler(
     if (updates.swing_analytics !== undefined) {
       if (updates.swing_analytics) {
         // Enable Swing Analytics - create or update subscription
-        const { error: swingError } = await supabase
+        const { error: swingError } = await supabaseAdmin
           .from("user_swing_subscriptions")
           .upsert({
             user_id: userId,
@@ -105,7 +108,7 @@ export default async function handler(
         if (swingError) throw swingError;
       } else {
         // Disable Swing Analytics
-        const { error: swingError } = await supabase
+        const { error: swingError } = await supabaseAdmin
           .from("user_swing_subscriptions")
           .update({
             status: "canceled",
