@@ -13,8 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Search, Shield, Crown, Zap, Check, X, Archive, ArchiveRestore, XCircle } from "lucide-react";
+import { Users, Search, Shield, Crown, Zap, Check, X, Archive, ArchiveRestore, XCircle, User, Lock, Settings, AlertTriangle, Key, Mail } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +24,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -48,6 +49,19 @@ interface UserWithSubscription {
   } | null;
   user_profiles: {
     subscription_tier: string | null;
+    first_name?: string | null;
+    last_name?: string | null;
+    phone_number?: string | null;
+    city?: string | null;
+    state?: string | null;
+    handicap_index?: number | null;
+    years_playing?: string | null;
+    height_ft?: number | null;
+    height_in?: number | null;
+    dominant_hand?: string | null;
+    swing_speed_range?: string | null;
+    ball_flight?: string | null;
+    driver_distance?: string | null;
   } | null;
   user_swing_subscriptions: {
     status: string;
@@ -65,6 +79,7 @@ function UsersContent() {
   const [showArchived, setShowArchived] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithSubscription | null>(null);
+  const [fullProfileData, setFullProfileData] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   
   // Confirmation dialogs
@@ -123,7 +138,7 @@ function UsersContent() {
           const [userProfiles, swingSubs] = await Promise.all([
             supabase
               .from("user_profiles")
-              .select("subscription_tier, first_name, last_name")
+              .select("*")
               .eq("user_id", profile.id)
               .maybeSingle(),
             supabase
@@ -144,9 +159,7 @@ function UsersContent() {
               last_name: userProfiles.data?.last_name || null,
               archived: profile.archived || false,
             },
-            user_profiles: {
-              subscription_tier: userProfiles.data?.subscription_tier || null,
-            },
+            user_profiles: userProfiles.data || { subscription_tier: null },
             user_swing_subscriptions: swingSubs.data || [],
           };
         })
@@ -163,6 +176,19 @@ function UsersContent() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOpenManageDialog = async (user: UserWithSubscription) => {
+    setEditingUser(user);
+    
+    // Fetch full profile data
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    
+    setFullProfileData(data || {});
   };
 
   const handleUpdateUser = async (userId: string, updates: any) => {
@@ -196,6 +222,82 @@ function UsersContent() {
       toast({
         title: "Error",
         description: error.message || "Failed to update user",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUpdateProfile = async (userId: string, profileData: any) => {
+    setSaving(true);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      
+      const response = await fetch("/api/admin/update-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId, profileData }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to update profile");
+      }
+
+      toast({
+        title: "Success",
+        description: "Profile updated successfully",
+      });
+
+      fetchUsers();
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update profile",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePasswordAction = async (userId: string, action: "set" | "reset", newPassword?: string) => {
+    setSaving(true);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      
+      const body = action === "set" 
+        ? { userId, action: "set_password", newPassword }
+        : { userId, sendPasswordReset: true };
+      
+      const response = await fetch("/api/admin/update-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to process password action");
+      }
+
+      toast({
+        title: "Success",
+        description: action === "set" ? "Password updated successfully" : "Password reset email sent",
+      });
+    } catch (error: any) {
+      console.error("Error with password action:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to process password action",
         variant: "destructive",
       });
     } finally {
@@ -625,26 +727,34 @@ function UsersContent() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => setEditingUser(u)}
+                                onClick={() => handleOpenManageDialog(u)}
                               >
                                 Manage
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-md">
+                            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                               <DialogHeader>
-                                <DialogTitle>Manage User Access</DialogTitle>
+                                <DialogTitle className="flex items-center gap-2">
+                                  <User className="h-5 w-5 text-accent" />
+                                  Manage User
+                                </DialogTitle>
                                 <DialogDescription>
-                                  Update roles, subscriptions, and account status for {u.email}
+                                  {u.email}
                                 </DialogDescription>
                               </DialogHeader>
-                              <UserEditForm
-                                user={u}
-                                onSave={handleUpdateUser}
-                                onArchive={() => setConfirmArchive(u)}
-                                onUnarchive={() => setConfirmUnarchive(u)}
-                                onCancelSubscriptions={() => setConfirmCancelSubs(u)}
-                                saving={saving}
-                              />
+                              {fullProfileData !== null && (
+                                <UserEditForm
+                                  user={u}
+                                  profileData={fullProfileData}
+                                  onSaveAccess={handleUpdateUser}
+                                  onSaveProfile={handleUpdateProfile}
+                                  onPasswordAction={handlePasswordAction}
+                                  onArchive={() => setConfirmArchive(u)}
+                                  onUnarchive={() => setConfirmUnarchive(u)}
+                                  onCancelSubscriptions={() => setConfirmCancelSubs(u)}
+                                  saving={saving}
+                                />
+                              )}
                             </DialogContent>
                           </Dialog>
                         </TableCell>
@@ -797,19 +907,26 @@ function UsersContent() {
 
 function UserEditForm({
   user,
-  onSave,
+  profileData,
+  onSaveAccess,
+  onSaveProfile,
+  onPasswordAction,
   onArchive,
   onUnarchive,
   onCancelSubscriptions,
   saving,
 }: {
   user: UserWithSubscription;
-  onSave: (userId: string, updates: any) => void;
+  profileData: any;
+  onSaveAccess: (userId: string, updates: any) => void;
+  onSaveProfile: (userId: string, profileData: any) => void;
+  onPasswordAction: (userId: string, action: "set" | "reset", password?: string) => void;
   onArchive: () => void;
   onUnarchive: () => void;
   onCancelSubscriptions: () => void;
   saving: boolean;
 }) {
+  // Access tab state
   const [role, setRole] = useState(user.profiles?.role || "user");
   const [subscriptionTier, setSubscriptionTier] = useState(
     user.user_profiles?.subscription_tier || "none"
@@ -818,124 +935,461 @@ function UserEditForm({
     user.user_swing_subscriptions.length > 0
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Profile tab state
+  const [profile, setProfile] = useState({
+    first_name: profileData?.first_name || "",
+    last_name: profileData?.last_name || "",
+    phone_number: profileData?.phone_number || "",
+    city: profileData?.city || "",
+    state: profileData?.state || "",
+    handicap_index: profileData?.handicap_index || "",
+    years_playing: profileData?.years_playing || "",
+    height_ft: profileData?.height_ft || "",
+    height_in: profileData?.height_in || "",
+    dominant_hand: profileData?.dominant_hand || "",
+    swing_speed_range: profileData?.swing_speed_range || "",
+    ball_flight: profileData?.ball_flight || "",
+    driver_distance: profileData?.driver_distance || "",
+  });
+
+  // Security tab state
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [sendReset, setSendReset] = useState(false);
+
+  const handleAccessSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(user.id, {
+    onSaveAccess(user.id, {
       role,
       subscription_tier: subscriptionTier === "none" ? null : subscriptionTier,
       swing_analytics: swingAnalytics,
     });
   };
 
+  const handleProfileSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSaveProfile(user.id, profile);
+  };
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (sendReset) {
+      onPasswordAction(user.id, "reset");
+      setSendReset(false);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      return;
+    }
+
+    onPasswordAction(user.id, "set", newPassword);
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
   const hasActiveSubscriptions = subscriptionTier !== "none" || swingAnalytics;
 
   return (
-    <div className="space-y-6 mt-4">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <Label htmlFor="role" className="text-base font-semibold mb-3 block">
-            User Role
-          </Label>
-          <Select value={role} onValueChange={setRole}>
-            <SelectTrigger id="role">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="user">User (Standard Access)</SelectItem>
-              <SelectItem value="admin">Admin (Full Access)</SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground mt-2">
-            Admins can access admin panel and manage all users
-          </p>
-        </div>
+    <Tabs defaultValue="profile" className="w-full">
+      <TabsList className="grid w-full grid-cols-4">
+        <TabsTrigger value="profile">
+          <User className="h-4 w-4 mr-2" />
+          Profile
+        </TabsTrigger>
+        <TabsTrigger value="access">
+          <Settings className="h-4 w-4 mr-2" />
+          Access
+        </TabsTrigger>
+        <TabsTrigger value="security">
+          <Lock className="h-4 w-4 mr-2" />
+          Security
+        </TabsTrigger>
+        <TabsTrigger value="actions">
+          <AlertTriangle className="h-4 w-4 mr-2" />
+          Actions
+        </TabsTrigger>
+      </TabsList>
 
-        <div>
-          <Label htmlFor="tier" className="text-base font-semibold mb-3 block">
-            Club Fitting Tier
-          </Label>
-          <Select value={subscriptionTier} onValueChange={setSubscriptionTier}>
-            <SelectTrigger id="tier">
-              <SelectValue placeholder="Select tier" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">None (No Access)</SelectItem>
-              <SelectItem value="entry">Entry - Single Club Fitting</SelectItem>
-              <SelectItem value="core">Core - Full Bag Fitting</SelectItem>
-              <SelectItem value="premium">Premium - Advanced Full Bag</SelectItem>
-              <SelectItem value="premium_plus">Premium Plus - Complete Pro Setup</SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground mt-2">
-            Controls access to club fitting features and equipment database
-          </p>
-        </div>
+      <TabsContent value="profile" className="space-y-4 mt-4">
+        <form onSubmit={handleProfileSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="first_name">First Name</Label>
+              <Input
+                id="first_name"
+                value={profile.first_name}
+                onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
+                placeholder="John"
+              />
+            </div>
+            <div>
+              <Label htmlFor="last_name">Last Name</Label>
+              <Input
+                id="last_name"
+                value={profile.last_name}
+                onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
+                placeholder="Doe"
+              />
+            </div>
+          </div>
 
-        <div className="flex items-center justify-between p-4 border rounded-lg">
-          <div className="flex-1">
-            <Label htmlFor="swing" className="font-semibold">
-              Swing Analytics Access
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="phone_number">Phone Number</Label>
+              <Input
+                id="phone_number"
+                value={profile.phone_number}
+                onChange={(e) => setProfile({ ...profile, phone_number: e.target.value })}
+                placeholder="(555) 123-4567"
+              />
+            </div>
+            <div>
+              <Label htmlFor="handicap_index">Handicap Index</Label>
+              <Input
+                id="handicap_index"
+                type="number"
+                step="0.1"
+                value={profile.handicap_index}
+                onChange={(e) => setProfile({ ...profile, handicap_index: e.target.value })}
+                placeholder="12.5"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                value={profile.city}
+                onChange={(e) => setProfile({ ...profile, city: e.target.value })}
+                placeholder="Denver"
+              />
+            </div>
+            <div>
+              <Label htmlFor="state">State</Label>
+              <Input
+                id="state"
+                value={profile.state}
+                onChange={(e) => setProfile({ ...profile, state: e.target.value })}
+                placeholder="CO"
+                maxLength={2}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="height_ft">Height (ft)</Label>
+              <Input
+                id="height_ft"
+                type="number"
+                value={profile.height_ft}
+                onChange={(e) => setProfile({ ...profile, height_ft: e.target.value })}
+                placeholder="6"
+                min="4"
+                max="7"
+              />
+            </div>
+            <div>
+              <Label htmlFor="height_in">Height (in)</Label>
+              <Input
+                id="height_in"
+                type="number"
+                value={profile.height_in}
+                onChange={(e) => setProfile({ ...profile, height_in: e.target.value })}
+                placeholder="2"
+                min="0"
+                max="11"
+              />
+            </div>
+            <div>
+              <Label htmlFor="dominant_hand">Dominant Hand</Label>
+              <Select value={profile.dominant_hand} onValueChange={(val) => setProfile({ ...profile, dominant_hand: val })}>
+                <SelectTrigger id="dominant_hand">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="right">Right</SelectItem>
+                  <SelectItem value="left">Left</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="years_playing">Years Playing</Label>
+              <Select value={profile.years_playing} onValueChange={(val) => setProfile({ ...profile, years_playing: val })}>
+                <SelectTrigger id="years_playing">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="less_than_1">Less than 1 year</SelectItem>
+                  <SelectItem value="1-3">1-3 years</SelectItem>
+                  <SelectItem value="3-5">3-5 years</SelectItem>
+                  <SelectItem value="5-10">5-10 years</SelectItem>
+                  <SelectItem value="10_plus">10+ years</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="swing_speed_range">Swing Speed Range</Label>
+              <Select value={profile.swing_speed_range} onValueChange={(val) => setProfile({ ...profile, swing_speed_range: val })}>
+                <SelectTrigger id="swing_speed_range">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="under_70">Under 70 mph</SelectItem>
+                  <SelectItem value="70-80">70-80 mph</SelectItem>
+                  <SelectItem value="80-90">80-90 mph</SelectItem>
+                  <SelectItem value="90-100">90-100 mph</SelectItem>
+                  <SelectItem value="100-110">100-110 mph</SelectItem>
+                  <SelectItem value="110_plus">110+ mph</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="ball_flight">Ball Flight</Label>
+              <Select value={profile.ball_flight} onValueChange={(val) => setProfile({ ...profile, ball_flight: val })}>
+                <SelectTrigger id="ball_flight">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="big_slice">Big Slice</SelectItem>
+                  <SelectItem value="soft_fade">Soft Fade</SelectItem>
+                  <SelectItem value="straight">Straight</SelectItem>
+                  <SelectItem value="soft_draw">Soft Draw</SelectItem>
+                  <SelectItem value="big_hook">Big Hook</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="driver_distance">Driver Distance</Label>
+              <Select value={profile.driver_distance} onValueChange={(val) => setProfile({ ...profile, driver_distance: val })}>
+                <SelectTrigger id="driver_distance">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="under_150">Under 150 yards</SelectItem>
+                  <SelectItem value="150-175">150-175 yards</SelectItem>
+                  <SelectItem value="175-200">175-200 yards</SelectItem>
+                  <SelectItem value="200-225">200-225 yards</SelectItem>
+                  <SelectItem value="225-250">225-250 yards</SelectItem>
+                  <SelectItem value="250_plus">250+ yards</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="submit"
+              disabled={saving}
+              className="flex-1 bg-gold text-gold-foreground hover:bg-gold/90"
+            >
+              {saving ? "Saving..." : "Save Profile"}
+            </Button>
+          </div>
+        </form>
+      </TabsContent>
+
+      <TabsContent value="access" className="space-y-4 mt-4">
+        <form onSubmit={handleAccessSubmit} className="space-y-6">
+          <div>
+            <Label htmlFor="role" className="text-base font-semibold mb-3 block">
+              User Role
             </Label>
-            <p className="text-xs text-muted-foreground mt-1">
-              Import swing data, track progress, view analytics
+            <Select value={role} onValueChange={setRole}>
+              <SelectTrigger id="role">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="user">User (Standard Access)</SelectItem>
+                <SelectItem value="admin">Admin (Full Access)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-2">
+              Admins can access admin panel and manage all users
             </p>
           </div>
-          <Switch
-            id="swing"
-            checked={swingAnalytics}
-            onCheckedChange={setSwingAnalytics}
-          />
-        </div>
 
-        <div className="pt-4 border-t flex gap-3">
-          <Button
-            type="submit"
-            disabled={saving}
-            className="flex-1 bg-gold text-gold-foreground hover:bg-gold/90"
-          >
-            {saving ? "Saving..." : "Save Changes"}
-          </Button>
-        </div>
-      </form>
+          <div>
+            <Label htmlFor="tier" className="text-base font-semibold mb-3 block">
+              Club Fitting Tier
+            </Label>
+            <Select value={subscriptionTier} onValueChange={setSubscriptionTier}>
+              <SelectTrigger id="tier">
+                <SelectValue placeholder="Select tier" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None (No Access)</SelectItem>
+                <SelectItem value="entry">Entry - Single Club Fitting</SelectItem>
+                <SelectItem value="core">Core - Full Bag Fitting</SelectItem>
+                <SelectItem value="premium">Premium - Advanced Full Bag</SelectItem>
+                <SelectItem value="premium_plus">Premium Plus - Complete Pro Setup</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-2">
+              Controls access to club fitting features and equipment database
+            </p>
+          </div>
 
-      <div className="pt-4 border-t space-y-3">
-        <p className="text-sm font-semibold text-muted-foreground">Account Actions</p>
-        
-        {hasActiveSubscriptions && (
-          <Button
-            variant="outline"
-            className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-            onClick={onCancelSubscriptions}
-            disabled={saving}
-          >
-            <XCircle className="h-4 w-4 mr-2" />
-            Cancel All Subscriptions
-          </Button>
-        )}
-        
-        {user.archived ? (
-          <Button
-            variant="outline"
-            className="w-full justify-start text-accent border-accent/20 hover:bg-accent/10"
-            onClick={onUnarchive}
-            disabled={saving}
-          >
-            <ArchiveRestore className="h-4 w-4 mr-2" />
-            Restore Account
-          </Button>
-        ) : (
-          <Button
-            variant="outline"
-            className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-            onClick={onArchive}
-            disabled={saving}
-          >
-            <Archive className="h-4 w-4 mr-2" />
-            Archive Account
-          </Button>
-        )}
-      </div>
-    </div>
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex-1">
+              <Label htmlFor="swing" className="font-semibold">
+                Swing Analytics Access
+              </Label>
+              <p className="text-xs text-muted-foreground mt-1">
+                Import swing data, track progress, view analytics
+              </p>
+            </div>
+            <Switch
+              id="swing"
+              checked={swingAnalytics}
+              onCheckedChange={setSwingAnalytics}
+            />
+          </div>
+
+          <div className="pt-4 border-t flex gap-3">
+            <Button
+              type="submit"
+              disabled={saving}
+              className="flex-1 bg-gold text-gold-foreground hover:bg-gold/90"
+            >
+              {saving ? "Saving..." : "Save Access Settings"}
+            </Button>
+          </div>
+        </form>
+      </TabsContent>
+
+      <TabsContent value="security" className="space-y-4 mt-4">
+        <form onSubmit={handlePasswordSubmit} className="space-y-6">
+          <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800 font-medium">
+              Password Management Options
+            </p>
+            <p className="text-xs text-yellow-700 mt-1">
+              Set a new password directly or send a password reset email to the user
+            </p>
+          </div>
+
+          <div className="flex items-center space-x-3 p-4 border rounded-lg">
+            <Checkbox
+              id="send-reset"
+              checked={sendReset}
+              onCheckedChange={(checked) => {
+                setSendReset(checked as boolean);
+                if (checked) {
+                  setNewPassword("");
+                  setConfirmPassword("");
+                }
+              }}
+            />
+            <div className="flex-1">
+              <Label htmlFor="send-reset" className="font-semibold cursor-pointer">
+                Send Password Reset Email
+              </Label>
+              <p className="text-xs text-muted-foreground mt-1">
+                User will receive an email with instructions to reset their password
+              </p>
+            </div>
+            <Mail className="h-5 w-5 text-muted-foreground" />
+          </div>
+
+          {!sendReset && (
+            <>
+              <div>
+                <Label htmlFor="new-password" className="flex items-center gap-2">
+                  <Key className="h-4 w-4" />
+                  New Password
+                </Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  minLength={6}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                />
+                {newPassword && confirmPassword && newPassword !== confirmPassword && (
+                  <p className="text-sm text-red-600 mt-1">Passwords do not match</p>
+                )}
+              </div>
+            </>
+          )}
+
+          <div className="pt-4 border-t">
+            <Button
+              type="submit"
+              disabled={saving || (!sendReset && (!newPassword || newPassword !== confirmPassword))}
+              className="w-full bg-gold text-gold-foreground hover:bg-gold/90"
+            >
+              {saving ? "Processing..." : sendReset ? "Send Password Reset Email" : "Set New Password"}
+            </Button>
+          </div>
+        </form>
+      </TabsContent>
+
+      <TabsContent value="actions" className="space-y-4 mt-4">
+        <div className="space-y-3">
+          <p className="text-sm font-semibold text-muted-foreground">Dangerous Actions</p>
+          <p className="text-xs text-muted-foreground">
+            These actions will affect the user's account status and access
+          </p>
+          
+          {hasActiveSubscriptions && (
+            <Button
+              variant="outline"
+              className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+              onClick={onCancelSubscriptions}
+              disabled={saving}
+            >
+              <XCircle className="h-4 w-4 mr-2" />
+              Cancel All Subscriptions
+            </Button>
+          )}
+          
+          {user.archived ? (
+            <Button
+              variant="outline"
+              className="w-full justify-start text-accent border-accent/20 hover:bg-accent/10"
+              onClick={onUnarchive}
+              disabled={saving}
+            >
+              <ArchiveRestore className="h-4 w-4 mr-2" />
+              Restore Account
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              className="w-full justify-start text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+              onClick={onArchive}
+              disabled={saving}
+            >
+              <Archive className="h-4 w-4 mr-2" />
+              Archive Account
+            </Button>
+          )}
+        </div>
+      </TabsContent>
+    </Tabs>
   );
 }
 

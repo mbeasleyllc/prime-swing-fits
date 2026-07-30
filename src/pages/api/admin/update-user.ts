@@ -35,23 +35,86 @@ export default async function handler(
       return res.status(403).json({ error: "Forbidden - Admin access required" });
     }
 
-    const { userId, updates, action } = req.body;
+    const { userId, updates, action, profileData, newPassword, sendPasswordReset } = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: "Missing userId" });
     }
 
+    // Handle password management
+    if (action === "set_password" && newPassword) {
+      const { error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(
+        userId,
+        { password: newPassword }
+      );
+
+      if (passwordError) throw passwordError;
+
+      return res.status(200).json({ success: true, message: "Password updated successfully" });
+    }
+
+    if (action === "send_password_reset" || sendPasswordReset) {
+      // Get user's email
+      const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId);
+      
+      if (userError || !userData.user.email) {
+        throw new Error("Could not retrieve user email");
+      }
+
+      const { error: resetError } = await supabaseAdmin.auth.resetPasswordForEmail(
+        userData.user.email,
+        { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/reset-password` }
+      );
+
+      if (resetError) throw resetError;
+
+      return res.status(200).json({ success: true, message: "Password reset email sent" });
+    }
+
+    // Handle full profile updates
+    if (profileData) {
+      const { data: existingProfile } = await supabaseAdmin
+        .from("user_profiles")
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      const profileUpdates = {
+        ...profileData,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (existingProfile) {
+        const { error: updateError } = await supabaseAdmin
+          .from("user_profiles")
+          .update(profileUpdates)
+          .eq("user_id", userId);
+
+        if (updateError) throw updateError;
+      } else {
+        const { error: insertError } = await supabaseAdmin
+          .from("user_profiles")
+          .insert({
+            user_id: userId,
+            ...profileUpdates,
+            created_at: new Date().toISOString(),
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      return res.status(200).json({ success: true, message: "Profile updated successfully" });
+    }
+
     // Handle special actions
     if (action === "archive") {
-      // Disable the user's auth account
       const { error: archiveError } = await supabaseAdmin.auth.admin.updateUserById(
         userId,
-        { ban_duration: "876000h" } // 100 years = effectively permanent
+        { ban_duration: "876000h" }
       );
 
       if (archiveError) throw archiveError;
 
-      // Mark as archived in profiles
       const { error: profileError } = await supabaseAdmin
         .from("profiles")
         .update({ 
@@ -66,7 +129,6 @@ export default async function handler(
     }
 
     if (action === "unarchive") {
-      // Re-enable the user's auth account
       const { error: unarchiveError } = await supabaseAdmin.auth.admin.updateUserById(
         userId,
         { ban_duration: "none" }
@@ -74,7 +136,6 @@ export default async function handler(
 
       if (unarchiveError) throw unarchiveError;
 
-      // Unmark archived in profiles
       const { error: profileError } = await supabaseAdmin
         .from("profiles")
         .update({ 
@@ -89,7 +150,6 @@ export default async function handler(
     }
 
     if (action === "cancel_subscriptions") {
-      // Cancel Club Fitting tier
       const { data: existingProfile } = await supabaseAdmin
         .from("user_profiles")
         .select("id")
@@ -108,7 +168,6 @@ export default async function handler(
         if (tierError) throw tierError;
       }
 
-      // Cancel Swing Analytics subscription
       const { error: swingError } = await supabaseAdmin
         .from("user_swing_subscriptions")
         .update({
@@ -128,8 +187,6 @@ export default async function handler(
       return res.status(400).json({ error: "Missing updates" });
     }
 
-    // Use admin client for all database operations (bypasses RLS)
-    
     // Update user role in profiles table if provided
     if (updates.role !== undefined) {
       const { error: roleError } = await supabaseAdmin
@@ -142,7 +199,6 @@ export default async function handler(
 
     // Update club fitting tier in user_profiles if provided
     if (updates.subscription_tier !== undefined) {
-      // First check if profile exists
       const { data: existingProfile } = await supabaseAdmin
         .from("user_profiles")
         .select("id")
@@ -150,7 +206,6 @@ export default async function handler(
         .single();
 
       if (existingProfile) {
-        // Update existing profile
         const { error: tierError } = await supabaseAdmin
           .from("user_profiles")
           .update({
@@ -161,7 +216,6 @@ export default async function handler(
 
         if (tierError) throw tierError;
       } else {
-        // Insert new profile
         const { error: tierError } = await supabaseAdmin
           .from("user_profiles")
           .insert({
@@ -178,7 +232,6 @@ export default async function handler(
     // Update Swing Analytics subscription if provided
     if (updates.swing_analytics !== undefined) {
       if (updates.swing_analytics) {
-        // Enable Swing Analytics - create or update subscription
         const { error: swingError } = await supabaseAdmin
           .from("user_swing_subscriptions")
           .upsert({
@@ -194,7 +247,6 @@ export default async function handler(
 
         if (swingError) throw swingError;
       } else {
-        // Disable Swing Analytics
         const { error: swingError } = await supabaseAdmin
           .from("user_swing_subscriptions")
           .update({
