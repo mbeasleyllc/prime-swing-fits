@@ -12,8 +12,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Search, Shield, Crown, Zap, Check } from "lucide-react";
+import { Users, Search, Shield, Crown, Zap, Check, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +22,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface UserWithSubscription {
   id: string;
@@ -51,6 +63,13 @@ function UsersContent() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithSubscription | null>(null);
   const [saving, setSaving] = useState(false);
+  
+  // Bulk update state
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [showBulkDialog, setShowBulkDialog] = useState(false);
+  const [bulkAction, setBulkAction] = useState<"role" | "tier" | "swing" | null>(null);
+  const [bulkValue, setBulkValue] = useState<string>("");
+  const [bulkProcessing, setBulkProcessing] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -174,6 +193,105 @@ function UsersContent() {
     }
   };
 
+  // Bulk selection handlers
+  const toggleUserSelection = (userId: string) => {
+    const newSelection = new Set(selectedUsers);
+    if (newSelection.has(userId)) {
+      newSelection.delete(userId);
+    } else {
+      newSelection.add(userId);
+    }
+    setSelectedUsers(newSelection);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedUsers.size === filteredUsers.length) {
+      setSelectedUsers(new Set());
+    } else {
+      setSelectedUsers(new Set(filteredUsers.map(u => u.id)));
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedUsers(new Set());
+  };
+
+  // Bulk update handlers
+  const handleBulkUpdate = async () => {
+    if (!bulkAction || selectedUsers.size === 0) return;
+
+    setBulkProcessing(true);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      const updates: any = {};
+
+      if (bulkAction === "role") {
+        updates.role = bulkValue;
+      } else if (bulkAction === "tier") {
+        updates.subscription_tier = bulkValue === "none" ? null : bulkValue;
+      } else if (bulkAction === "swing") {
+        updates.swing_analytics = bulkValue === "enable";
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const userId of selectedUsers) {
+        try {
+          const response = await fetch("/api/admin/update-user", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify({ userId, updates }),
+          });
+
+          if (response.ok) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch {
+          failCount++;
+        }
+      }
+
+      toast({
+        title: "Bulk Update Complete",
+        description: `${successCount} users updated successfully${failCount > 0 ? `, ${failCount} failed` : ""}`,
+      });
+
+      await fetchUsers();
+      clearSelection();
+      setShowBulkDialog(false);
+      setBulkAction(null);
+      setBulkValue("");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Bulk update failed",
+        variant: "destructive",
+      });
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
+  const openBulkDialog = (action: "role" | "tier" | "swing") => {
+    if (selectedUsers.size === 0) {
+      toast({
+        title: "No Users Selected",
+        description: "Please select at least one user to perform bulk actions",
+        variant: "destructive",
+      });
+      return;
+    }
+    setBulkAction(action);
+    setBulkValue("");
+    setShowBulkDialog(true);
+  };
+
   const filteredUsers = users.filter((u) =>
     u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.profiles?.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -236,20 +354,61 @@ function UsersContent() {
 
         <Card>
           <CardHeader>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-accent" />
-                All Users ({filteredUsers.length})
-              </CardTitle>
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search users..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-accent" />
+                  All Users ({filteredUsers.length})
+                </CardTitle>
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search users..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
+
+              {/* Bulk Actions Bar */}
+              {selectedUsers.size > 0 && (
+                <div className="flex flex-wrap items-center gap-3 p-4 bg-accent/10 border border-accent/20 rounded-lg">
+                  <Badge className="bg-accent text-white">
+                    {selectedUsers.size} {selectedUsers.size === 1 ? "user" : "users"} selected
+                  </Badge>
+                  <div className="flex-1" />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => openBulkDialog("role")}
+                  >
+                    Update Roles
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => openBulkDialog("tier")}
+                  >
+                    Update Tiers
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => openBulkDialog("swing")}
+                  >
+                    Swing Analytics
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={clearSelection}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Clear
+                  </Button>
+                </div>
+              )}
             </div>
           </CardHeader>
           <CardContent>
@@ -262,6 +421,12 @@ function UsersContent() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={selectedUsers.size === filteredUsers.length && filteredUsers.length > 0}
+                          onCheckedChange={toggleSelectAll}
+                        />
+                      </TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Role</TableHead>
@@ -274,6 +439,12 @@ function UsersContent() {
                   <TableBody>
                     {filteredUsers.map((u) => (
                       <TableRow key={u.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedUsers.has(u.id)}
+                            onCheckedChange={() => toggleUserSelection(u.id)}
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">{u.email}</TableCell>
                         <TableCell>
                           {u.profiles?.first_name || u.profiles?.last_name
@@ -329,6 +500,74 @@ function UsersContent() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Bulk Update Dialog */}
+      <AlertDialog open={showBulkDialog} onOpenChange={setShowBulkDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Bulk Update {selectedUsers.size} {selectedUsers.size === 1 ? "User" : "Users"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {bulkAction === "role" && "Select a role to apply to all selected users"}
+              {bulkAction === "tier" && "Select a club fitting tier to apply to all selected users"}
+              {bulkAction === "swing" && "Enable or disable Swing Analytics access for all selected users"}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="py-4">
+            {bulkAction === "role" && (
+              <Select value={bulkValue} onValueChange={setBulkValue}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">User (Standard Access)</SelectItem>
+                  <SelectItem value="admin">Admin (Full Access)</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+            
+            {bulkAction === "tier" && (
+              <Select value={bulkValue} onValueChange={setBulkValue}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select tier" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None (No Access)</SelectItem>
+                  <SelectItem value="entry">Entry - Single Club Fitting</SelectItem>
+                  <SelectItem value="core">Core - Full Bag Fitting</SelectItem>
+                  <SelectItem value="premium">Premium - Advanced Full Bag</SelectItem>
+                  <SelectItem value="premium_plus">Premium Plus - Complete Pro Setup</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+            
+            {bulkAction === "swing" && (
+              <Select value={bulkValue} onValueChange={setBulkValue}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select action" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="enable">Enable Swing Analytics</SelectItem>
+                  <SelectItem value="disable">Disable Swing Analytics</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkProcessing}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkUpdate}
+              disabled={!bulkValue || bulkProcessing}
+              className="bg-gold text-gold-foreground hover:bg-gold/90"
+            >
+              {bulkProcessing ? "Processing..." : `Update ${selectedUsers.size} ${selectedUsers.size === 1 ? "User" : "Users"}`}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 }
