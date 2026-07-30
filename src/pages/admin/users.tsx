@@ -937,6 +937,7 @@ function UserEditForm({
 
   // Profile tab state
   const [profile, setProfile] = useState({
+    email: user.email || "",
     first_name: profileData?.first_name || "",
     last_name: profileData?.last_name || "",
     phone_number: profileData?.phone_number || "",
@@ -1013,162 +1014,217 @@ function UserEditForm({
       </TabsList>
 
       <TabsContent value="profile" className="space-y-4 mt-4">
-        <form onSubmit={handleProfileSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="first_name">First Name</Label>
-              <Input
-                id="first_name"
-                value={profile.first_name}
-                onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
-                placeholder="John"
-              />
+        <form onSubmit={handleProfileSubmit} className="space-y-6">
+          {/* Account Information Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <Mail className="h-4 w-4 text-accent" />
+              <h3 className="font-semibold text-sm">Account Information</h3>
             </div>
+            
             <div>
-              <Label htmlFor="last_name">Last Name</Label>
+              <Label htmlFor="email">Email Address</Label>
               <Input
-                id="last_name"
-                value={profile.last_name}
-                onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
-                placeholder="Doe"
+                id="email"
+                type="email"
+                value={profile.email}
+                onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                placeholder="user@example.com"
+                required
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Used for login and account communications
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="first_name">First Name</Label>
+                <Input
+                  id="first_name"
+                  value={profile.first_name}
+                  onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
+                  placeholder="John"
+                />
+              </div>
+              <div>
+                <Label htmlFor="last_name">Last Name</Label>
+                <Input
+                  id="last_name"
+                  value={profile.last_name}
+                  onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
+                  placeholder="Doe"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          {/* Contact Information Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <User className="h-4 w-4 text-accent" />
+              <h3 className="font-semibold text-sm">Contact Information</h3>
+            </div>
+            
             <div>
               <Label htmlFor="phone_number">Phone Number</Label>
               <Input
                 id="phone_number"
+                type="tel"
                 value={profile.phone_number}
                 onChange={(e) => setProfile({ ...profile, phone_number: e.target.value })}
                 placeholder="(555) 123-4567"
               />
             </div>
-            <div>
-              <Label htmlFor="handicap_index">Handicap Index</Label>
-              <Input
-                id="handicap_index"
-                type="number"
-                step="0.1"
-                value={profile.handicap_index}
-                onChange={(e) => setProfile({ ...profile, handicap_index: e.target.value })}
-                placeholder="12.5"
-              />
+          </div>
+
+          {/* Location Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <User className="h-4 w-4 text-accent" />
+              <h3 className="font-semibold text-sm">Location</h3>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="city">City</Label>
+                <Input
+                  id="city"
+                  value={profile.city}
+                  onChange={(e) => setProfile({ ...profile, city: e.target.value })}
+                  placeholder="Denver"
+                />
+              </div>
+              <div>
+                <Label htmlFor="state">State</Label>
+                <Input
+                  id="state"
+                  value={profile.state}
+                  onChange={(e) => setProfile({ ...profile, state: e.target.value })}
+                  placeholder="CO"
+                  maxLength={2}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                value={profile.city}
-                onChange={(e) => setProfile({ ...profile, city: e.target.value })}
-                placeholder="Denver"
-              />
+          {/* Physical Attributes Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <User className="h-4 w-4 text-accent" />
+              <h3 className="font-semibold text-sm">Physical Attributes</h3>
             </div>
-            <div>
-              <Label htmlFor="state">State</Label>
-              <Input
-                id="state"
-                value={profile.state}
-                onChange={(e) => setProfile({ ...profile, state: e.target.value })}
-                placeholder="CO"
-                maxLength={2}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="height_ft">Height (ft)</Label>
-              <Input
-                id="height_ft"
-                type="number"
-                value={profile.height_ft}
-                onChange={(e) => setProfile({ ...profile, height_ft: e.target.value })}
-                placeholder="6"
-                min="4"
-                max="7"
-              />
-            </div>
-            <div>
-              <Label htmlFor="height_in">Height (in)</Label>
-              <Input
-                id="height_in"
-                type="number"
-                value={profile.height_in}
-                onChange={(e) => setProfile({ ...profile, height_in: e.target.value })}
-                placeholder="2"
-                min="0"
-                max="11"
-              />
-            </div>
-            <div>
-              <Label htmlFor="dominant_hand">Dominant Hand</Label>
-              <Select value={profile.dominant_hand} onValueChange={(val) => setProfile({ ...profile, dominant_hand: val })}>
-                <SelectTrigger id="dominant_hand">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="right">Right</SelectItem>
-                  <SelectItem value="left">Left</SelectItem>
-                </SelectContent>
-              </Select>
+            
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="height_ft">Height (ft)</Label>
+                <Input
+                  id="height_ft"
+                  type="number"
+                  value={profile.height_ft}
+                  onChange={(e) => setProfile({ ...profile, height_ft: e.target.value })}
+                  placeholder="6"
+                  min="4"
+                  max="7"
+                />
+              </div>
+              <div>
+                <Label htmlFor="height_in">Height (in)</Label>
+                <Input
+                  id="height_in"
+                  type="number"
+                  value={profile.height_in}
+                  onChange={(e) => setProfile({ ...profile, height_in: e.target.value })}
+                  placeholder="2"
+                  min="0"
+                  max="11"
+                />
+              </div>
+              <div>
+                <Label htmlFor="dominant_hand">Dominant Hand</Label>
+                <Select value={profile.dominant_hand} onValueChange={(val) => setProfile({ ...profile, dominant_hand: val })}>
+                  <SelectTrigger id="dominant_hand">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="right">Right</SelectItem>
+                    <SelectItem value="left">Left</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="years_playing">Years Playing</Label>
-              <Select value={profile.years_playing} onValueChange={(val) => setProfile({ ...profile, years_playing: val })}>
-                <SelectTrigger id="years_playing">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="less_than_1">Less than 1 year</SelectItem>
-                  <SelectItem value="1-3">1-3 years</SelectItem>
-                  <SelectItem value="3-5">3-5 years</SelectItem>
-                  <SelectItem value="5-10">5-10 years</SelectItem>
-                  <SelectItem value="10_plus">10+ years</SelectItem>
-                </SelectContent>
-              </Select>
+          {/* Golf Profile Section */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b">
+              <Zap className="h-4 w-4 text-accent" />
+              <h3 className="font-semibold text-sm">Golf Profile</h3>
             </div>
-            <div>
-              <Label htmlFor="swing_speed_range">Swing Speed Range</Label>
-              <Select value={profile.swing_speed_range} onValueChange={(val) => setProfile({ ...profile, swing_speed_range: val })}>
-                <SelectTrigger id="swing_speed_range">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="under_70">Under 70 mph</SelectItem>
-                  <SelectItem value="70-80">70-80 mph</SelectItem>
-                  <SelectItem value="80-90">80-90 mph</SelectItem>
-                  <SelectItem value="90-100">90-100 mph</SelectItem>
-                  <SelectItem value="100-110">100-110 mph</SelectItem>
-                  <SelectItem value="110_plus">110+ mph</SelectItem>
-                </SelectContent>
-              </Select>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="handicap_index">Handicap Index</Label>
+                <Input
+                  id="handicap_index"
+                  type="number"
+                  step="0.1"
+                  value={profile.handicap_index}
+                  onChange={(e) => setProfile({ ...profile, handicap_index: e.target.value })}
+                  placeholder="12.5"
+                />
+              </div>
+              <div>
+                <Label htmlFor="years_playing">Years Playing</Label>
+                <Select value={profile.years_playing} onValueChange={(val) => setProfile({ ...profile, years_playing: val })}>
+                  <SelectTrigger id="years_playing">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="less_than_1">Less than 1 year</SelectItem>
+                    <SelectItem value="1-3">1-3 years</SelectItem>
+                    <SelectItem value="3-5">3-5 years</SelectItem>
+                    <SelectItem value="5-10">5-10 years</SelectItem>
+                    <SelectItem value="10_plus">10+ years</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="ball_flight">Ball Flight</Label>
-              <Select value={profile.ball_flight} onValueChange={(val) => setProfile({ ...profile, ball_flight: val })}>
-                <SelectTrigger id="ball_flight">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="big_slice">Big Slice</SelectItem>
-                  <SelectItem value="soft_fade">Soft Fade</SelectItem>
-                  <SelectItem value="straight">Straight</SelectItem>
-                  <SelectItem value="soft_draw">Soft Draw</SelectItem>
-                  <SelectItem value="big_hook">Big Hook</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="swing_speed_range">Swing Speed Range</Label>
+                <Select value={profile.swing_speed_range} onValueChange={(val) => setProfile({ ...profile, swing_speed_range: val })}>
+                  <SelectTrigger id="swing_speed_range">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="under_70">Under 70 mph</SelectItem>
+                    <SelectItem value="70-80">70-80 mph</SelectItem>
+                    <SelectItem value="80-90">80-90 mph</SelectItem>
+                    <SelectItem value="90-100">90-100 mph</SelectItem>
+                    <SelectItem value="100-110">100-110 mph</SelectItem>
+                    <SelectItem value="110_plus">110+ mph</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="ball_flight">Ball Flight</Label>
+                <Select value={profile.ball_flight} onValueChange={(val) => setProfile({ ...profile, ball_flight: val })}>
+                  <SelectTrigger id="ball_flight">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="big_slice">Big Slice</SelectItem>
+                    <SelectItem value="soft_fade">Soft Fade</SelectItem>
+                    <SelectItem value="straight">Straight</SelectItem>
+                    <SelectItem value="soft_draw">Soft Draw</SelectItem>
+                    <SelectItem value="big_hook">Big Hook</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+
             <div>
               <Label htmlFor="driver_distance">Driver Distance</Label>
               <Select value={profile.driver_distance} onValueChange={(val) => setProfile({ ...profile, driver_distance: val })}>
@@ -1187,7 +1243,7 @@ function UserEditForm({
             </div>
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-4 border-t">
             <Button
               type="submit"
               disabled={saving}

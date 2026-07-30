@@ -73,6 +73,27 @@ export default async function handler(
 
     // Handle full profile updates
     if (profileData) {
+      // Handle email update separately through Supabase Auth
+      if (profileData.email) {
+        const { error: emailError } = await supabaseAdmin.auth.admin.updateUserById(
+          userId,
+          { email: profileData.email }
+        );
+
+        if (emailError) throw emailError;
+
+        // Also update email in profiles table
+        const { error: profileEmailError } = await supabaseAdmin
+          .from("profiles")
+          .update({ email: profileData.email, updated_at: new Date().toISOString() })
+          .eq("id", userId);
+
+        if (profileEmailError) throw profileEmailError;
+      }
+
+      // Remove email from profileData before updating user_profiles
+      const { email, ...userProfileData } = profileData;
+
       const { data: existingProfile } = await supabaseAdmin
         .from("user_profiles")
         .select("id")
@@ -80,7 +101,7 @@ export default async function handler(
         .maybeSingle();
 
       const profileUpdates = {
-        ...profileData,
+        ...userProfileData,
         updated_at: new Date().toISOString(),
       };
 
