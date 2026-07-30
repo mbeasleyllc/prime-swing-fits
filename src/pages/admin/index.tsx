@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Activity, Award, TrendingUp, FileText, BarChart3, Download, RefreshCw } from "lucide-react";
+import { Users, Activity, Award, TrendingUp, FileText, BarChart3, Download, RefreshCw, Shield, Tag } from "lucide-react";
 
 interface ActivityLog {
   id: string;
@@ -217,14 +217,21 @@ export default function AdminDashboard() {
   return (
     <ProtectedRoute adminOnly>
       <AppLayout>
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Prime Swing Fits system overview and management</p>
+        <div className="space-y-6 max-w-7xl">
+          {/* Admin Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                <Shield className="h-8 w-8 text-gold" />
+                Admin Dashboard
+              </h1>
+              <p className="text-muted-foreground">System overview, logs, and administrative controls</p>
+            </div>
           </div>
 
+          {/* System Stats - Admin Overview */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card>
+            <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Total Users</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -235,7 +242,7 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Total Fittings</CardTitle>
                 <Activity className="h-4 w-4 text-muted-foreground" />
@@ -246,7 +253,7 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Swing Data</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -257,7 +264,7 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Active Subscriptions</CardTitle>
                 <Award className="h-4 w-4 text-muted-foreground" />
@@ -269,8 +276,9 @@ export default function AdminDashboard() {
             </Card>
           </div>
 
+          {/* Recommendation Insights */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
+            <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Most Common Flex</CardTitle>
                 <Award className="h-4 w-4 text-muted-foreground" />
@@ -281,7 +289,7 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="hover:shadow-md transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Most Common Type</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -293,38 +301,7 @@ export default function AdminDashboard() {
             </Card>
           </div>
 
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Recent Completed Sessions</CardTitle>
-                <Button variant="outline" asChild>
-                  <Link href="/admin/sessions">View All Sessions</Link>
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {recentSessions.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No completed sessions yet</p>
-              ) : (
-                <div className="space-y-4">
-                  {recentSessions.map((session) => (
-                    <div key={session.id} className="flex items-center justify-between border-b pb-3 last:border-0">
-                      <div>
-                        <p className="font-medium">{session.users?.email || "Unknown User"}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Completed: {session.completed_at ? new Date(session.completed_at).toLocaleDateString() : "N/A"}
-                        </p>
-                      </div>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/fitting/${session.id}/results`}>View Results</Link>
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
+          {/* Activity Logs & Reports - Primary Admin Feature */}
           <Card>
             <CardHeader>
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -404,6 +381,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
+          {/* System Health Monitoring */}
           <Card>
             <CardHeader>
               <CardTitle>System Health</CardTitle>
@@ -438,16 +416,50 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Recent Completed Sessions - Admin View */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Recent Completed Sessions</CardTitle>
+                <Button variant="outline" asChild>
+                  <Link href="/admin/sessions">View All Sessions</Link>
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {recentSessions.length === 0 ? (
+                <p className="text-muted-foreground text-center py-8">No completed sessions yet</p>
+              ) : (
+                <div className="space-y-4">
+                  {recentSessions.map((session) => (
+                    <div key={session.id} className="flex items-center justify-between border-b pb-3 last:border-0">
+                      <div>
+                        <p className="font-medium">{session.users?.email || "Unknown User"}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Completed: {session.completed_at ? new Date(session.completed_at).toLocaleDateString() : "N/A"}
+                        </p>
+                      </div>
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/fitting/${session.id}/results`}>View Results</Link>
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Admin Management Quick Links */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <Link href="/admin/sessions">
               <Card className="hover:border-accent transition-colors cursor-pointer">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-accent" />
-                    Fitting Sessions
+                    Sessions
                   </CardTitle>
                   <CardDescription>
-                    View and manage all fitting sessions
+                    View and manage fittings
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -458,10 +470,24 @@ export default function AdminDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-accent" />
-                    User Management
+                    Users
                   </CardTitle>
                   <CardDescription>
-                    Manage user roles and subscriptions
+                    Manage user accounts
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+
+            <Link href="/admin/coupons">
+              <Card className="hover:border-accent transition-colors cursor-pointer">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Tag className="h-5 w-5 text-accent" />
+                    Coupons
+                  </CardTitle>
+                  <CardDescription>
+                    Discount code management
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -472,10 +498,10 @@ export default function AdminDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-accent" />
-                    Fitting Rules
+                    Rules
                   </CardTitle>
                   <CardDescription>
-                    Configure recommendation engine logic
+                    Configure fitting logic
                   </CardDescription>
                 </CardHeader>
               </Card>
