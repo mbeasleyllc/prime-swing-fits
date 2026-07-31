@@ -329,8 +329,10 @@ export default function SwingAnalyticsPage() {
             </CardContent>
           </Card>
 
-          {/* Progress Charts */}
-          <ProgressCharts />
+          {/* Trend Analysis Charts */}
+          <div className="mb-8">
+            <ProgressCharts userId={user.id} />
+          </div>
 
           {/* Session History */}
           <Card className="mt-8">
