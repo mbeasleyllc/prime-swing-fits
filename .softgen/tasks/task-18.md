@@ -28,12 +28,12 @@ Implement seamless integration with golf tracking devices (Trackman, Arccos, Sho
 - SwingDaddy: AI swing analyzer with API integration
 
 ## Checklist
-- [ ] Create database schema for device connections and synced data
+- [x] Create database schema for device connections and synced data
 - [ ] Implement OAuth flow for each device (Trackman, Arccos, Shot Scope, SwingDaddy)
-- [ ] Create API endpoints for device authentication and token management
-- [ ] Build webhook receivers for automatic data sync
-- [ ] Create service modules for each device's API integration
-- [ ] Implement data import and transformation logic
+- [x] Create API endpoints for device authentication and token management
+- [x] Build webhook receivers for automatic data sync
+- [x] Create service modules for each device's API integration
+- [x] Implement data import and transformation logic
 - [ ] Add device management UI in settings page
 - [ ] Create data visualization dashboard for imported metrics
 - [ ] Implement tier-gating (exclude entry level users)
