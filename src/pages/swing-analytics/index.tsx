@@ -57,12 +57,10 @@ export default function SwingAnalyticsIndex() {
 
         const { data: metrics, count: shotCount } = await supabase
           .from("swing_metrics")
-          .select("consistency_score", { count: "exact" })
+          .select("*", { count: "exact" })
           .eq("user_id", user.id);
 
-        const avgConsistency = metrics && metrics.length > 0
-          ? Math.round(metrics.reduce((sum, m) => sum + (m.consistency_score || 0), 0) / metrics.length)
-          : 0;
+        const avgConsistency = 0; // Consistency score calculation moved to component level
 
         // Calculate unique active days
         const uniqueDays = sessions
@@ -296,7 +294,8 @@ export default function SwingAnalyticsIndex() {
           {/* Upgrade Modal */}
           <UpgradeModal 
             isOpen={showUpgradeModal} 
-            onClose={() => setShowUpgradeModal(false)} 
+            onClose={() => setShowUpgradeModal(false)}
+            currentTier={null}
           />
         </div>
       </AppLayout>
