@@ -12,7 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, CheckCircle2, Mail } from "lucide-react";
 
 export default function Register() {
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +31,9 @@ export default function Register() {
         password,
         options: {
           data: {
-            full_name: fullName,
+            first_name: firstName,
+            last_name: lastName,
+            full_name: `${firstName} ${lastName}`.trim(),
             role: "user",
           },
         },
@@ -51,16 +54,17 @@ export default function Register() {
         // Add a small delay to ensure trigger completes
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Verify profile was created
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("id", data.user.id)
-          .single();
+        // Create user_profiles entry with first and last name
+        const { error: profileError } = await supabase
+          .from("user_profiles")
+          .upsert({
+            user_id: data.user.id,
+            first_name: firstName,
+            last_name: lastName,
+          });
 
-        if (profileError || !profile) {
-          // Profile not ready yet, wait a bit more
-          await new Promise(resolve => setTimeout(resolve, 1000));
+        if (profileError) {
+          console.error("Error creating user profile:", profileError);
         }
 
         toast({
@@ -152,17 +156,31 @@ export default function Register() {
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleEmailRegister} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder="John Doe"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    placeholder="John"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    placeholder="Doe"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
