@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -131,10 +132,10 @@ export function DeviceSetup({ userId, subscriptionTier }: DeviceSetupProps) {
           </CardHeader>
           <CardContent>
             <Button asChild>
-              <a href="/pricing">
+              <Link href="/pricing">
                 <Zap className="h-4 w-4 mr-2" />
                 Upgrade Now
-              </a>
+              </Link>
             </Button>
           </CardContent>
         </Card>
