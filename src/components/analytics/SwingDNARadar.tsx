@@ -16,17 +16,10 @@ interface SwingDNAProfile {
 }
 
 interface SwingDNARadarProps {
-  data: {
-    club_speed_mph: number | null;
-    ball_speed_mph: number | null;
-    launch_angle_deg: number | null;
-    spin_rate_rpm: number | null;
-    carry_distance_yds: number | null;
-    consistency_score: number | null;
-  };
+  userId: string;
 }
 
-export function SwingDNARadar({ data }: SwingDNARadarProps) {
+export function SwingDNARadar({ userId }: SwingDNARadarProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { toast } = useToast();
   const [profile, setProfile] = useState<SwingDNAProfile | null>(null);
@@ -43,7 +36,7 @@ export function SwingDNARadar({ data }: SwingDNARadarProps) {
 
   useEffect(() => {
     fetchAndCalculateProfile();
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (profile) {
@@ -66,14 +59,12 @@ export function SwingDNARadar({ data }: SwingDNARadarProps) {
   const fetchAndCalculateProfile = async () => {
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
 
       // Get all swing metrics for the user
       const { data: metrics, error } = await supabase
         .from("swing_metrics")
         .select("*")
-        .eq("user_id", user.id);
+        .eq("user_id", userId);
 
       if (error) throw error;
       if (!metrics || metrics.length === 0) {
