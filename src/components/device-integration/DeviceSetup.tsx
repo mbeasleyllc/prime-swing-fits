@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Lock, ExternalLink, Zap } from "lucide-react";
 import { DeviceIntegrationService } from "@/lib/deviceIntegration/deviceService";
 import { DeviceConnectionCard } from "./DeviceConnectionCard";
-import type { DeviceConnection } from "@/lib/deviceIntegration/types";
+import type { DeviceConnection, DeviceProvider } from "@/lib/deviceIntegration/types";
 import { useToast } from "@/hooks/use-toast";
 
 interface DeviceSetupProps {
@@ -79,7 +79,7 @@ export function DeviceSetup({ userId, subscriptionTier }: DeviceSetupProps) {
 
     setConnecting(deviceId);
     try {
-      const authUrl = await DeviceIntegrationService.initiateOAuth(deviceId as any);
+      const authUrl = await DeviceIntegrationService.initiateOAuth(deviceId as DeviceProvider);
       window.location.href = authUrl;
     } catch (error: any) {
       toast({
