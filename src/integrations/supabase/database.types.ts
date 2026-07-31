@@ -183,6 +183,226 @@ export type Database = {
           },
         ]
       }
+      device_providers: {
+        Row: {
+          api_base_url: string | null
+          created_at: string | null
+          description: string | null
+          display_name: string
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          name: string
+          oauth_authorize_url: string | null
+          oauth_token_url: string | null
+          required_tier: string[] | null
+          updated_at: string | null
+          webhook_secret: string | null
+        }
+        Insert: {
+          api_base_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_name: string
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name: string
+          oauth_authorize_url?: string | null
+          oauth_token_url?: string | null
+          required_tier?: string[] | null
+          updated_at?: string | null
+          webhook_secret?: string | null
+        }
+        Update: {
+          api_base_url?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_name?: string
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          name?: string
+          oauth_authorize_url?: string | null
+          oauth_token_url?: string | null
+          required_tier?: string[] | null
+          updated_at?: string | null
+          webhook_secret?: string | null
+        }
+        Relationships: []
+      }
+      device_swing_data: {
+        Row: {
+          attack_angle: number | null
+          backspin: number | null
+          ball_speed: number | null
+          carry_distance: number | null
+          club_name: string | null
+          club_path: number | null
+          club_type: string | null
+          conditions: Json | null
+          connection_id: string
+          course_name: string | null
+          created_at: string | null
+          device_model: string | null
+          device_swing_id: string
+          face_angle: number | null
+          firmware_version: string | null
+          gps_latitude: number | null
+          gps_longitude: number | null
+          hole_number: number | null
+          id: string
+          lateral_deviation: number | null
+          launch_angle: number | null
+          max_height: number | null
+          notes: string | null
+          offline_distance: number | null
+          raw_data: Json | null
+          shot_shape: string | null
+          sidespin: number | null
+          smash_factor: number | null
+          spin_rate: number | null
+          swing_date: string
+          swing_speed: number | null
+          target_distance: number | null
+          total_distance: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          attack_angle?: number | null
+          backspin?: number | null
+          ball_speed?: number | null
+          carry_distance?: number | null
+          club_name?: string | null
+          club_path?: number | null
+          club_type?: string | null
+          conditions?: Json | null
+          connection_id: string
+          course_name?: string | null
+          created_at?: string | null
+          device_model?: string | null
+          device_swing_id: string
+          face_angle?: number | null
+          firmware_version?: string | null
+          gps_latitude?: number | null
+          gps_longitude?: number | null
+          hole_number?: number | null
+          id?: string
+          lateral_deviation?: number | null
+          launch_angle?: number | null
+          max_height?: number | null
+          notes?: string | null
+          offline_distance?: number | null
+          raw_data?: Json | null
+          shot_shape?: string | null
+          sidespin?: number | null
+          smash_factor?: number | null
+          spin_rate?: number | null
+          swing_date: string
+          swing_speed?: number | null
+          target_distance?: number | null
+          total_distance?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          attack_angle?: number | null
+          backspin?: number | null
+          ball_speed?: number | null
+          carry_distance?: number | null
+          club_name?: string | null
+          club_path?: number | null
+          club_type?: string | null
+          conditions?: Json | null
+          connection_id?: string
+          course_name?: string | null
+          created_at?: string | null
+          device_model?: string | null
+          device_swing_id?: string
+          face_angle?: number | null
+          firmware_version?: string | null
+          gps_latitude?: number | null
+          gps_longitude?: number | null
+          hole_number?: number | null
+          id?: string
+          lateral_deviation?: number | null
+          launch_angle?: number | null
+          max_height?: number | null
+          notes?: string | null
+          offline_distance?: number | null
+          raw_data?: Json | null
+          shot_shape?: string | null
+          sidespin?: number | null
+          smash_factor?: number | null
+          spin_rate?: number | null
+          swing_date?: string
+          swing_speed?: number | null
+          target_distance?: number | null
+          total_distance?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_swing_data_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "user_device_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      device_sync_logs: {
+        Row: {
+          completed_at: string | null
+          connection_id: string
+          created_at: string | null
+          error_details: Json | null
+          error_message: string | null
+          id: string
+          records_failed: number | null
+          records_imported: number | null
+          started_at: string
+          sync_status: string
+          sync_type: string
+        }
+        Insert: {
+          completed_at?: string | null
+          connection_id: string
+          created_at?: string | null
+          error_details?: Json | null
+          error_message?: string | null
+          id?: string
+          records_failed?: number | null
+          records_imported?: number | null
+          started_at: string
+          sync_status: string
+          sync_type: string
+        }
+        Update: {
+          completed_at?: string | null
+          connection_id?: string
+          created_at?: string | null
+          error_details?: Json | null
+          error_message?: string | null
+          id?: string
+          records_failed?: number | null
+          records_imported?: number | null
+          started_at?: string
+          sync_status?: string
+          sync_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "device_sync_logs_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "user_device_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_logs: {
         Row: {
           email_type: string
@@ -938,6 +1158,74 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_device_connections: {
+        Row: {
+          access_token: string
+          auto_sync_enabled: boolean | null
+          connection_status: string | null
+          created_at: string | null
+          device_user_id: string | null
+          device_username: string | null
+          error_count: number | null
+          error_message: string | null
+          id: string
+          last_sync_at: string | null
+          metadata: Json | null
+          provider_id: string
+          refresh_token: string | null
+          sync_frequency: string | null
+          token_expires_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          auto_sync_enabled?: boolean | null
+          connection_status?: string | null
+          created_at?: string | null
+          device_user_id?: string | null
+          device_username?: string | null
+          error_count?: number | null
+          error_message?: string | null
+          id?: string
+          last_sync_at?: string | null
+          metadata?: Json | null
+          provider_id: string
+          refresh_token?: string | null
+          sync_frequency?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          auto_sync_enabled?: boolean | null
+          connection_status?: string | null
+          created_at?: string | null
+          device_user_id?: string | null
+          device_username?: string | null
+          error_count?: number | null
+          error_message?: string | null
+          id?: string
+          last_sync_at?: string | null
+          metadata?: Json | null
+          provider_id?: string
+          refresh_token?: string | null
+          sync_frequency?: string | null
+          token_expires_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_device_connections_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "device_providers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_profiles: {
         Row: {
