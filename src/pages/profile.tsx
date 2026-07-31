@@ -32,7 +32,8 @@ import {
   TrendingUp,
   Trophy,
   BarChart,
-  SettingsIcon
+  SettingsIcon,
+  Smartphone
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Toaster } from "@/components/ui/toaster";
@@ -542,6 +543,14 @@ function ProfileContent() {
                     </button>
                     
                     <Link
+                      href="/profile/settings#devices"
+                      className="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors hover:bg-muted text-foreground"
+                    >
+                      <Smartphone className="h-4 w-4" />
+                      <span className="font-medium">Device Integration</span>
+                    </Link>
+                    
+                    <Link
                       href="/profile/settings"
                       className="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors hover:bg-muted text-foreground"
                     >
@@ -600,6 +609,16 @@ function ProfileContent() {
               >
                 <BarChart className="h-4 w-4 mr-2" />
                 History
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+              >
+                <Link href="/profile/settings#devices">
+                  <Smartphone className="h-4 w-4 mr-2" />
+                  Devices
+                </Link>
               </Button>
             </div>
           </div>
