@@ -16,8 +16,8 @@ export default function AuthCallback() {
         const refreshToken = hashParams.get("refresh_token");
         const type = hashParams.get("type");
 
-        // Also check query params (some flows use query params)
-        const { code, error: authError, error_description } = router.query;
+        // Check query params for code or token_hash
+        const { code, token_hash, error: authError, error_description } = router.query;
 
         if (authError) {
           setError(error_description as string || "Authentication error occurred");
@@ -25,7 +25,25 @@ export default function AuthCallback() {
           return;
         }
 
-        // Handle code-based flow (email confirmation)
+        // Handle email verification with token_hash
+        if (token_hash && type === "email") {
+          const { error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: token_hash as string,
+            type: "email",
+          });
+
+          if (verifyError) {
+            setError(verifyError.message);
+            setTimeout(() => router.push("/auth/login"), 3000);
+            return;
+          }
+
+          // Successfully verified, redirect to dashboard
+          setTimeout(() => router.replace("/dashboard"), 500);
+          return;
+        }
+
+        // Handle code-based flow (email confirmation via code exchange)
         if (code) {
           const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(
             code as string
@@ -38,15 +56,7 @@ export default function AuthCallback() {
           }
 
           if (data?.session) {
-            // Check if user profile exists
-            const { data: profile } = await supabase
-              .from("user_profiles")
-              .select("user_id")
-              .eq("user_id", data.session.user.id)
-              .maybeSingle();
-
-            // Redirect to dashboard
-            router.push("/dashboard");
+            setTimeout(() => router.replace("/dashboard"), 500);
             return;
           }
         }
@@ -65,14 +75,14 @@ export default function AuthCallback() {
           }
 
           if (data?.session) {
-            router.push("/dashboard");
+            setTimeout(() => router.replace("/dashboard"), 500);
             return;
           }
         }
 
         // If we get here and have a type parameter, handle specific types
         if (type === "signup") {
-          router.push("/dashboard");
+          setTimeout(() => router.replace("/dashboard"), 500);
           return;
         }
 
@@ -80,7 +90,7 @@ export default function AuthCallback() {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-          router.push("/dashboard");
+          setTimeout(() => router.replace("/dashboard"), 500);
         } else {
           setError("No authentication session found");
           setTimeout(() => router.push("/auth/login"), 3000);
