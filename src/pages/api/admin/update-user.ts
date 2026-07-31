@@ -203,6 +203,18 @@ export default async function handler(
       return res.status(200).json({ success: true, message: "All subscriptions canceled" });
     }
 
+    if (action === "delete") {
+      // Permanently delete user account and all associated data
+      // This is irreversible - all user data will be removed
+      
+      // Delete from auth.users (cascades to related tables due to foreign keys)
+      const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+
+      if (deleteError) throw deleteError;
+
+      return res.status(200).json({ success: true, message: "User permanently deleted" });
+    }
+
     // Handle regular updates if no special action
     if (!updates) {
       return res.status(400).json({ error: "Missing updates" });
