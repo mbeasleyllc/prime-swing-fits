@@ -13,27 +13,32 @@ interface DeviceSetupProps {
   subscriptionTier: string | null;
 }
 
-const AVAILABLE_DEVICES = [
+const AVAILABLE_DEVICES: Array<{
+  id: DeviceProvider;
+  name: string;
+  description: string;
+  logo: string;
+}> = [
   {
-    id: "trackman",
+    id: "trackman" as DeviceProvider,
     name: "Trackman",
     description: "Professional launch monitor with comprehensive ball flight data",
     logo: "https://www.trackman.com/assets/images/trackman-logo.svg",
   },
   {
-    id: "arccos",
+    id: "arccos" as DeviceProvider,
     name: "Arccos Caddie",
     description: "GPS tracking with AI-powered insights and shot analytics",
     logo: "https://www.arccosgolf.com/assets/images/arccos-logo.svg",
   },
   {
-    id: "shot_scope",
+    id: "shot_scope" as DeviceProvider,
     name: "Shot Scope",
     description: "Performance tracking with detailed statistics and GPS",
     logo: "https://www.shotscope.com/assets/images/shot-scope-logo.svg",
   },
   {
-    id: "swing_daddy",
+    id: "swing_daddy" as DeviceProvider,
     name: "SwingDaddy",
     description: "AI-powered swing analyzer with real-time feedback",
     logo: "https://www.swingdaddy.com/assets/images/logo.svg",
@@ -45,7 +50,7 @@ export function DeviceSetup({ userId, subscriptionTier }: DeviceSetupProps) {
   const [connections, setConnections] = useState<DeviceConnection[]>([]);
   const [hasAccess, setHasAccess] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [connecting, setConnecting] = useState<string | null>(null);
+  const [connecting, setConnecting] = useState<DeviceProvider | null>(null);
 
   useEffect(() => {
     loadConnections();
@@ -67,7 +72,7 @@ export function DeviceSetup({ userId, subscriptionTier }: DeviceSetupProps) {
     }
   };
 
-  const handleConnect = async (deviceId: string) => {
+  const handleConnect = async (deviceId: DeviceProvider) => {
     if (!hasAccess) {
       toast({
         title: "Premium Feature",
@@ -79,7 +84,7 @@ export function DeviceSetup({ userId, subscriptionTier }: DeviceSetupProps) {
 
     setConnecting(deviceId);
     try {
-      const authUrl = await DeviceIntegrationService.initiateOAuth(deviceId as DeviceProvider);
+      const authUrl = await DeviceIntegrationService.initiateOAuth(deviceId);
       window.location.href = authUrl;
     } catch (error: any) {
       toast({
