@@ -149,7 +149,15 @@ export class DeviceIntegrationService {
 
     const { data, error } = await query;
     if (error) throw error;
-    return { data: (data || []) as SwingData[] };
+    
+    // Transform database records to match SwingData type
+    const transformedData = (data || []).map(record => ({
+      ...record,
+      recorded_at: record.swing_date, // Map swing_date to recorded_at
+      data_source: record.device_swing_id ? 'device' : 'manual', // Add data_source field
+    })) as SwingData[];
+
+    return { data: transformedData };
   }
 
   /**
