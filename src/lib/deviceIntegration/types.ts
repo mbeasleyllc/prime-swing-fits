@@ -10,7 +10,6 @@ export interface DeviceConnection {
   id: string;
   user_id: string;
   provider_id: string;
-  provider_name: DeviceProvider;
   device_username?: string;
   connection_status: ConnectionStatus;
   last_sync_at?: string;
@@ -19,6 +18,11 @@ export interface DeviceConnection {
   error_message?: string;
   error_count: number;
   created_at: string;
+  provider: {
+    name: DeviceProvider;
+    display_name: string;
+    logo_url?: string;
+  };
 }
 
 export interface SwingData {
