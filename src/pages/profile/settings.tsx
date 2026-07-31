@@ -36,7 +36,8 @@ import {
   Laptop,
   AlertCircle,
   Moon,
-  Sun
+  Sun,
+  Smartphone
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -72,6 +73,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useRouter } from "next/router";
+import { DeviceSetup } from "@/components/device-integration/DeviceSetup";
 
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
@@ -179,6 +181,23 @@ function SettingsContent() {
             <SwingAnalyticsSubscriptionSection user={user!} />
             <PrivacyDataSection user={user!} profile={profile} onUpdate={fetchProfile} />
             <IntegrationsSection />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Smartphone className="h-5 w-5" />
+                  Device Integration
+                </CardTitle>
+                <CardDescription>
+                  Connect your golf tracking devices to automatically sync swing data
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DeviceSetup 
+                  userId={user?.id || ""} 
+                  subscriptionTier={profile?.subscription_tier || null}
+                />
+              </CardContent>
+            </Card>
             <DangerZoneSection user={user!} />
           </div>
         </div>
