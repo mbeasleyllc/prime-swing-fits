@@ -21,6 +21,7 @@ import { BadgeShelf } from "@/components/gamification/BadgeShelf";
 import { GoalsList } from "@/components/gamification/GoalsList";
 import { InsightsPanel } from "@/components/gamification/InsightsPanel";
 import { WeeklySummary } from "@/components/analytics/WeeklySummary";
+import { ProgressCharts } from "@/components/analytics/ProgressCharts";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -1122,6 +1123,106 @@ export default function Dashboard() {
                   </Tabs>
                 </div>
               )}
+
+              {/* Trend Analysis Section - NEW */}
+              {user && (
+                <div className="mb-8">
+                  <ProgressCharts userId={user.id} />
+                </div>
+              )}
+
+              {/* Recent Fitting Sessions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    Recent Fitting Sessions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {sessions.length === 0 ? (
+                    <div className="py-16 text-center">
+                      <div className="max-w-md mx-auto">
+                        <div className="bg-muted rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                          <Target className="h-12 w-12 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-2xl font-bold mb-3">Start Your First Fitting</h3>
+                        <p className="text-muted-foreground mb-6">
+                          Get personalized club recommendations with Prime Swing Fits' guided fitting wizard.
+                        </p>
+                        <Button size="lg" asChild>
+                          <Link href="/fitting/new">
+                            Begin Fitting Process
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {sessions.map((session) => (
+                        <Card key={session.id} className="hover:shadow-md transition-shadow">
+                          <CardContent className="pt-6">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h3 className="text-lg font-semibold">
+                                    Fitting Session
+                                  </h3>
+                                  {session.status === "in_progress" ? (
+                                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                                      <Clock className="h-3 w-3 mr-1" />
+                                      In Progress
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="success" className="bg-success/10 text-success border-success/20">
+                                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                                      Completed
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="text-sm text-muted-foreground space-y-1">
+                                  <p>Created: {new Date(session.created_at).toLocaleDateString()}</p>
+                                  {session.completed_at && (
+                                    <p>Completed: {new Date(session.completed_at).toLocaleDateString()}</p>
+                                  )}
+                                  {session.status === "in_progress" && (
+                                    <p>Current Step: {session.current_step} of 6</p>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                {session.status === "in_progress" ? (
+                                  <Button asChild>
+                                    <Link href={`/fitting/${session.id}/step/${session.current_step}`}>
+                                      <Play className="h-4 w-4 mr-2" />
+                                      Resume
+                                    </Link>
+                                  </Button>
+                                ) : (
+                                  <>
+                                    <Button asChild>
+                                      <Link href={`/fitting/${session.id}/results`}>
+                                        <Eye className="h-4 w-4 mr-2" />
+                                        View Results
+                                      </Link>
+                                    </Button>
+                                    <Button variant="outline" asChild>
+                                      <Link href={`/fitting/${session.id}/report`}>
+                                        <Download className="h-4 w-4 mr-2" />
+                                        Report
+                                      </Link>
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </>
           )}
 

@@ -1,448 +1,315 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
-import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/database.types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { TrendingUp, TrendingDown, Minus, Calendar } from "lucide-react";
+import { DeviceIntegrationService } from "@/lib/deviceIntegration/deviceService";
+import type { SwingData } from "@/lib/deviceIntegration/types";
 
-type SwingMetric = Database["public"]["Tables"]["swing_metrics"]["Row"];
+interface ProgressChartsProps {
+  userId: string;
+}
 
-export function ProgressCharts() {
-  const [shots, setShots] = useState<SwingMetric[]>([]);
+type TimeRange = "7d" | "30d" | "90d" | "all";
+type MetricType = "ball_speed" | "carry_distance" | "smash_factor" | "spin_rate" | "launch_angle";
+
+interface DataPoint {
+  date: string;
+  value: number;
+  count: number;
+}
+
+interface TrendData {
+  current: number;
+  previous: number;
+  change: number;
+  changePercent: number;
+  trend: "up" | "down" | "stable";
+}
+
+export function ProgressCharts({ userId }: ProgressChartsProps) {
+  const [timeRange, setTimeRange] = useState<TimeRange>("30d");
+  const [selectedMetric, setSelectedMetric] = useState<MetricType>("ball_speed");
+  const [chartData, setChartData] = useState<DataPoint[]>([]);
+  const [trendData, setTrendData] = useState<TrendData | null>(null);
   const [loading, setLoading] = useState(true);
-  const speedChartRef = useRef<HTMLCanvasElement>(null);
-  const distanceChartRef = useRef<HTMLCanvasElement>(null);
-  const consistencyChartRef = useRef<HTMLCanvasElement>(null);
-  const launchChartRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    fetchShots();
-  }, []);
+    loadChartData();
+  }, [userId, timeRange, selectedMetric]);
 
-  useEffect(() => {
-    if (shots.length > 0) {
-      drawSpeedChart();
-      drawDistanceChart();
-      drawConsistencyChart();
-      drawLaunchMatrix();
-    }
-  }, [shots]);
-
-  const fetchShots = async () => {
+  const loadChartData = async () => {
+    setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      const days = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : timeRange === "90d" ? 90 : 365;
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
 
-      // Get count first to determine strategy
-      const { count } = await supabase
-        .from("swing_metrics")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", user.id);
+      const { data: swingData } = await DeviceIntegrationService.getSwingData(userId, {
+        startDate: startDate.toISOString(),
+        limit: 1000,
+      });
 
-      let data;
-      
-      // For large datasets (500+ shots), fetch only last 90 days for performance
-      if (count && count > 500) {
-        const ninetyDaysAgo = new Date();
-        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-        
-        const { data: recentData, error } = await supabase
-          .from("swing_metrics")
-          .select("*")
-          .eq("user_id", user.id)
-          .gte("created_at", ninetyDaysAgo.toISOString())
-          .order("created_at", { ascending: true })
-          .limit(500);
-
-        if (error) throw error;
-        data = recentData;
-      } else {
-        // Fetch all for smaller datasets
-        const { data: allData, error } = await supabase
-          .from("swing_metrics")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: true });
-
-        if (error) throw error;
-        data = allData;
+      if (!swingData || swingData.length === 0) {
+        setChartData([]);
+        setTrendData(null);
+        setLoading(false);
+        return;
       }
 
-      setShots(data ?? []);
+      // Group data by date and calculate daily averages
+      const groupedData = swingData.reduce((acc, swing) => {
+        const date = swing.swing_date.split("T")[0];
+        const value = swing[selectedMetric];
+
+        if (value !== null && value !== undefined) {
+          if (!acc[date]) {
+            acc[date] = { total: 0, count: 0 };
+          }
+          acc[date].total += value;
+          acc[date].count += 1;
+        }
+        return acc;
+      }, {} as Record<string, { total: number; count: number }>);
+
+      // Convert to array and calculate averages
+      const points: DataPoint[] = Object.entries(groupedData)
+        .map(([date, { total, count }]) => ({
+          date,
+          value: total / count,
+          count,
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      setChartData(points);
+
+      // Calculate trend
+      if (points.length >= 2) {
+        const midpoint = Math.floor(points.length / 2);
+        const firstHalf = points.slice(0, midpoint);
+        const secondHalf = points.slice(midpoint);
+
+        const firstAvg = firstHalf.reduce((sum, p) => sum + p.value, 0) / firstHalf.length;
+        const secondAvg = secondHalf.reduce((sum, p) => sum + p.value, 0) / secondHalf.length;
+
+        const change = secondAvg - firstAvg;
+        const changePercent = (change / firstAvg) * 100;
+
+        setTrendData({
+          current: secondAvg,
+          previous: firstAvg,
+          change,
+          changePercent,
+          trend: Math.abs(changePercent) < 1 ? "stable" : changePercent > 0 ? "up" : "down",
+        });
+      } else {
+        setTrendData(null);
+      }
     } catch (error) {
-      console.error("Error fetching shots:", error);
+      console.error("Failed to load chart data:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const drawSpeedChart = () => {
-    if (!speedChartRef.current || shots.length === 0) return;
-
-    const canvas = speedChartRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const parentWidth = canvas.parentElement?.clientWidth ?? 600;
-    const isMobile = parentWidth < 640;
-    const width = Math.min(parentWidth, 800);
-    const height = isMobile ? 250 : 300;
-    canvas.width = width;
-    canvas.height = height;
-
-    ctx.clearRect(0, 0, width, height);
-
-    const padding = isMobile ? 40 : 50;
-    const chartWidth = width - padding * 2;
-    const chartHeight = height - padding * 2;
-
-    const speeds = shots.map(s => s.club_speed ?? 0).filter(s => s > 0);
-    const maxSpeed = Math.max(...speeds);
-    const minSpeed = Math.min(...speeds);
-    const speedRange = maxSpeed - minSpeed || 1;
-
-    // Draw axes
-    ctx.strokeStyle = "#e5e7eb";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(padding, padding);
-    ctx.lineTo(padding, height - padding);
-    ctx.lineTo(width - padding, height - padding);
-    ctx.stroke();
-
-    // Draw grid lines
-    for (let i = 0; i <= 5; i++) {
-      const y = padding + (chartHeight / 5) * i;
-      ctx.strokeStyle = "#f3f4f6";
-      ctx.beginPath();
-      ctx.moveTo(padding, y);
-      ctx.lineTo(width - padding, y);
-      ctx.stroke();
-
-      // Y-axis labels
-      const value = maxSpeed - (speedRange / 5) * i;
-      ctx.fillStyle = "#6b7280";
-      ctx.font = isMobile ? "10px Inter" : "12px Inter";
-      ctx.textAlign = "right";
-      ctx.fillText(value.toFixed(0), padding - 5, y + 4);
-    }
-
-    // Draw data points and line
-    ctx.strokeStyle = "#2D6A4F";
-    ctx.fillStyle = "#2D6A4F";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-
-    speeds.forEach((speed, i) => {
-      const x = padding + (chartWidth / (speeds.length - 1)) * i;
-      const y = height - padding - ((speed - minSpeed) / speedRange) * chartHeight;
-
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-
-      // Draw point - larger on mobile for touch
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(x, y, isMobile ? 4 : 3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    });
-
-    ctx.stroke();
-
-    // Draw trend line
-    const avgSpeed = speeds.reduce((a, b) => a + b, 0) / speeds.length;
-    const y = height - padding - ((avgSpeed - minSpeed) / speedRange) * chartHeight;
-    ctx.setLineDash([5, 5]);
-    ctx.strokeStyle = "#C9A84C";
-    ctx.beginPath();
-    ctx.moveTo(padding, y);
-    ctx.lineTo(width - padding, y);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // Title
-    ctx.fillStyle = "#000";
-    ctx.font = isMobile ? "600 12px Inter" : "600 14px Inter";
-    ctx.textAlign = "center";
-    ctx.fillText("Club Speed Over Time", width / 2, 20);
+  const metricConfig: Record<MetricType, { label: string; unit: string; decimals: number; color: string }> = {
+    ball_speed: { label: "Ball Speed", unit: "mph", decimals: 1, color: "#22C55E" },
+    carry_distance: { label: "Carry Distance", unit: "yds", decimals: 0, color: "#3B82F6" },
+    smash_factor: { label: "Smash Factor", unit: "", decimals: 2, color: "#F59E0B" },
+    spin_rate: { label: "Spin Rate", unit: "rpm", decimals: 0, color: "#8B5CF6" },
+    launch_angle: { label: "Launch Angle", unit: "°", decimals: 1, color: "#EC4899" },
   };
 
-  const drawDistanceChart = () => {
-    if (!distanceChartRef.current || shots.length === 0) return;
+  const config = metricConfig[selectedMetric];
 
-    const canvas = distanceChartRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const width = canvas.parentElement?.clientWidth ?? 600;
-    const height = 300;
-    canvas.width = width;
-    canvas.height = height;
-
-    ctx.clearRect(0, 0, width, height);
-
-    const padding = 50;
-    const chartWidth = width - padding * 2;
-    const chartHeight = height - padding * 2;
-
-    const carryDistances = shots.map(s => s.carry_distance ?? 0).filter(d => d > 0);
-    const totalDistances = shots.map(s => s.total_distance ?? 0).filter(d => d > 0);
-    const maxDistance = Math.max(...carryDistances, ...totalDistances);
-
-    // Draw axes
-    ctx.strokeStyle = "#e5e7eb";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(padding, padding);
-    ctx.lineTo(padding, height - padding);
-    ctx.lineTo(width - padding, height - padding);
-    ctx.stroke();
-
-    // Draw carry distance line
-    ctx.strokeStyle = "#2D6A4F";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    carryDistances.forEach((dist, i) => {
-      const x = padding + (chartWidth / (carryDistances.length - 1)) * i;
-      const y = height - padding - (dist / maxDistance) * chartHeight;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-
-    // Draw total distance line
-    ctx.strokeStyle = "#C9A84C";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    totalDistances.forEach((dist, i) => {
-      const x = padding + (chartWidth / (totalDistances.length - 1)) * i;
-      const y = height - padding - (dist / maxDistance) * chartHeight;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-
-    // Legend
-    ctx.fillStyle = "#2D6A4F";
-    ctx.fillRect(padding, 30, 15, 3);
-    ctx.fillStyle = "#000";
-    ctx.font = "12px Inter";
-    ctx.textAlign = "left";
-    ctx.fillText("Carry", padding + 20, 33);
-
-    ctx.fillStyle = "#C9A84C";
-    ctx.fillRect(padding + 80, 30, 15, 3);
-    ctx.fillStyle = "#000";
-    ctx.fillText("Total", padding + 100, 33);
-
-    // Title
-    ctx.fillStyle = "#000";
-    ctx.font = "600 14px Inter";
-    ctx.textAlign = "center";
-    ctx.fillText("Distance Progression", width / 2, 20);
+  const formatValue = (value: number) => {
+    return value.toFixed(config.decimals) + (config.unit ? ` ${config.unit}` : "");
   };
 
-  const drawConsistencyChart = () => {
-    if (!consistencyChartRef.current || shots.length === 0) return;
-
-    const canvas = consistencyChartRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const width = canvas.parentElement?.clientWidth ?? 600;
-    const height = 300;
-    canvas.width = width;
-    canvas.height = height;
-
-    ctx.clearRect(0, 0, width, height);
-
-    const padding = 50;
-    const chartWidth = width - padding * 2;
-    const chartHeight = height - padding * 2;
-
-    // Calculate variance over rolling window
-    const windowSize = 10;
-    const variances: number[] = [];
-    
-    for (let i = windowSize; i < shots.length; i++) {
-      const window = shots.slice(i - windowSize, i);
-      const speeds = window.map(s => s.club_speed ?? 0).filter(s => s > 0);
-      const avg = speeds.reduce((a, b) => a + b, 0) / speeds.length;
-      const variance = Math.sqrt(speeds.reduce((sq, n) => sq + Math.pow(n - avg, 2), 0) / speeds.length);
-      variances.push(variance);
-    }
-
-    if (variances.length === 0) return;
-
-    const maxVariance = Math.max(...variances);
-
-    // Draw axes
-    ctx.strokeStyle = "#e5e7eb";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(padding, padding);
-    ctx.lineTo(padding, height - padding);
-    ctx.lineTo(width - padding, height - padding);
-    ctx.stroke();
-
-    // Draw variance line
-    ctx.strokeStyle = "#2D6A4F";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    variances.forEach((variance, i) => {
-      const x = padding + (chartWidth / (variances.length - 1)) * i;
-      const y = height - padding - (variance / maxVariance) * chartHeight;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-
-    // Title
-    ctx.fillStyle = "#000";
-    ctx.font = "600 14px Inter";
-    ctx.textAlign = "center";
-    ctx.fillText("Consistency Tracker (Lower is Better)", width / 2, 20);
-  };
-
-  const drawLaunchMatrix = () => {
-    if (!launchChartRef.current || shots.length === 0) return;
-
-    const canvas = launchChartRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const width = canvas.parentElement?.clientWidth ?? 600;
-    const height = 300;
-    canvas.width = width;
-    canvas.height = height;
-
-    ctx.clearRect(0, 0, width, height);
-
-    const padding = 50;
-    const chartWidth = width - padding * 2;
-    const chartHeight = height - padding * 2;
-
-    const validShots = shots.filter(s => s.launch_angle && s.spin_rate);
-    if (validShots.length === 0) return;
-
-    const launchAngles = validShots.map(s => s.launch_angle as number);
-    const spinRates = validShots.map(s => s.spin_rate as number);
-
-    const maxLaunch = Math.max(...launchAngles);
-    const minLaunch = Math.min(...launchAngles);
-    const maxSpin = Math.max(...spinRates);
-    const minSpin = Math.min(...spinRates);
-
-    // Draw axes
-    ctx.strokeStyle = "#e5e7eb";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(padding, padding);
-    ctx.lineTo(padding, height - padding);
-    ctx.lineTo(width - padding, height - padding);
-    ctx.stroke();
-
-    // Draw scatter points
-    validShots.forEach(shot => {
-      const x = padding + ((shot.launch_angle! - minLaunch) / (maxLaunch - minLaunch)) * chartWidth;
-      const y = height - padding - ((shot.spin_rate! - minSpin) / (maxSpin - minSpin)) * chartHeight;
-
-      ctx.beginPath();
-      ctx.arc(x, y, 4, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(45, 106, 79, 0.6)";
-      ctx.fill();
-      ctx.strokeStyle = "#C9A84C";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    });
-
-    // Axis labels
-    ctx.fillStyle = "#6b7280";
-    ctx.font = "12px Inter";
-    ctx.textAlign = "center";
-    ctx.fillText("Launch Angle (°)", width / 2, height - 10);
-    
-    ctx.save();
-    ctx.translate(15, height / 2);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText("Spin Rate (rpm)", 0, 0);
-    ctx.restore();
-
-    // Title
-    ctx.fillStyle = "#000";
-    ctx.font = "600 14px Inter";
-    ctx.textAlign = "center";
-    ctx.fillText("Launch Conditions Matrix", width / 2, 20);
-  };
-
-  if (loading) {
-    return (
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Progress Charts</CardTitle>
-          <CardDescription>Loading your swing data...</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-[300px] w-full" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (shots.length === 0) {
-    return (
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Progress Charts</CardTitle>
-          <CardDescription>No shot data available</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-center py-8">
-            Add swing sessions to see progress charts
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
+  const maxValue = Math.max(...chartData.map((d) => d.value), 0);
+  const minValue = Math.min(...chartData.map((d) => d.value), maxValue);
+  const range = maxValue - minValue || 1;
 
   return (
-    <Card className="mt-8">
+    <Card>
       <CardHeader>
-        <CardTitle>Progress Charts</CardTitle>
-        <CardDescription>Track your improvement over time</CardDescription>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <CardTitle>Swing Trend Analysis</CardTitle>
+            <CardDescription>Track your improvement over time</CardDescription>
+          </div>
+          <div className="flex gap-2">
+            <Select value={selectedMetric} onValueChange={(v) => setSelectedMetric(v as MetricType)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(metricConfig).map(([key, { label }]) => (
+                  <SelectItem key={key} value={key}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7d">7 Days</SelectItem>
+                <SelectItem value="30d">30 Days</SelectItem>
+                <SelectItem value="90d">90 Days</SelectItem>
+                <SelectItem value="all">All Time</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="speed" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="speed">Club Speed</TabsTrigger>
-            <TabsTrigger value="distance">Distance</TabsTrigger>
-            <TabsTrigger value="consistency">Consistency</TabsTrigger>
-            <TabsTrigger value="launch">Launch</TabsTrigger>
-          </TabsList>
+        {loading ? (
+          <div className="h-64 flex items-center justify-center">
+            <div className="text-muted-foreground">Loading chart data...</div>
+          </div>
+        ) : chartData.length === 0 ? (
+          <div className="h-64 flex flex-col items-center justify-center gap-2">
+            <Calendar className="h-12 w-12 text-muted-foreground" />
+            <p className="text-muted-foreground">No data available for selected period</p>
+            <p className="text-sm text-muted-foreground">Start recording swings to see your progress</p>
+          </div>
+        ) : (
+          <>
+            {/* Trend Summary */}
+            {trendData && (
+              <div className="mb-6 p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Current Average</p>
+                    <p className="text-2xl font-bold">{formatValue(trendData.current)}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center gap-2">
+                      {trendData.trend === "up" && (
+                        <>
+                          <TrendingUp className="h-5 w-5 text-accent" />
+                          <Badge className="bg-accent text-white">
+                            +{Math.abs(trendData.changePercent).toFixed(1)}%
+                          </Badge>
+                        </>
+                      )}
+                      {trendData.trend === "down" && (
+                        <>
+                          <TrendingDown className="h-5 w-5 text-red-500" />
+                          <Badge variant="destructive">
+                            {trendData.changePercent.toFixed(1)}%
+                          </Badge>
+                        </>
+                      )}
+                      {trendData.trend === "stable" && (
+                        <>
+                          <Minus className="h-5 w-5 text-muted-foreground" />
+                          <Badge variant="secondary">Stable</Badge>
+                        </>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {trendData.change > 0 ? "+" : ""}
+                      {formatValue(trendData.change)} vs. previous period
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
 
-          <TabsContent value="speed" className="mt-6">
-            <canvas ref={speedChartRef} className="w-full" />
-          </TabsContent>
+            {/* Chart */}
+            <div className="relative h-64">
+              <svg className="w-full h-full" viewBox="0 0 800 200" preserveAspectRatio="none">
+                {/* Grid lines */}
+                <line x1="0" y1="0" x2="800" y2="0" stroke="#e5e7eb" strokeWidth="1" />
+                <line x1="0" y1="50" x2="800" y2="50" stroke="#e5e7eb" strokeWidth="1" />
+                <line x1="0" y1="100" x2="800" y2="100" stroke="#e5e7eb" strokeWidth="1" />
+                <line x1="0" y1="150" x2="800" y2="150" stroke="#e5e7eb" strokeWidth="1" />
+                <line x1="0" y1="200" x2="800" y2="200" stroke="#e5e7eb" strokeWidth="1" />
 
-          <TabsContent value="distance" className="mt-6">
-            <canvas ref={distanceChartRef} className="w-full" />
-          </TabsContent>
+                {/* Data line */}
+                <polyline
+                  fill="none"
+                  stroke={config.color}
+                  strokeWidth="3"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  points={chartData
+                    .map((point, index) => {
+                      const x = (index / (chartData.length - 1)) * 800;
+                      const y = 200 - ((point.value - minValue) / range) * 200;
+                      return `${x},${y}`;
+                    })
+                    .join(" ")}
+                />
 
-          <TabsContent value="consistency" className="mt-6">
-            <canvas ref={consistencyChartRef} className="w-full" />
-          </TabsContent>
+                {/* Data points */}
+                {chartData.map((point, index) => {
+                  const x = (index / (chartData.length - 1)) * 800;
+                  const y = 200 - ((point.value - minValue) / range) * 200;
+                  return (
+                    <g key={index}>
+                      <circle cx={x} cy={y} r="4" fill={config.color} stroke="white" strokeWidth="2" />
+                      <title>
+                        {point.date}: {formatValue(point.value)} ({point.count} shots)
+                      </title>
+                    </g>
+                  );
+                })}
 
-          <TabsContent value="launch" className="mt-6">
-            <canvas ref={launchChartRef} className="w-full" />
-          </TabsContent>
-        </Tabs>
+                {/* Area fill */}
+                <polygon
+                  fill={config.color}
+                  fillOpacity="0.1"
+                  points={
+                    chartData
+                      .map((point, index) => {
+                        const x = (index / (chartData.length - 1)) * 800;
+                        const y = 200 - ((point.value - minValue) / range) * 200;
+                        return `${x},${y}`;
+                      })
+                      .join(" ") + " 800,200 0,200"
+                  }
+                />
+              </svg>
+
+              {/* Y-axis labels */}
+              <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-xs text-muted-foreground">
+                <span>{formatValue(maxValue)}</span>
+                <span>{formatValue((maxValue + minValue) / 2)}</span>
+                <span>{formatValue(minValue)}</span>
+              </div>
+            </div>
+
+            {/* X-axis labels */}
+            <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+              <span>{chartData[0]?.date}</span>
+              <span>{chartData[Math.floor(chartData.length / 2)]?.date}</span>
+              <span>{chartData[chartData.length - 1]?.date}</span>
+            </div>
+
+            {/* Stats Summary */}
+            <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t">
+              <div>
+                <p className="text-xs text-muted-foreground">Best</p>
+                <p className="font-semibold">{formatValue(maxValue)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Average</p>
+                <p className="font-semibold">
+                  {formatValue(chartData.reduce((sum, p) => sum + p.value, 0) / chartData.length)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Total Shots</p>
+                <p className="font-semibold">{chartData.reduce((sum, p) => sum + p.count, 0)}</p>
+              </div>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   );
