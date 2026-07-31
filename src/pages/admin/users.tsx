@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Search, Shield, Crown, Zap, Check, X, Archive, ArchiveRestore, XCircle, User, Lock, Settings, AlertTriangle, Key, Mail } from "lucide-react";
+import { Users, Search, Shield, Crown, Zap, Check, X, Archive, ArchiveRestore, XCircle, User, Lock, Settings, AlertTriangle, Key, Mail, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -86,6 +86,8 @@ function UsersContent() {
   const [confirmArchive, setConfirmArchive] = useState<UserWithSubscription | null>(null);
   const [confirmUnarchive, setConfirmUnarchive] = useState<UserWithSubscription | null>(null);
   const [confirmCancelSubs, setConfirmCancelSubs] = useState<UserWithSubscription | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   
   // Bulk update state
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
@@ -422,6 +424,57 @@ function UsersContent() {
     }
   };
 
+  const handleDeleteUsers = async () => {
+    if (selectedUsers.size === 0 || deleteConfirmText !== "DELETE") return;
+
+    setBulkProcessing(true);
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const userId of selectedUsers) {
+        try {
+          const response = await fetch("/api/admin/update-user", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+            body: JSON.stringify({ userId, action: "delete" }),
+          });
+
+          if (response.ok) {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch {
+          failCount++;
+        }
+      }
+
+      toast({
+        title: "Deletion Complete",
+        description: `${successCount} user(s) permanently deleted${failCount > 0 ? `, ${failCount} failed` : ""}`,
+      });
+
+      await fetchUsers();
+      clearSelection();
+      setConfirmDelete(false);
+      setDeleteConfirmText("");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete users",
+        variant: "destructive",
+      });
+    } finally {
+      setBulkProcessing(false);
+    }
+  };
+
   // Bulk selection handlers
   const toggleUserSelection = (userId: string) => {
     const newSelection = new Set(selectedUsers);
@@ -643,6 +696,14 @@ function UsersContent() {
                     onClick={() => openBulkDialog("swing")}
                   >
                     Swing Analytics
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => setConfirmDelete(true)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete
                   </Button>
                   <Button
                     size="sm"
@@ -897,6 +958,66 @@ function UsersContent() {
               className="bg-red-500 text-white hover:bg-red-600"
             >
               {saving ? "Canceling..." : "Cancel Subscriptions"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Users Confirmation */}
+      <AlertDialog open={confirmDelete} onOpenChange={(open) => {
+        setConfirmDelete(open);
+        if (!open) setDeleteConfirmText("");
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+              <Trash2 className="h-5 w-5" />
+              Permanently Delete {selectedUsers.size} {selectedUsers.size === 1 ? "User" : "Users"}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3 pt-2">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm font-semibold text-red-800">⚠️ This action is IRREVERSIBLE</p>
+                <p className="text-xs text-red-700 mt-1">
+                  All user data, fitting sessions, swing analytics, and account information will be permanently deleted from the system.
+                </p>
+              </div>
+              
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Selected users:</p>
+                <div className="max-h-32 overflow-y-auto space-y-1 bg-gray-50 p-2 rounded border">
+                  {Array.from(selectedUsers).map(userId => {
+                    const user = users.find(u => u.id === userId);
+                    return (
+                      <div key={userId} className="text-sm text-gray-700">
+                        • {user?.email}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="delete-confirm" className="text-sm font-medium">
+                  Type <span className="font-bold text-red-600">DELETE</span> to confirm:
+                </Label>
+                <Input
+                  id="delete-confirm"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="Type DELETE to confirm"
+                  className="font-mono"
+                />
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkProcessing}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUsers}
+              disabled={deleteConfirmText !== "DELETE" || bulkProcessing}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              {bulkProcessing ? "Deleting..." : `Permanently Delete ${selectedUsers.size} ${selectedUsers.size === 1 ? "User" : "Users"}`}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
