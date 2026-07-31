@@ -255,16 +255,7 @@ export default function FittingResults() {
                 <div>
                   <h3 className="font-semibold mb-4">Current Swing DNA Profile</h3>
                   <div className="max-w-md mx-auto">
-                    <SwingDNARadar
-                      data={{
-                        club_speed_mph: swingData.club_speed_mph,
-                        ball_speed_mph: swingData.ball_speed_mph,
-                        launch_angle_deg: swingData.launch_angle_deg,
-                        spin_rate_rpm: swingData.spin_rate_rpm,
-                        carry_distance_yds: swingData.carry_distance_yds,
-                        consistency_score: swingData.consistency_score,
-                      }}
-                    />
+                    <SwingDNARadar userId={user?.id || ""} />
                   </div>
                 </div>
 
