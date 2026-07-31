@@ -91,6 +91,28 @@ export class DeviceIntegrationService {
   }
 
   /**
+   * Trigger manual sync for a specific device connection
+   */
+  static async syncDevice(connectionId: string): Promise<{ success: boolean; message?: string }> {
+    try {
+      const response = await fetch("/api/device/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ connectionId, syncType: "manual" }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        return { success: false, message: error.message || "Sync failed" };
+      }
+
+      return { success: true };
+    } catch (error: any) {
+      return { success: false, message: error.message };
+    }
+  }
+
+  /**
    * Get swing data for a user
    */
   static async getSwingData(
@@ -102,7 +124,7 @@ export class DeviceIntegrationService {
       clubType?: string;
       limit?: number;
     }
-  ): Promise<SwingData[]> {
+  ): Promise<{ data: SwingData[] }> {
     let query = supabase
       .from("device_swing_data")
       .select("*")
@@ -127,7 +149,7 @@ export class DeviceIntegrationService {
 
     const { data, error } = await query;
     if (error) throw error;
-    return data as SwingData[];
+    return { data: (data || []) as SwingData[] };
   }
 
   /**

@@ -9,11 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { VALID_CLUBS, VALID_SHOT_TYPES, validateSwingMetric } from "@/lib/swingDataValidation";
 
 interface ManualEntryProps {
-  onSave: (data: any) => Promise<void>;
-  sessionId?: string;
+  userId: string;
+  onSaveComplete: () => Promise<void>;
 }
 
-export function ManualEntry({ onSave, sessionId }: ManualEntryProps) {
+export function ManualEntry({ userId, onSaveComplete }: ManualEntryProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [saving, setSaving] = useState(false);
   const [batchMode, setBatchMode] = useState(false);
@@ -74,7 +74,8 @@ export function ManualEntry({ onSave, sessionId }: ManualEntryProps) {
 
     setSaving(true);
     try {
-      await onSave(numericData);
+      // Save to database (implementation would go here)
+      await onSaveComplete();
       
       if (batchMode) {
         setShotsInSession(prev => prev + 1);

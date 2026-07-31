@@ -64,7 +64,12 @@ export interface SwingData {
   target_distance?: number;
   
   created_at: string;
+  recorded_at: string;
+  data_source: string;
 }
+
+// Alias for compatibility
+export type SwingDataPoint = SwingData;
 
 export interface SyncLog {
   id: string;
