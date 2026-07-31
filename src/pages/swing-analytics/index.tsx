@@ -2,494 +2,304 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { AppLayout } from "@/components/AppLayout";
-import { SEO } from "@/components/SEO";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SwingDNARadar } from "@/components/analytics/SwingDNARadar";
+import { WeeklySummary } from "@/components/analytics/WeeklySummary";
 import { ProgressCharts } from "@/components/analytics/ProgressCharts";
-import { TrendingUp, TrendingDown, Target, Calendar, Download, Upload, Plus, Eye, Filter, Activity } from "lucide-react";
-import { checkSwingAnalyticsAccess } from "@/lib/subscriptionMiddleware";
+import { Activity, TrendingUp, Target, BarChart3, Calendar, Download, Plus, Upload } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { UpgradeModal } from "@/components/swing-analytics/UpgradeModal";
-import type { Database } from "@/integrations/supabase/database.types";
 
-type SwingSession = Database["public"]["Tables"]["swing_sessions"]["Row"];
-
-export default function SwingAnalyticsPage() {
+export default function SwingAnalyticsIndex() {
   const router = useRouter();
-  const { toast } = useToast();
-  const [sessions, setSessions] = useState<SwingSession[]>([]);
-  const [latestSession, setLatestSession] = useState<SwingSession | null>(null);
+  const { user } = useAuth();
+  const [hasAccess, setHasAccess] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [accessBlocked, setAccessBlocked] = useState(false);
-  const [userTier, setUserTier] = useState<"entry" | "core" | "premium">("core");
-  const [blockReason, setBlockReason] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [filters, setFilters] = useState({
-    startDate: "",
-    endDate: "",
-    club: "",
-    device: "",
-  });
-  const [kpis, setKpis] = useState({
-    consistencyScore: 0,
-    trend30Days: 0,
-    bestSpeed: 0,
+  const [stats, setStats] = useState({
     totalSessions: 0,
+    totalShots: 0,
+    avgConsistency: 0,
+    activeDays: 0,
   });
-
-  const itemsPerPage = 20;
-
-  useEffect(() => {
-    checkAccess();
-  }, []);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   useEffect(() => {
-    if (!accessBlocked) {
-      fetchSessions();
-      calculateKPIs();
-    }
-  }, [currentPage, filters, accessBlocked]);
+    if (!user) return;
 
-  const checkAccess = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/auth/login");
-        return;
-      }
-
-      const access = await checkSwingAnalyticsAccess(user.id);
-      
-      if (!access.hasAccess) {
-        setAccessBlocked(true);
-        setBlockReason(access.blockReason || "Upgrade required");
-        
-        // Determine user tier for upgrade modal
-        const { data: userData } = await supabase
-          .from("users")
-          .select("subscription_tier")
-          .eq("id", user.id)
-          .single();
-        
-        const tier = userData?.subscription_tier as "entry" | "core" | "premium" || "core";
-        setUserTier(tier);
-        setShowUpgradeModal(true);
-        setLoading(false);
-        return;
-      }
-      
-      setAccessBlocked(false);
-    } catch (error) {
-      console.error("Access check error:", error);
-      setAccessBlocked(true);
-      setShowUpgradeModal(true);
-    }
-  };
-
-  const fetchSessions = async () => {
-    try {
+    const checkAccess = async () => {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/auth/login");
-        return;
+      try {
+        // Check subscription tier
+        const { data: profile } = await supabase
+          .from("user_profiles")
+          .select("subscription_tier")
+          .eq("user_id", user.id)
+          .single();
+
+        const allowedTiers = ["core", "premium", "premium_plus"];
+        const access = profile?.subscription_tier ? allowedTiers.includes(profile.subscription_tier) : false;
+        setHasAccess(access);
+
+        if (!access) {
+          setShowUpgradeModal(true);
+        }
+
+        // Load stats
+        const { data: sessions, count: sessionCount } = await supabase
+          .from("swing_sessions")
+          .select("*", { count: "exact" })
+          .eq("user_id", user.id);
+
+        const { data: metrics, count: shotCount } = await supabase
+          .from("swing_metrics")
+          .select("consistency_score", { count: "exact" })
+          .eq("user_id", user.id);
+
+        const avgConsistency = metrics && metrics.length > 0
+          ? Math.round(metrics.reduce((sum, m) => sum + (m.consistency_score || 0), 0) / metrics.length)
+          : 0;
+
+        // Calculate unique active days
+        const uniqueDays = sessions
+          ? new Set(sessions.map(s => s.session_date?.split('T')[0])).size
+          : 0;
+
+        setStats({
+          totalSessions: sessionCount || 0,
+          totalShots: shotCount || 0,
+          avgConsistency,
+          activeDays: uniqueDays,
+        });
+      } catch (error) {
+        console.error("Error checking access:", error);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      let query = supabase
-        .from("swing_sessions")
-        .select("*", { count: "exact" })
-        .eq("user_id", user.id)
-        .order("session_date", { ascending: false })
-        .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1);
+    checkAccess();
+  }, [user]);
 
-      if (filters.startDate) {
-        query = query.gte("session_date", filters.startDate);
-      }
-      if (filters.endDate) {
-        query = query.lte("session_date", filters.endDate);
-      }
-      if (filters.device) {
-        query = query.eq("device_type", filters.device);
-      }
+  if (!user) return null;
 
-      const { data, error, count } = await query;
-
-      if (error) throw error;
-
-      setSessions(data ?? []);
-      setTotalPages(Math.ceil((count ?? 0) / itemsPerPage));
-      
-      // Set latest session for DNA radar
-      if (data && data.length > 0) {
-        setLatestSession(data[0]);
-      }
-    } catch (error) {
-      console.error("Error fetching sessions:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load sessions",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calculateKPIs = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Get all sessions for calculations
-      const { data: allSessions } = await supabase
-        .from("swing_sessions")
-        .select("*")
-        .eq("user_id", user.id);
-
-      if (!allSessions || allSessions.length === 0) return;
-
-      // Total sessions
-      const totalSessions = allSessions.length;
-
-      // Consistency score (based on standard deviation of club speeds)
-      const speeds = allSessions.map(s => s.avg_club_speed).filter(s => s !== null) as number[];
-      const avgSpeed = speeds.reduce((a, b) => a + b, 0) / speeds.length;
-      const stdDev = Math.sqrt(speeds.reduce((sq, n) => sq + Math.pow(n - avgSpeed, 2), 0) / speeds.length);
-      const consistencyScore = Math.max(0, 100 - (stdDev / avgSpeed) * 100);
-
-      // Best speed
-      const bestSpeed = Math.max(...speeds);
-
-      // 30-day trend
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const recentSessions = allSessions.filter(s => new Date(s.session_date) >= thirtyDaysAgo);
-      const oldSessions = allSessions.filter(s => new Date(s.session_date) < thirtyDaysAgo);
-      
-      if (recentSessions.length > 0 && oldSessions.length > 0) {
-        const recentAvg = recentSessions.reduce((sum, s) => sum + (s.avg_club_speed ?? 0), 0) / recentSessions.length;
-        const oldAvg = oldSessions.reduce((sum, s) => sum + (s.avg_club_speed ?? 0), 0) / oldSessions.length;
-        const trend30Days = ((recentAvg - oldAvg) / oldAvg) * 100;
-        setKpis({ consistencyScore, trend30Days, bestSpeed, totalSessions });
-      } else {
-        setKpis({ consistencyScore, trend30Days: 0, bestSpeed, totalSessions });
-      }
-    } catch (error) {
-      console.error("Error calculating KPIs:", error);
-    }
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
+  if (loading) {
+    return (
+      <ProtectedRoute>
+        <AppLayout>
+          <div className="max-w-7xl mx-auto">
+            <div className="animate-pulse space-y-6">
+              <div className="h-10 bg-muted rounded w-1/3" />
+              <div className="h-64 bg-muted rounded" />
+            </div>
+          </div>
+        </AppLayout>
+      </ProtectedRoute>
+    );
+  }
 
   return (
-    <AppLayout>
-      <SEO
-        title="Swing Analytics - Prime Swing Fits"
-        description="Analyze your swing data with comprehensive analytics and insights"
-      />
-      
-      <UpgradeModal
-        isOpen={showUpgradeModal}
-        onClose={() => {
-          setShowUpgradeModal(false);
-          if (accessBlocked) {
-            router.push("/dashboard");
-          }
-        }}
-        currentTier={userTier}
-        blockReason={blockReason}
-      />
-
-      {accessBlocked ? (
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Access restricted. Please upgrade to view analytics.</p>
-          </div>
-        </div>
-      ) : (
-        <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <ProtectedRoute>
+      <AppLayout>
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold">Swing Analytics</h1>
-              <p className="text-muted-foreground mt-1">Track your progress and analyze your swing data</p>
+              <h1 className="text-4xl font-bold mb-2">Swing Analytics Dashboard</h1>
+              <p className="text-muted-foreground">
+                Track your progress, analyze your swing data, and improve your game
+              </p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex gap-3">
               <Button variant="outline" asChild>
                 <Link href="/swing-data/import">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Import CSV
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import Data
                 </Link>
               </Button>
               <Button asChild>
                 <Link href="/swing-data/import">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Manual Entry
+                  <Plus className="h-4 w-4 mr-2" />
+                  Log Session
                 </Link>
               </Button>
             </div>
           </div>
 
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Consistency Score</CardDescription>
-                <CardTitle className="text-3xl">{kpis.consistencyScore.toFixed(1)}%</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center text-sm">
-                  <Target className="w-4 h-4 mr-1 text-success" />
-                  <span className="text-muted-foreground">Based on speed variance</span>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="bg-accent/10 rounded-lg p-3">
+                    <Activity className="h-6 w-6 text-accent" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Total Sessions</p>
+                    <p className="text-2xl font-bold">{stats.totalSessions}</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>30-Day Trend</CardDescription>
-                <CardTitle className="text-3xl flex items-center">
-                  {kpis.trend30Days > 0 ? "+" : ""}{kpis.trend30Days.toFixed(1)}%
-                  {kpis.trend30Days > 0 ? (
-                    <TrendingUp className="w-5 h-5 ml-2 text-green-500" />
-                  ) : (
-                    <TrendingDown className="w-5 h-5 ml-2 text-red-500" />
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center text-sm">
-                  <Calendar className="w-4 h-4 mr-1 text-muted-foreground" />
-                  <span className="text-muted-foreground">vs previous period</span>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="bg-gold/10 rounded-lg p-3">
+                    <Target className="h-6 w-6 text-gold" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Total Shots</p>
+                    <p className="text-2xl font-bold">{stats.totalShots}</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Best Club Speed</CardDescription>
-                <CardTitle className="text-3xl">{kpis.bestSpeed.toFixed(1)} mph</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm text-muted-foreground">Personal record</div>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="bg-success/10 rounded-lg p-3">
+                    <TrendingUp className="h-6 w-6 text-success" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Avg Consistency</p>
+                    <p className="text-2xl font-bold">{stats.avgConsistency}%</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Total Sessions</CardDescription>
-                <CardTitle className="text-3xl">{kpis.totalSessions}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-sm text-muted-foreground">All-time tracking</div>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 rounded-lg p-3">
+                    <Calendar className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Active Days</p>
+                    <p className="text-2xl font-bold">{stats.activeDays}</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
-
-          {/* Swing DNA Radar Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-success" />
-                Your Swing DNA Profile
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {latestSession ? (
-                <SwingDNARadar
-                  data={{
-                    club_speed_mph: latestSession.avg_club_speed,
-                    ball_speed_mph: latestSession.avg_ball_speed,
-                    launch_angle_deg: latestSession.avg_launch_angle,
-                    spin_rate_rpm: latestSession.avg_spin_rate,
-                    carry_distance_yds: latestSession.avg_carry_distance,
-                    consistency_score: latestSession.consistency_score,
-                  }}
-                />
-              ) : (
-                <div className="text-center py-12 text-muted-foreground">
-                  Complete a swing session to see your DNA profile
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
           {/* Trend Analysis Charts */}
           <div className="mb-8">
             <ProgressCharts userId={user.id} />
           </div>
 
-          {/* Session History */}
-          <Card className="mt-8">
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                  <CardTitle>Session History</CardTitle>
-                  <CardDescription>View and analyze your swing sessions</CardDescription>
-                </div>
-                <Button variant="outline" size="sm">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filters
-                </Button>
-              </div>
-              
-              {/* Filters */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-                <Input
-                  type="date"
-                  placeholder="Start Date"
-                  value={filters.startDate}
-                  onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-                />
-                <Input
-                  type="date"
-                  placeholder="End Date"
-                  value={filters.endDate}
-                  onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-                />
-                <Select
-                  value={filters.club || undefined}
-                  onValueChange={(value) => setFilters({ ...filters, club: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Clubs" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Driver">Driver</SelectItem>
-                    <SelectItem value="3-Wood">3-Wood</SelectItem>
-                    <SelectItem value="5-Wood">5-Wood</SelectItem>
-                    <SelectItem value="Hybrid">Hybrid</SelectItem>
-                    <SelectItem value="Iron">Iron</SelectItem>
-                    <SelectItem value="Wedge">Wedge</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={filters.device || undefined}
-                  onValueChange={(value) => setFilters({ ...filters, device: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Devices" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="golf_daddy">Golf Daddy</SelectItem>
-                    <SelectItem value="trackman">TrackMan</SelectItem>
-                    <SelectItem value="flightscope">FlightScope</SelectItem>
-                    <SelectItem value="garmin">Garmin</SelectItem>
-                    <SelectItem value="manual">Manual</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="space-y-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Skeleton key={i} className="h-12 w-full" />
-                  ))}
-                </div>
-              ) : sessions.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground mb-4">No sessions found</p>
-                  <Button asChild>
-                    <Link href="/swing-data/import">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add First Session
-                    </Link>
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="min-w-[100px]">Date</TableHead>
-                          <TableHead className="min-w-[120px]">Club</TableHead>
-                          <TableHead className="min-w-[100px]">Device</TableHead>
-                          <TableHead className="text-right min-w-[60px]">Shots</TableHead>
-                          <TableHead className="text-right min-w-[100px]">Avg Speed</TableHead>
-                          <TableHead className="text-right min-w-[110px]">Avg Distance</TableHead>
-                          <TableHead className="min-w-[60px]"></TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {sessions.map((session) => (
-                          <TableRow key={session.id} className="touch-manipulation">
-                            <TableCell className="font-medium">{formatDate(session.session_date)}</TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{session.session_name || "Session"}</Badge>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground text-sm">
-                              {session.device_type}
-                            </TableCell>
-                            <TableCell className="text-right font-medium">{session.total_shots}</TableCell>
-                            <TableCell className="text-right">
-                              {session.avg_club_speed ? `${session.avg_club_speed.toFixed(1)} mph` : "-"}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {session.avg_carry_distance ? `${session.avg_carry_distance.toFixed(0)} yds` : "-"}
-                            </TableCell>
-                            <TableCell>
-                              <Button variant="ghost" size="sm" className="h-9 w-9 p-0" asChild>
-                                <Link href={`/swing-analytics/${session.id}`}>
-                                  <Eye className="w-4 h-4" />
-                                </Link>
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+          {/* Main Content Tabs */}
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="overview">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="dna">
+                <Target className="h-4 w-4 mr-2" />
+                Swing DNA
+              </TabsTrigger>
+              <TabsTrigger value="weekly">
+                <Calendar className="h-4 w-4 mr-2" />
+                Weekly Summary
+              </TabsTrigger>
+              <TabsTrigger value="trends">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Trends
+              </TabsTrigger>
+            </TabsList>
 
-                  {/* Pagination */}
-                  {totalPages > 1 && (
-                    <div className="flex justify-between items-center mt-4 gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                        disabled={currentPage === 1}
-                        className="min-h-[44px]"
-                      >
-                        Previous
-                      </Button>
-                      <span className="text-sm text-muted-foreground whitespace-nowrap">
-                        Page {currentPage} of {totalPages}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                        disabled={currentPage === totalPages}
-                        className="min-h-[44px]"
-                      >
-                        Next
-                      </Button>
+            <TabsContent value="overview" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Performance Overview</CardTitle>
+                  <CardDescription>
+                    Your swing analytics at a glance
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {stats.totalSessions === 0 ? (
+                    <div className="py-16 text-center">
+                      <div className="max-w-md mx-auto">
+                        <div className="bg-muted rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+                          <Activity className="h-12 w-12 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-2xl font-bold mb-3">Start Tracking Your Swings</h3>
+                        <p className="text-muted-foreground mb-6">
+                          Import data from your launch monitor or manually log your sessions to get started.
+                        </p>
+                        <Button asChild>
+                          <Link href="/swing-data/import">
+                            <Upload className="h-4 w-4 mr-2" />
+                            Import Swing Data
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <p className="text-sm text-muted-foreground">
+                        You have logged {stats.totalSessions} sessions with {stats.totalShots} total shots.
+                        Your average consistency score is {stats.avgConsistency}%.
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 bg-muted/50 rounded-lg">
+                          <h4 className="font-semibold mb-2">Recent Activity</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Active on {stats.activeDays} different days
+                          </p>
+                        </div>
+                        <div className="p-4 bg-muted/50 rounded-lg">
+                          <h4 className="font-semibold mb-2">Performance</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {stats.avgConsistency >= 80 ? "Excellent" : stats.avgConsistency >= 60 ? "Good" : "Keep practicing"} consistency
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   )}
-                </>
-              )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="dna" className="mt-6">
+              <SwingDNARadar userId={user.id} />
+            </TabsContent>
+
+            <TabsContent value="weekly" className="mt-6">
+              <WeeklySummary userId={user.id} />
+            </TabsContent>
+
+            <TabsContent value="trends" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Performance Trends</CardTitle>
+                  <CardDescription>
+                    Track your improvement over time
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Detailed trend analysis coming soon. Import more sessions to see your progress.
+                  </p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          {/* Upgrade Modal */}
+          <UpgradeModal 
+            isOpen={showUpgradeModal} 
+            onClose={() => setShowUpgradeModal(false)} 
+          />
         </div>
-      )}
-    </AppLayout>
+      </AppLayout>
+    </ProtectedRoute>
   );
 }
