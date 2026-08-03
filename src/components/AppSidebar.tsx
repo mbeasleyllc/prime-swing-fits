@@ -116,7 +116,7 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-border/50 px-4 py-4">
         <Link href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
           <Image 
-            src="/PSF-Logo_HeaderLogo_WHT-3.png?v=3" 
+            src="/PSF-Logo_HeaderLogo_WHT-3.png?v=4" 
             alt="Prime Swing Fits" 
             width={180}
             height={40}
