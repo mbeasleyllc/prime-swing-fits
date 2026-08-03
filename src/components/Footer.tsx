@@ -13,11 +13,11 @@ export function Footer() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2 font-bold text-lg hover:opacity-80 transition-opacity">
               <Image 
-                src="/PSF-Logo_HeaderLogo_CLR-2.png" 
+                src="/PSF-Logo_Cicle-Ball_CLR-2.png" 
                 alt="Prime Swing Fits" 
-                width={160}
-                height={36}
-                className="h-9 w-auto"
+                width={80}
+                height={80}
+                className="h-20 w-20"
               />
             </Link>
             <p className="text-sm text-white/70">

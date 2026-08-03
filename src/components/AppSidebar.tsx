@@ -116,11 +116,11 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-border/50 px-4 py-4">
         <Link href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
           <Image 
-            src="/PSF-Logo_HeaderLogo_CLR-2.png" 
+            src="/PSF-Logo_Cicle-Ball_CLR-2.png" 
             alt="Prime Swing Fits" 
-            width={180}
-            height={40}
-            className="h-10 w-auto"
+            width={60}
+            height={60}
+            className="h-15 w-15"
           />
         </Link>
       </SidebarHeader>
