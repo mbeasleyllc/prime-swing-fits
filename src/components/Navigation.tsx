@@ -34,9 +34,9 @@ export function Navigation() {
             <Image 
               src="/PSF-Logo_HeaderLogo_CLR-2.png" 
               alt="Prime Swing Fits" 
-              width={180}
-              height={40}
-              className="h-10 w-auto"
+              width={225}
+              height={50}
+              className="h-12 w-auto"
               priority
             />
           </Link>
