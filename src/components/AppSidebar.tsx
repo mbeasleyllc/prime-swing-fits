@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -113,14 +114,14 @@ export function AppSidebar() {
   return (
     <Sidebar className="border-r border-border bg-primary text-primary-foreground">
       <SidebarHeader className="border-b border-border/50 px-4 py-4">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold">
-            <span className="text-lg font-bold text-gold-foreground">PSF</span>
-          </div>
-          <div>
-            <h2 className="text-base font-semibold text-white">Prime Swing Fits</h2>
-            <p className="text-xs text-white/70">Professional Golf Fitting</p>
-          </div>
+        <Link href="/" className="flex items-center justify-center hover:opacity-80 transition-opacity">
+          <Image 
+            src="/PSF-Logo_HeaderLogo_CLR-2.png" 
+            alt="Prime Swing Fits" 
+            width={180}
+            height={40}
+            className="h-10 w-auto"
+          />
         </Link>
       </SidebarHeader>
 

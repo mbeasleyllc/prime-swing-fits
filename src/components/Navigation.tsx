@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "next-themes";
@@ -9,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Trophy, LayoutDashboard, Shield, LogOut, Menu, X, ChevronDown, Moon, Sun } from "lucide-react";
+import { LayoutDashboard, Shield, LogOut, Menu, X, ChevronDown, Moon, Sun } from "lucide-react";
 
 export function Navigation() {
   const { user, isLoading, signOut } = useAuth();
@@ -29,11 +30,15 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary hover:text-gold transition-colors group">
-            <div className="bg-gold/10 p-2 rounded-lg group-hover:bg-gold/20 transition-colors">
-              <Trophy className="h-6 w-6 text-gold" />
-            </div>
-            <span className="hidden sm:inline">Prime Swing Fits</span>
+          <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary hover:opacity-80 transition-opacity group">
+            <Image 
+              src="/PSF-Logo_HeaderLogo_CLR-2.png" 
+              alt="Prime Swing Fits" 
+              width={180}
+              height={40}
+              className="h-10 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}

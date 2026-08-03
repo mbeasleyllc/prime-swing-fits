@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import { Trophy, Mail } from "lucide-react";
+import Image from "next/image";
+import { Mail } from "lucide-react";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -10,12 +11,15 @@ export function Footer() {
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
-            <div className="flex items-center gap-2 font-bold text-lg">
-              <div className="bg-accent/20 p-2 rounded-lg">
-                <Trophy className="h-6 w-6 text-accent" />
-              </div>
-              <span>Prime Swing Fits</span>
-            </div>
+            <Link href="/" className="flex items-center gap-2 font-bold text-lg hover:opacity-80 transition-opacity">
+              <Image 
+                src="/PSF-Logo_HeaderLogo_CLR-2.png" 
+                alt="Prime Swing Fits" 
+                width={160}
+                height={36}
+                className="h-9 w-auto"
+              />
+            </Link>
             <p className="text-sm text-white/70">
               Professional golf club fitting guidance at your fingertips.
             </p>
