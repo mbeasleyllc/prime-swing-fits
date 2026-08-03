@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AppHeader } from "@/components/AppHeader";
+import { Footer } from "@/components/Footer";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 interface AppLayoutProps {
@@ -17,6 +18,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <main className="flex-1 p-6 pt-24 bg-background">
             {children}
           </main>
+          <Footer />
         </div>
       </div>
     </SidebarProvider>
