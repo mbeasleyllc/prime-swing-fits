@@ -15,9 +15,9 @@ export function Footer() {
               <Image 
                 src="/PSF-Logo_HeaderLogo_WHT-3.png?v=1785911682"
                 alt="Prime Swing Fits" 
-                width={400}
-                height={90}
-                className="h-[5.5rem] w-auto"
+                width={660}
+                height={149}
+                className="h-[9.3rem] w-auto"
                 unoptimized
               />
             </Link>
