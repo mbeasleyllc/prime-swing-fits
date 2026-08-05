@@ -1547,15 +1547,6 @@ function PreferencesSection({
     club_priorities: profile.club_priorities || [],
   });
 
-  useEffect(() => {
-    setFormData({
-      primary_goals: profile.primary_goals || [],
-      club_budget: profile.club_budget || "",
-      preferred_brands: profile.preferred_brands || [],
-      club_priorities: profile.club_priorities || [],
-    });
-  }, [profile]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
