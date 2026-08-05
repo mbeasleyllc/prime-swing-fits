@@ -1548,23 +1548,12 @@ function PreferencesSection({
   });
 
   useEffect(() => {
-    const newData = {
+    setFormData({
       primary_goals: profile.primary_goals || [],
       club_budget: profile.club_budget || "",
       preferred_brands: profile.preferred_brands || [],
       club_priorities: profile.club_priorities || [],
-    };
-    
-    // Only update if values have actually changed (deep comparison)
-    const hasChanged = 
-      JSON.stringify(newData.primary_goals) !== JSON.stringify(formData.primary_goals) ||
-      newData.club_budget !== formData.club_budget ||
-      JSON.stringify(newData.preferred_brands) !== JSON.stringify(formData.preferred_brands) ||
-      JSON.stringify(newData.club_priorities) !== JSON.stringify(formData.club_priorities);
-    
-    if (hasChanged) {
-      setFormData(newData);
-    }
+    });
   }, [profile]);
 
   const handleSubmit = (e: React.FormEvent) => {
