@@ -1565,7 +1565,7 @@ function PreferencesSection({
     if (hasChanged) {
       setFormData(newData);
     }
-  }, [profile, formData]);
+  }, [profile]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
