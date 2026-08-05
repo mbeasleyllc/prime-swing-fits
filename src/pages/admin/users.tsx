@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Search, Shield, Crown, Zap, Check, X, Archive, ArchiveRestore, XCircle, User, Lock, Settings, AlertTriangle, Key, Mail, Trash2 } from "lucide-react";
+import { Users, Search, Shield, Crown, Zap, Check, X, Archive, ArchiveRestore, XCircle, User, Lock, Settings, AlertTriangle, Key, Mail, Trash2, Database } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -80,6 +80,7 @@ function UsersContent() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithSubscription | null>(null);
   const [fullProfileData, setFullProfileData] = useState<any>(null);
+  const [supabaseAuthData, setSupabaseAuthData] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   
   // Confirmation dialogs
@@ -191,6 +192,27 @@ function UsersContent() {
       .maybeSingle();
     
     setFullProfileData(data || {});
+    
+    // Fetch Supabase auth data
+    try {
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
+      const response = await fetch("/api/admin/update-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId: user.id, action: "get_auth_data" }),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        setSupabaseAuthData(result.data || null);
+      }
+    } catch (error) {
+      console.error("Error fetching auth data:", error);
+      setSupabaseAuthData(null);
+    }
   };
 
   const handleUpdateUser = async (userId: string, updates: any) => {
@@ -807,6 +829,7 @@ function UsersContent() {
                                 <UserEditForm
                                   user={u}
                                   profileData={fullProfileData}
+                                  supabaseAuthData={supabaseAuthData}
                                   onSaveAccess={handleUpdateUser}
                                   onSaveProfile={handleUpdateProfile}
                                   onPasswordAction={handlePasswordAction}
@@ -1029,6 +1052,7 @@ function UsersContent() {
 function UserEditForm({
   user,
   profileData,
+  supabaseAuthData,
   onSaveAccess,
   onSaveProfile,
   onPasswordAction,
@@ -1039,6 +1063,7 @@ function UserEditForm({
 }: {
   user: UserWithSubscription;
   profileData: any;
+  supabaseAuthData: any;
   onSaveAccess: (userId: string, updates: any) => void;
   onSaveProfile: (userId: string, profileData: any) => void;
   onPasswordAction: (userId: string, action: "set" | "reset", password?: string) => void;
@@ -1131,7 +1156,7 @@ function UserEditForm({
 
   return (
     <Tabs defaultValue="profile" className="w-full">
-      <TabsList className="grid w-full grid-cols-4">
+      <TabsList className="grid w-full grid-cols-5">
         <TabsTrigger value="profile">
           <User className="h-4 w-4 mr-2" />
           Profile
@@ -1139,6 +1164,10 @@ function UserEditForm({
         <TabsTrigger value="access">
           <Settings className="h-4 w-4 mr-2" />
           Access
+        </TabsTrigger>
+        <TabsTrigger value="supabase">
+          <Database className="h-4 w-4 mr-2" />
+          Supabase
         </TabsTrigger>
         <TabsTrigger value="security">
           <Lock className="h-4 w-4 mr-2" />
@@ -1459,6 +1488,178 @@ function UserEditForm({
             </Button>
           </div>
         </form>
+      </TabsContent>
+
+      <TabsContent value="supabase" className="space-y-4 mt-4">
+        {!supabaseAuthData ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <Database className="h-12 w-12 mx-auto mb-3 opacity-50" />
+            <p>Loading Supabase Auth data...</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Account Status Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b">
+                <Shield className="h-4 w-4 text-accent" />
+                <h3 className="font-semibold text-sm">Account Status</h3>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">User ID</Label>
+                  <div className="text-sm font-mono bg-muted p-2 rounded break-all">
+                    {supabaseAuthData.id}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Account Created</Label>
+                  <div className="text-sm p-2">
+                    {new Date(supabaseAuthData.created_at).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Last Sign In</Label>
+                  <div className="text-sm p-2">
+                    {supabaseAuthData.last_sign_in_at 
+                      ? new Date(supabaseAuthData.last_sign_in_at).toLocaleString()
+                      : "Never"}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Email Confirmed</Label>
+                  <div className="flex items-center gap-2 p-2">
+                    {supabaseAuthData.email_confirmed_at ? (
+                      <>
+                        <Badge className="bg-accent text-white">
+                          <Check className="h-3 w-3 mr-1" />
+                          Confirmed
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(supabaseAuthData.email_confirmed_at).toLocaleDateString()}
+                        </span>
+                      </>
+                    ) : (
+                      <Badge variant="outline">
+                        <X className="h-3 w-3 mr-1" />
+                        Not Confirmed
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Information Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b">
+                <Mail className="h-4 w-4 text-accent" />
+                <h3 className="font-semibold text-sm">Contact & Authentication</h3>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Email Address</Label>
+                  <div className="text-sm p-2 bg-muted rounded">
+                    {supabaseAuthData.email || "Not set"}
+                  </div>
+                </div>
+
+                {supabaseAuthData.phone && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Phone Number</Label>
+                      <div className="text-sm p-2 bg-muted rounded">
+                        {supabaseAuthData.phone}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Phone Confirmed</Label>
+                      <div className="flex items-center gap-2 p-2">
+                        {supabaseAuthData.phone_confirmed_at ? (
+                          <Badge className="bg-accent text-white">
+                            <Check className="h-3 w-3 mr-1" />
+                            Confirmed
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline">
+                            <X className="h-3 w-3 mr-1" />
+                            Not Confirmed
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Authentication Method</Label>
+                  <div className="flex items-center gap-2 p-2">
+                    {supabaseAuthData.is_sso_user ? (
+                      <Badge className="bg-blue-500 text-white">SSO / OAuth</Badge>
+                    ) : (
+                      <Badge variant="outline">Email / Password</Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Metadata Section */}
+            {(supabaseAuthData.user_metadata || supabaseAuthData.app_metadata) && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b">
+                  <Database className="h-4 w-4 text-accent" />
+                  <h3 className="font-semibold text-sm">Metadata</h3>
+                </div>
+                
+                {supabaseAuthData.user_metadata && Object.keys(supabaseAuthData.user_metadata).length > 0 && (
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">User Metadata</Label>
+                    <Textarea
+                      value={JSON.stringify(supabaseAuthData.user_metadata, null, 2)}
+                      readOnly
+                      className="font-mono text-xs min-h-[100px] bg-muted"
+                    />
+                  </div>
+                )}
+
+                {supabaseAuthData.app_metadata && Object.keys(supabaseAuthData.app_metadata).length > 0 && (
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">App Metadata</Label>
+                    <Textarea
+                      value={JSON.stringify(supabaseAuthData.app_metadata, null, 2)}
+                      readOnly
+                      className="font-mono text-xs min-h-[100px] bg-muted"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Ban/Archive Status */}
+            {supabaseAuthData.banned_until && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  <Label className="text-sm font-semibold text-red-800">Account Banned</Label>
+                </div>
+                <p className="text-xs text-red-700">
+                  Banned until: {new Date(supabaseAuthData.banned_until).toLocaleString()}
+                </p>
+              </div>
+            )}
+
+            <div className="pt-4 border-t">
+              <p className="text-xs text-muted-foreground text-center">
+                Supabase Auth fields are read-only. Use other tabs to modify user settings.
+              </p>
+            </div>
+          </div>
+        )}
       </TabsContent>
 
       <TabsContent value="security" className="space-y-4 mt-4">
