@@ -1547,6 +1547,34 @@ function PreferencesSection({
     club_priorities: profile.club_priorities || [],
   });
 
+  // Sync formData with profile changes, but only if values actually differ
+  useEffect(() => {
+    const profileGoals = profile.primary_goals || [];
+    const profileBrands = profile.preferred_brands || [];
+    const profilePriorities = profile.club_priorities || [];
+    const profileBudget = profile.club_budget || "";
+    
+    // Deep comparison - only update if actual values changed
+    const goalsChanged = JSON.stringify(profileGoals.sort()) !== JSON.stringify([...formData.primary_goals].sort());
+    const brandsChanged = JSON.stringify(profileBrands.sort()) !== JSON.stringify([...formData.preferred_brands].sort());
+    const prioritiesChanged = JSON.stringify(profilePriorities.sort()) !== JSON.stringify([...formData.club_priorities].sort());
+    const budgetChanged = profileBudget !== formData.club_budget;
+    
+    if (goalsChanged || brandsChanged || prioritiesChanged || budgetChanged) {
+      setFormData({
+        primary_goals: profileGoals,
+        club_budget: profileBudget,
+        preferred_brands: profileBrands,
+        club_priorities: profilePriorities,
+      });
+    }
+  }, [
+    profile.primary_goals, 
+    profile.club_budget, 
+    profile.preferred_brands, 
+    profile.club_priorities
+  ]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
