@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1540,12 +1540,27 @@ function PreferencesSection({
   saving: boolean;
   onSave: (data: Partial<UserProfile>) => void;
 }) {
+  // Stabilize array references with useMemo to prevent unnecessary re-renders
+  const stableGoals = useMemo(() => profile.primary_goals || [], [profile.primary_goals]);
+  const stableBrands = useMemo(() => profile.preferred_brands || [], [profile.preferred_brands]);
+  const stablePriorities = useMemo(() => profile.club_priorities || [], [profile.club_priorities]);
+  
   const [formData, setFormData] = useState({
-    primary_goals: profile.primary_goals || [],
+    primary_goals: stableGoals,
     club_budget: profile.club_budget || "",
-    preferred_brands: profile.preferred_brands || [],
-    club_priorities: profile.club_priorities || [],
+    preferred_brands: stableBrands,
+    club_priorities: stablePriorities,
   });
+
+  // Sync formData with profile changes (after save or initial load)
+  useEffect(() => {
+    setFormData({
+      primary_goals: stableGoals,
+      club_budget: profile.club_budget || "",
+      preferred_brands: stableBrands,
+      club_priorities: stablePriorities,
+    });
+  }, [stableGoals, stableBrands, stablePriorities, profile.club_budget]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
