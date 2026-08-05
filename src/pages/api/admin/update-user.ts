@@ -41,6 +41,20 @@ export default async function handler(
       return res.status(400).json({ error: "Missing userId" });
     }
 
+    // Handle fetching Supabase auth data
+    if (action === "get_auth_data") {
+      const { data: authData, error: authDataError } = await supabaseAdmin.auth.admin.getUserById(userId);
+
+      if (authDataError) {
+        throw new Error(`Failed to fetch auth data: ${authDataError.message}`);
+      }
+
+      return res.status(200).json({ 
+        success: true, 
+        data: authData.user 
+      });
+    }
+
     // Handle password management
     if (action === "set_password" && newPassword) {
       const { error: passwordError } = await supabaseAdmin.auth.admin.updateUserById(
