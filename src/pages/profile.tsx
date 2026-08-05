@@ -249,9 +249,6 @@ function ProfileContent() {
         localStorage.setItem("psfSwingProfile", JSON.stringify(swingProfile));
       }
 
-      // Update local state with saved data
-      setProfile(prev => ({ ...prev, ...cleanData }));
-      
       toast({
         title: "Saved",
         description: `${getSectionName(section)} updated successfully`,
