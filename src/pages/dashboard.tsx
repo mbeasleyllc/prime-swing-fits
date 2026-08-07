@@ -506,7 +506,7 @@ export default function Dashboard() {
           {(userTier === "entry" || userTier === "core") && (
             <>
               {/* Simplified Hero Banner */}
-              <div className="relative mb-8 h-[200px] overflow-hidden rounded-2xl">
+              <div className="relative mb-6 md:mb-8 h-[160px] md:h-[200px] overflow-hidden rounded-xl md:rounded-2xl">
                 <div 
                   className="absolute inset-0 bg-cover bg-center transition-transform duration-75"
                   style={{ 
@@ -524,22 +524,22 @@ export default function Dashboard() {
                       : "linear-gradient(135deg, rgba(27, 67, 50, 0.75) 0%, rgba(27, 67, 50, 0.45) 100%)"
                   }}
                 />
-                <div className="relative h-full flex items-center justify-between px-8">
-                  <div className="flex-1">
-                    <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">
+                <div className="relative h-full flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-8 py-4 md:py-0">
+                  <div className="flex-1 mb-3 md:mb-0">
+                    <h1 className="text-2xl md:text-4xl font-bold text-white mb-1 md:mb-2 drop-shadow-lg">
                       Welcome back, {user?.user_metadata?.full_name || user?.email?.split("@")[0]}
                     </h1>
-                    <p className="text-white/90 text-lg drop-shadow-md">
+                    <p className="text-white/90 text-sm md:text-lg drop-shadow-md">
                       Your personalized club fitting journey
                     </p>
                   </div>
                   <Button 
-                    size="lg" 
+                    size="default"
                     asChild 
-                    className="bg-gold hover:bg-gold/90 text-gold-foreground shadow-xl hover:shadow-2xl transition-all hover:scale-105 font-semibold"
+                    className="w-full md:w-auto bg-gold hover:bg-gold/90 text-gold-foreground shadow-xl hover:shadow-2xl transition-all hover:scale-105 font-semibold text-sm md:text-base"
                   >
                     <Link href="/fitting/new">
-                      <Play className="h-5 w-5 mr-2" />
+                      <Play className="h-4 w-4 md:h-5 md:w-5 mr-2" />
                       Start New Fitting
                     </Link>
                   </Button>
@@ -548,17 +548,17 @@ export default function Dashboard() {
 
               {/* Fitting Summary Stats - Entry/Core */}
               {fittingStats && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-3 gap-2 md:gap-4 mb-6 md:mb-8">
                   <Card className="hover:shadow-md transition-shadow">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="bg-success/10 rounded-lg p-3">
-                            <CheckCircle2 className="h-6 w-6 text-success" />
+                    <CardContent className="pt-4 md:pt-6 pb-4 px-3 md:px-6">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div className="flex items-center gap-2 md:gap-3">
+                          <div className="bg-success/10 rounded-lg p-2 md:p-3">
+                            <CheckCircle2 className="h-4 w-4 md:h-6 md:w-6 text-success" />
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground mb-1">Total Fittings</p>
-                            <p className="text-2xl font-bold">{fittingStats.totalFittings}</p>
+                            <p className="text-xs text-muted-foreground mb-0.5 md:mb-1">Total</p>
+                            <p className="text-xl md:text-2xl font-bold">{fittingStats.totalFittings}</p>
                           </div>
                         </div>
                       </div>
@@ -566,15 +566,15 @@ export default function Dashboard() {
                   </Card>
 
                   <Card className="hover:shadow-md transition-shadow">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="bg-gold/10 rounded-lg p-3">
-                            <Target className="h-6 w-6 text-gold" />
+                    <CardContent className="pt-4 md:pt-6 pb-4 px-3 md:px-6">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div className="flex items-center gap-2 md:gap-3">
+                          <div className="bg-gold/10 rounded-lg p-2 md:p-3">
+                            <Target className="h-4 w-4 md:h-6 md:w-6 text-gold" />
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground mb-1">Completion Rate</p>
-                            <p className="text-2xl font-bold">{fittingStats.completionRate}%</p>
+                            <p className="text-xs text-muted-foreground mb-0.5 md:mb-1">Rate</p>
+                            <p className="text-xl md:text-2xl font-bold">{fittingStats.completionRate}%</p>
                           </div>
                         </div>
                       </div>
@@ -582,15 +582,15 @@ export default function Dashboard() {
                   </Card>
 
                   <Card className="hover:shadow-md transition-shadow">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="bg-primary/10 rounded-lg p-3">
-                            <Activity className="h-6 w-6 text-primary" />
+                    <CardContent className="pt-4 md:pt-6 pb-4 px-3 md:px-6">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                        <div className="flex items-center gap-2 md:gap-3">
+                          <div className="bg-primary/10 rounded-lg p-2 md:p-3">
+                            <Activity className="h-4 w-4 md:h-6 md:w-6 text-primary" />
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground mb-1">Last 30 Days</p>
-                            <p className="text-2xl font-bold">{fittingStats.recentSessions}</p>
+                            <p className="text-xs text-muted-foreground mb-0.5 md:mb-1">30 Days</p>
+                            <p className="text-xl md:text-2xl font-bold">{fittingStats.recentSessions}</p>
                           </div>
                         </div>
                       </div>

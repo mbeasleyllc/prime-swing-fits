@@ -406,17 +406,17 @@ function ProfileContent() {
   return (
     <AppLayout>
       <div className="max-w-7xl">
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
           <aside className="hidden lg:block lg:w-80 flex-shrink-0">
             <div className="sticky top-24 space-y-6">
               <Card>
                 <CardContent className="pt-6 text-center">
                   {/* Avatar Section */}
-                  <div className="flex items-center gap-6 mb-8">
+                  <div className="flex flex-col items-center gap-4 mb-6">
                     <div className="relative">
-                      <Avatar className="h-24 w-24">
+                      <Avatar className="h-20 w-20 md:h-24 md:w-24">
                         <AvatarImage src={avatarUrl || undefined} />
-                        <AvatarFallback className="text-2xl bg-gold/20 text-gold font-semibold">
+                        <AvatarFallback className="text-xl md:text-2xl bg-gold/20 text-gold font-semibold">
                           {user?.email?.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -425,7 +425,7 @@ function ProfileContent() {
                         className="absolute bottom-0 right-0 p-2 bg-gold text-gold-foreground rounded-full cursor-pointer hover:bg-gold/90 transition-colors shadow-lg"
                         title="Upload new avatar"
                       >
-                        <Camera className="h-4 w-4" />
+                        <Camera className="h-3 w-3 md:h-4 md:w-4" />
                       </label>
                       <input
                         id="avatar-upload"
@@ -437,27 +437,18 @@ function ProfileContent() {
                       />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-foreground">
+                      <h2 className="text-xl md:text-2xl font-bold text-foreground">
                         {profile?.first_name} {profile?.last_name}
                       </h2>
-                      <p className="text-muted-foreground">{user?.email}</p>
+                      <p className="text-sm text-muted-foreground truncate max-w-[200px]">{user?.email}</p>
                       {isUploading && (
-                        <p className="text-sm text-gold mt-2">Uploading avatar...</p>
+                        <p className="text-xs md:text-sm text-gold mt-2">Uploading...</p>
                       )}
                       {uploadError && (
-                        <p className="text-sm text-destructive mt-2">{uploadError}</p>
+                        <p className="text-xs md:text-sm text-destructive mt-2">{uploadError}</p>
                       )}
                     </div>
                   </div>
-                  
-                  <h2 className="font-bold text-xl text-foreground mb-1">
-                    {profile.first_name && profile.last_name
-                      ? `${profile.first_name} ${profile.last_name}`
-                      : "Your Name"}
-                  </h2>
-                  <p className="text-sm text-muted-foreground mb-3 truncate">
-                    {user?.email}
-                  </p>
                   
                   <Badge className={getMembershipBadgeColor(profile.membership_tier)}>
                     {getMembershipLabel(profile.membership_tier)}
@@ -465,12 +456,12 @@ function ProfileContent() {
                   
                   <div className="mt-6">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-foreground">Profile Completion</span>
-                      <span className="text-sm font-bold text-accent">{completion}%</span>
+                      <span className="text-xs md:text-sm font-medium text-foreground">Profile Completion</span>
+                      <span className="text-xs md:text-sm font-bold text-accent">{completion}%</span>
                     </div>
                     <Progress value={completion} className="h-2" />
                     <p className="text-xs text-muted-foreground mt-2">
-                      {completion}% Complete — A fuller profile means a more accurate AI fitting.
+                      A fuller profile means more accurate fitting.
                     </p>
                   </div>
                 </CardContent>
