@@ -87,18 +87,18 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navigation />
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
-            <CardDescription>
+          <CardHeader className="space-y-1 px-4 sm:px-6 pt-6 pb-4">
+            <CardTitle className="text-2xl sm:text-3xl font-bold">Sign in</CardTitle>
+            <CardDescription className="text-sm sm:text-base">
               Enter your credentials to access your Prime Swing Fits account
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 px-4 sm:px-6 pb-6">
             <form onSubmit={handleEmailLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -107,10 +107,11 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
+                  className="h-11 text-base"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -118,9 +119,10 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
+                  className="h-11 text-base"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full h-11 text-base" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Sign In
               </Button>
@@ -138,7 +140,7 @@ export default function Login() {
             <Button
               type="button"
               variant="outline"
-              className="w-full"
+              className="w-full h-11 text-base"
               onClick={handleGoogleLogin}
               disabled={isLoading}
             >
@@ -146,11 +148,11 @@ export default function Login() {
               Google
             </Button>
 
-            <div className="text-center text-sm space-y-2">
-              <Link href="/auth/reset" className="text-muted-foreground hover:text-foreground">
+            <div className="text-center text-sm space-y-2 pt-2">
+              <Link href="/auth/reset" className="block text-muted-foreground hover:text-foreground py-2">
                 Forgot your password?
               </Link>
-              <div>
+              <div className="py-2">
                 <span className="text-muted-foreground">Don&apos;t have an account? </span>
                 <Link href="/auth/register" className="text-primary hover:underline font-medium">
                   Sign up

@@ -107,7 +107,7 @@ export default function NewFitting() {
     <ProtectedRoute>
       <div className="min-h-screen flex flex-col bg-background">
         <Navigation />
-        <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           {isLoading ? (
             <div className="flex items-center gap-2">
               <Loader2 className="w-6 h-6 animate-spin" />
@@ -115,28 +115,28 @@ export default function NewFitting() {
             </div>
           ) : existingSession ? (
             <Card className="w-full max-w-2xl">
-              <CardHeader>
-                <CardTitle>Resume Your Fitting?</CardTitle>
-                <CardDescription>
+              <CardHeader className="px-4 sm:px-6 pt-6 pb-4">
+                <CardTitle className="text-xl sm:text-2xl">Resume Your Fitting?</CardTitle>
+                <CardDescription className="text-sm sm:text-base">
                   You have an unfinished fitting session from{" "}
                   {new Date(existingSession.created_at).toLocaleDateString()}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 px-4 sm:px-6 pb-6">
                 {existingSession.daysSinceCreated > 7 && (
                   <Alert variant="default">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Session is over 7 days old</AlertTitle>
-                    <AlertDescription>
+                    <AlertTitle className="text-sm sm:text-base">Session is over 7 days old</AlertTitle>
+                    <AlertDescription className="text-sm">
                       Recommendations may need updating. Consider starting a new fitting for the most accurate results.
                     </AlertDescription>
                   </Alert>
                 )}
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button onClick={handleResumeSession} className="flex-1">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <Button onClick={handleResumeSession} className="flex-1 h-11 text-base">
                     Resume (Step {existingSession.current_step} of 6)
                   </Button>
-                  <Button onClick={handleNewSession} variant="outline" className="flex-1">
+                  <Button onClick={handleNewSession} variant="outline" className="flex-1 h-11 text-base">
                     Start New Fitting
                   </Button>
                 </div>
@@ -144,22 +144,24 @@ export default function NewFitting() {
             </Card>
           ) : (
             <Card className="w-full max-w-2xl">
-              <CardHeader>
-                <CardTitle>Start Your Club Fitting</CardTitle>
-                <CardDescription>
+              <CardHeader className="px-4 sm:px-6 pt-6 pb-4">
+                <CardTitle className="text-xl sm:text-2xl lg:text-3xl">Start Your Club Fitting</CardTitle>
+                <CardDescription className="text-sm sm:text-base">
                   Complete our 6-step guided wizard to receive personalized club fitting recommendations
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="max-w-2xl mx-auto">
-                  <h1 className="text-3xl font-bold mb-4">Start New Fitting</h1>
-                  <p className="text-muted-foreground mb-8">
-                    Begin your personalized Prime Swing Fits club fitting journey.
-                  </p>
+              <CardContent className="px-4 sm:px-6 pb-6">
+                <div className="space-y-6 sm:space-y-8">
+                  <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Start New Fitting</h1>
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                      Begin your personalized Prime Swing Fits club fitting journey.
+                    </p>
+                  </div>
+                  <Button onClick={handleNewSession} size="lg" className="w-full h-12 text-base sm:text-lg">
+                    Begin Fitting
+                  </Button>
                 </div>
-                <Button onClick={handleNewSession} size="lg" className="w-full">
-                  Begin Fitting
-                </Button>
               </CardContent>
             </Card>
           )}

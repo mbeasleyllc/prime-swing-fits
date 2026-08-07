@@ -110,27 +110,27 @@ export default function Register() {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Navigation />
-        <div className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <Card className="w-full max-w-md">
-            <CardHeader className="text-center space-y-4">
+            <CardHeader className="text-center space-y-4 px-4 sm:px-6 pt-6">
               <div className="mx-auto w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
                 <Mail className="h-8 w-8 text-accent" />
               </div>
               <div>
-                <CardTitle className="text-2xl mb-2">Check Your Email</CardTitle>
-                <CardDescription>
-                  We've sent a confirmation link to <strong>{email}</strong>
+                <CardTitle className="text-2xl sm:text-3xl mb-2">Check Your Email</CardTitle>
+                <CardDescription className="text-sm sm:text-base">
+                  We've sent a confirmation link to <strong className="break-all">{email}</strong>
                 </CardDescription>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3 text-sm text-muted-foreground text-center">
+            <CardContent className="space-y-4 px-4 sm:px-6 pb-6">
+              <div className="space-y-3 text-sm sm:text-base text-muted-foreground text-center">
                 <p>Click the link in the email to verify your account and complete registration.</p>
                 <p>Can't find the email? Check your spam folder.</p>
               </div>
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full h-11 text-base"
                 onClick={() => setEmailSent(false)}
               >
                 Try Again
@@ -146,19 +146,19 @@ export default function Register() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navigation />
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
+      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <h1 className="text-3xl font-bold text-center mb-2">Create Your Account</h1>
-            <p className="text-center text-muted-foreground mb-6">
+          <CardHeader className="space-y-1 px-4 sm:px-6 pt-6 pb-4">
+            <h1 className="text-2xl sm:text-3xl font-bold text-center mb-2">Create Your Account</h1>
+            <p className="text-center text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
               Start your Prime Swing Fits journey today
             </p>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 px-4 sm:px-6 pb-6">
             <form onSubmit={handleEmailRegister} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName" className="text-sm font-medium">First Name</Label>
                   <Input
                     id="firstName"
                     type="text"
@@ -167,10 +167,11 @@ export default function Register() {
                     onChange={(e) => setFirstName(e.target.value)}
                     required
                     disabled={isLoading}
+                    className="h-11 text-base"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName" className="text-sm font-medium">Last Name</Label>
                   <Input
                     id="lastName"
                     type="text"
@@ -179,11 +180,12 @@ export default function Register() {
                     onChange={(e) => setLastName(e.target.value)}
                     required
                     disabled={isLoading}
+                    className="h-11 text-base"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-sm font-medium">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -192,10 +194,11 @@ export default function Register() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
+                  className="h-11 text-base"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -205,9 +208,10 @@ export default function Register() {
                   required
                   minLength={6}
                   disabled={isLoading}
+                  className="h-11 text-base"
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full h-11 text-base" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Account
               </Button>
@@ -225,7 +229,7 @@ export default function Register() {
             <Button
               type="button"
               variant="outline"
-              className="w-full"
+              className="w-full h-11 text-base"
               onClick={handleGoogleRegister}
               disabled={isLoading}
             >
@@ -233,7 +237,7 @@ export default function Register() {
               Google
             </Button>
 
-            <div className="text-center text-sm">
+            <div className="text-center text-sm pt-2">
               <span className="text-muted-foreground">Already have an account? </span>
               <Link href="/auth/login" className="text-primary hover:underline font-medium">
                 Sign in
