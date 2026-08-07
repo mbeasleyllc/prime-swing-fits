@@ -148,23 +148,23 @@ export default function Pricing() {
 
       <div className="flex-1">
         {/* Hero Section */}
-        <section className="py-16 md:py-24 bg-gradient-to-b from-primary/5 to-background">
+        <section className="py-12 md:py-16 lg:py-24 bg-gradient-to-b from-primary/5 to-background">
           <div className="container mx-auto px-4 max-w-7xl">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full mb-4">
-                <Target className="h-4 w-4" />
-                <span className="text-sm font-semibold">Professional Club Fitting Technology</span>
+            <div className="text-center max-w-3xl mx-auto mb-10 md:mb-16">
+              <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-3 md:px-4 py-2 rounded-full mb-3 md:mb-4">
+                <Target className="h-3 w-3 md:h-4 md:w-4" />
+                <span className="text-xs md:text-sm font-semibold">Professional Club Fitting Technology</span>
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-4 md:mb-6">
                 Choose Your Perfect Plan
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground">
+              <p className="text-base md:text-lg lg:text-xl text-muted-foreground">
                 From single club recommendations to complete bag analysis with professional equipment. Get the fitting level that matches your goals.
               </p>
             </div>
 
             {/* Pricing Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 mb-12 md:mb-16">
               {plans.map((plan, index) => {
                 const IconComponent = plan.icon;
                 return (
@@ -172,42 +172,42 @@ export default function Pricing() {
                     key={index}
                     className={`relative flex flex-col ${
                       plan.popular
-                        ? "border-2 border-accent shadow-lg scale-105"
+                        ? "border-2 border-accent shadow-lg sm:scale-105"
                         : `border ${plan.borderColor}`
                     } ${plan.bgColor} hover:shadow-xl transition-all duration-300`}
                   >
                     {plan.popular && (
-                      <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                        <Badge className="bg-accent text-accent-foreground px-4 py-1 text-sm font-semibold">
+                      <div className="absolute -top-3 md:-top-4 left-1/2 transform -translate-x-1/2">
+                        <Badge className="bg-accent text-accent-foreground px-3 md:px-4 py-1 text-xs md:text-sm font-semibold">
                           Most Popular
                         </Badge>
                       </div>
                     )}
 
-                    <CardHeader className="text-center pb-4">
-                      <div className={`w-12 h-12 mx-auto mb-4 rounded-full ${plan.bgColor} flex items-center justify-center`}>
-                        <IconComponent className={`h-6 w-6 ${plan.color}`} />
+                    <CardHeader className="text-center pb-3 md:pb-4 px-4">
+                      <div className={`w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 rounded-full ${plan.bgColor} flex items-center justify-center`}>
+                        <IconComponent className={`h-5 w-5 md:h-6 md:w-6 ${plan.color}`} />
                       </div>
-                      <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-                      <CardDescription className="text-sm">{plan.description}</CardDescription>
-                      <div className="mt-4">
-                        <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                        <span className="text-sm text-muted-foreground ml-2">{plan.period}</span>
+                      <CardTitle className="text-xl md:text-2xl font-bold">{plan.name}</CardTitle>
+                      <CardDescription className="text-xs md:text-sm">{plan.description}</CardDescription>
+                      <div className="mt-3 md:mt-4">
+                        <span className="text-3xl md:text-4xl font-bold text-foreground">{plan.price}</span>
+                        <span className="text-xs md:text-sm text-muted-foreground ml-2">{plan.period}</span>
                       </div>
                     </CardHeader>
 
-                    <CardContent className="flex-1 flex flex-col">
-                      <ul className="space-y-3 mb-8 flex-1">
+                    <CardContent className="flex-1 flex flex-col px-4">
+                      <ul className="space-y-2 md:space-y-3 mb-6 md:mb-8 flex-1">
                         {plan.features.map((feature, featureIndex) => (
                           <li key={featureIndex} className="flex items-start gap-2">
-                            <Check className={`h-5 w-5 mt-0.5 flex-shrink-0 ${plan.popular ? "text-accent" : "text-primary"}`} />
-                            <span className="text-sm text-muted-foreground">{feature}</span>
+                            <Check className={`h-4 w-4 md:h-5 md:w-5 mt-0.5 flex-shrink-0 ${plan.popular ? "text-accent" : "text-primary"}`} />
+                            <span className="text-xs md:text-sm text-muted-foreground">{feature}</span>
                           </li>
                         ))}
                       </ul>
 
                       <Button
-                        className={`w-full ${plan.popular ? "bg-accent hover:bg-accent/90" : ""}`}
+                        className={`w-full ${plan.popular ? "bg-accent hover:bg-accent/90" : ""} h-10 md:h-11 text-sm md:text-base`}
                         size="lg"
                         asChild
                       >
@@ -222,17 +222,17 @@ export default function Pricing() {
             </div>
 
             {/* Add-Ons Section */}
-            <div className="mt-16">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            <div className="mt-12 md:mt-16">
+              <div className="text-center mb-8 md:mb-12">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 md:mb-4">
                   Premium Add-Ons & Features
                 </h2>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
                   Enhance your experience with advanced analytics and gamification
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 lg:gap-8 max-w-5xl mx-auto">
                 {addOns.map((addon, index) => {
                   const IconComponent = addon.icon;
                   return (
@@ -240,31 +240,31 @@ export default function Pricing() {
                       key={index}
                       className={`border-2 ${addon.borderColor} hover:shadow-xl transition-all duration-300`}
                     >
-                      <CardHeader className="text-center pb-4">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center">
-                          <IconComponent className={`h-8 w-8 ${addon.color}`} />
+                      <CardHeader className="text-center pb-3 md:pb-4 px-4">
+                        <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-3 md:mb-4 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center">
+                          <IconComponent className={`h-6 w-6 md:h-8 md:w-8 ${addon.color}`} />
                         </div>
-                        <CardTitle className="text-2xl font-bold">{addon.name}</CardTitle>
-                        <CardDescription className="text-sm">{addon.description}</CardDescription>
-                        <div className="mt-4">
-                          <span className="text-4xl font-bold text-foreground">{addon.price}</span>
-                          <span className="text-sm text-muted-foreground ml-2">{addon.period}</span>
+                        <CardTitle className="text-xl md:text-2xl font-bold">{addon.name}</CardTitle>
+                        <CardDescription className="text-xs md:text-sm">{addon.description}</CardDescription>
+                        <div className="mt-3 md:mt-4">
+                          <span className="text-3xl md:text-4xl font-bold text-foreground">{addon.price}</span>
+                          <span className="text-xs md:text-sm text-muted-foreground ml-2">{addon.period}</span>
                         </div>
                       </CardHeader>
 
-                      <CardContent>
-                        <ul className="space-y-3">
+                      <CardContent className="px-4">
+                        <ul className="space-y-2 md:space-y-3">
                           {addon.features.map((feature, featureIndex) => (
                             <li key={featureIndex} className="flex items-start gap-2">
-                              <Check className={`h-5 w-5 mt-0.5 flex-shrink-0 ${addon.color}`} />
-                              <span className="text-sm text-muted-foreground">{feature}</span>
+                              <Check className={`h-4 w-4 md:h-5 md:w-5 mt-0.5 flex-shrink-0 ${addon.color}`} />
+                              <span className="text-xs md:text-sm text-muted-foreground">{feature}</span>
                             </li>
                           ))}
                         </ul>
 
                         {addon.name === "Swing Analytics" && (
                           <Button
-                            className="w-full mt-6 bg-accent hover:bg-accent/90"
+                            className="w-full mt-4 md:mt-6 bg-accent hover:bg-accent/90 h-10 md:h-11 text-sm md:text-base"
                             size="lg"
                             asChild
                           >
@@ -280,78 +280,78 @@ export default function Pricing() {
               </div>
             </div>
 
-            {/* Feature Comparison Table */}
-            <div className="mt-20">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            {/* Feature Comparison Table - Mobile Optimized */}
+            <div className="mt-16 md:mt-20">
+              <div className="text-center mb-8 md:mb-12">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-3 md:mb-4">
                   What's Included
                 </h2>
-                <p className="text-lg text-muted-foreground">
+                <p className="text-base md:text-lg text-muted-foreground">
                   Compare features across all plans
                 </p>
               </div>
 
               <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full min-w-[600px]">
                     <thead className="bg-muted/50">
                       <tr>
-                        <th className="text-left p-4 font-semibold">Feature</th>
-                        <th className="text-center p-4 font-semibold">Entry</th>
-                        <th className="text-center p-4 font-semibold bg-accent/10">Core</th>
-                        <th className="text-center p-4 font-semibold">Premium</th>
-                        <th className="text-center p-4 font-semibold">Premium Plus</th>
+                        <th className="text-left p-3 md:p-4 font-semibold text-sm md:text-base">Feature</th>
+                        <th className="text-center p-3 md:p-4 font-semibold text-sm md:text-base">Entry</th>
+                        <th className="text-center p-3 md:p-4 font-semibold bg-accent/10 text-sm md:text-base">Core</th>
+                        <th className="text-center p-3 md:p-4 font-semibold text-sm md:text-base">Premium</th>
+                        <th className="text-center p-3 md:p-4 font-semibold text-sm md:text-base">Premium Plus</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">
                       <tr>
-                        <td className="p-4 font-medium">Club Recommendations</td>
-                        <td className="text-center p-4">1 Club</td>
-                        <td className="text-center p-4 bg-accent/5">Full Bag</td>
-                        <td className="text-center p-4">Full Bag</td>
-                        <td className="text-center p-4">Full Bag</td>
+                        <td className="p-3 md:p-4 font-medium text-sm md:text-base">Club Recommendations</td>
+                        <td className="text-center p-3 md:p-4 text-sm md:text-base">1 Club</td>
+                        <td className="text-center p-3 md:p-4 bg-accent/5 text-sm md:text-base">Full Bag</td>
+                        <td className="text-center p-3 md:p-4 text-sm md:text-base">Full Bag</td>
+                        <td className="text-center p-3 md:p-4 text-sm md:text-base">Full Bag</td>
                       </tr>
                       <tr>
-                        <td className="p-4 font-medium">Equipment Database Access</td>
-                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
-                        <td className="text-center p-4 bg-accent/5"><Check className="h-5 w-5 text-success mx-auto" /></td>
-                        <td className="text-center p-4"><Database className="h-5 w-5 text-accent mx-auto" /></td>
-                        <td className="text-center p-4"><Database className="h-5 w-5 text-accent mx-auto" /></td>
+                        <td className="p-3 md:p-4 font-medium text-sm md:text-base">Equipment Database Access</td>
+                        <td className="text-center p-3 md:p-4"><Check className="h-4 w-4 md:h-5 md:w-5 text-success mx-auto" /></td>
+                        <td className="text-center p-3 md:p-4 bg-accent/5"><Check className="h-4 w-4 md:h-5 md:w-5 text-success mx-auto" /></td>
+                        <td className="text-center p-3 md:p-4"><Database className="h-4 w-4 md:h-5 md:w-5 text-accent mx-auto" /></td>
+                        <td className="text-center p-3 md:p-4"><Database className="h-4 w-4 md:h-5 md:w-5 text-accent mx-auto" /></td>
                       </tr>
                       <tr>
-                        <td className="p-4 font-medium">Profile Management</td>
-                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
-                        <td className="text-center p-4 bg-accent/5"><Check className="h-5 w-5 text-success mx-auto" /></td>
-                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
-                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
+                        <td className="p-3 md:p-4 font-medium text-sm md:text-base">Profile Management</td>
+                        <td className="text-center p-3 md:p-4"><Check className="h-4 w-4 md:h-5 md:w-5 text-success mx-auto" /></td>
+                        <td className="text-center p-3 md:p-4 bg-accent/5"><Check className="h-4 w-4 md:h-5 md:w-5 text-success mx-auto" /></td>
+                        <td className="text-center p-3 md:p-4"><Check className="h-4 w-4 md:h-5 md:w-5 text-success mx-auto" /></td>
+                        <td className="text-center p-3 md:p-4"><Check className="h-4 w-4 md:h-5 md:w-5 text-success mx-auto" /></td>
                       </tr>
                       <tr>
-                        <td className="p-4 font-medium">Gamification & Badges</td>
-                        <td className="text-center p-4"><Trophy className="h-5 w-5 text-gold mx-auto" /></td>
-                        <td className="text-center p-4 bg-accent/5"><Trophy className="h-5 w-5 text-gold mx-auto" /></td>
-                        <td className="text-center p-4"><Trophy className="h-5 w-5 text-gold mx-auto" /></td>
-                        <td className="text-center p-4"><Trophy className="h-5 w-5 text-gold mx-auto" /></td>
+                        <td className="p-3 md:p-4 font-medium text-sm md:text-base">Gamification & Badges</td>
+                        <td className="text-center p-3 md:p-4"><Trophy className="h-4 w-4 md:h-5 md:w-5 text-gold mx-auto" /></td>
+                        <td className="text-center p-3 md:p-4 bg-accent/5"><Trophy className="h-4 w-4 md:h-5 md:w-5 text-gold mx-auto" /></td>
+                        <td className="text-center p-3 md:p-4"><Trophy className="h-4 w-4 md:h-5 md:w-5 text-gold mx-auto" /></td>
+                        <td className="text-center p-3 md:p-4"><Trophy className="h-4 w-4 md:h-5 md:w-5 text-gold mx-auto" /></td>
                       </tr>
                       <tr>
-                        <td className="p-4 font-medium">Advanced Shaft Optimization</td>
-                        <td className="text-center p-4 text-muted-foreground">—</td>
-                        <td className="text-center p-4 bg-accent/5 text-muted-foreground">—</td>
-                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
-                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
+                        <td className="p-3 md:p-4 font-medium text-sm md:text-base">Advanced Shaft Optimization</td>
+                        <td className="text-center p-3 md:p-4 text-muted-foreground text-sm md:text-base">—</td>
+                        <td className="text-center p-3 md:p-4 bg-accent/5 text-muted-foreground text-sm md:text-base">—</td>
+                        <td className="text-center p-3 md:p-4"><Check className="h-4 w-4 md:h-5 md:w-5 text-success mx-auto" /></td>
+                        <td className="text-center p-3 md:p-4"><Check className="h-4 w-4 md:h-5 md:w-5 text-success mx-auto" /></td>
                       </tr>
                       <tr>
-                        <td className="p-4 font-medium">Launch Monitor Included</td>
-                        <td className="text-center p-4 text-muted-foreground">—</td>
-                        <td className="text-center p-4 bg-accent/5 text-muted-foreground">—</td>
-                        <td className="text-center p-4 text-muted-foreground">—</td>
-                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
+                        <td className="p-3 md:p-4 font-medium text-sm md:text-base">Launch Monitor Included</td>
+                        <td className="text-center p-3 md:p-4 text-muted-foreground text-sm md:text-base">—</td>
+                        <td className="text-center p-3 md:p-4 bg-accent/5 text-muted-foreground text-sm md:text-base">—</td>
+                        <td className="text-center p-3 md:p-4 text-muted-foreground text-sm md:text-base">—</td>
+                        <td className="text-center p-3 md:p-4"><Check className="h-4 w-4 md:h-5 md:w-5 text-success mx-auto" /></td>
                       </tr>
                       <tr>
-                        <td className="p-4 font-medium">Swing Analytics (6 months)</td>
-                        <td className="text-center p-4 text-muted-foreground">—</td>
-                        <td className="text-center p-4 bg-accent/5 text-muted-foreground">—</td>
-                        <td className="text-center p-4 text-muted-foreground">—</td>
-                        <td className="text-center p-4"><Check className="h-5 w-5 text-success mx-auto" /></td>
+                        <td className="p-3 md:p-4 font-medium text-sm md:text-base">Swing Analytics (6 months)</td>
+                        <td className="text-center p-3 md:p-4 text-muted-foreground text-sm md:text-base">—</td>
+                        <td className="text-center p-3 md:p-4 bg-accent/5 text-muted-foreground text-sm md:text-base">—</td>
+                        <td className="text-center p-3 md:p-4 text-muted-foreground text-sm md:text-base">—</td>
+                        <td className="text-center p-3 md:p-4"><Check className="h-4 w-4 md:h-5 md:w-5 text-success mx-auto" /></td>
                       </tr>
                     </tbody>
                   </table>
@@ -360,17 +360,17 @@ export default function Pricing() {
             </div>
 
             {/* Additional Info */}
-            <div className="mt-16 text-center">
-              <p className="text-muted-foreground mb-4">
+            <div className="mt-12 md:mt-16 text-center">
+              <p className="text-sm md:text-base text-muted-foreground mb-4">
                 All plans include our guided fitting wizard, downloadable PDF reports, and personalized recommendations
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button variant="outline" size="lg" asChild>
+              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
+                <Button variant="outline" size="lg" asChild className="h-11 text-base">
                   <Link href="/auth/login">
                     Already have an account? Sign in
                   </Link>
                 </Button>
-                <Button variant="ghost" size="lg" asChild>
+                <Button variant="ghost" size="lg" asChild className="h-11 text-base">
                   <Link href="/how-it-works">
                     Learn more about our process
                   </Link>
