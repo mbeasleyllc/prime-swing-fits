@@ -70,44 +70,44 @@ export default function Home() {
           style={{ transform: `translateY(${foregroundOffset}px)` }}
         />
 
-        <div className="container relative z-30 h-full flex items-center justify-center">
+        <div className="container relative z-30 h-full flex items-center justify-center px-4">
           <div className="max-w-5xl mx-auto text-center text-white">
-            <div className="flex justify-center mb-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+            <div className="flex justify-center mb-6 md:mb-8 animate-in fade-in slide-in-from-bottom-6 duration-1000">
               <div className="relative">
                 <div className="absolute inset-0 bg-gold/30 blur-2xl rounded-full" />
-                <div className="relative bg-gold/10 p-8 rounded-full backdrop-blur-md border border-gold/30">
-                  <Trophy className="h-20 w-20 text-gold drop-shadow-2xl" />
+                <div className="relative bg-gold/10 p-4 md:p-8 rounded-full backdrop-blur-md border border-gold/30">
+                  <Trophy className="h-12 w-12 md:h-20 md:w-20 text-gold drop-shadow-2xl" />
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2 mb-8 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-150">
-              <div className="inline-flex items-center gap-2 bg-gold/20 backdrop-blur-sm text-gold px-5 py-2.5 rounded-full mb-6 border border-gold/30">
-                <Star className="h-4 w-4 fill-gold" />
-                <span className="text-sm font-semibold tracking-wide">Professional Club Fitting Technology</span>
+            <div className="space-y-2 mb-6 md:mb-8 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-150">
+              <div className="inline-flex items-center gap-2 bg-gold/20 backdrop-blur-sm text-gold px-3 py-2 md:px-5 md:py-2.5 rounded-full mb-4 md:mb-6 border border-gold/30">
+                <Star className="h-3 w-3 md:h-4 md:w-4 fill-gold" />
+                <span className="text-xs md:text-sm font-semibold tracking-wide">Professional Club Fitting Technology</span>
               </div>
               
-              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-6 tracking-tight leading-none">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-4 md:mb-6 tracking-tight leading-none">
                 Perfect Your
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-gold via-gold/80 to-gold mt-3">
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-gold via-gold/80 to-gold mt-2 md:mt-3">
                   Golf Game
                 </span>
               </h1>
             </div>
 
-            <p className="text-xl md:text-2xl lg:text-3xl mb-12 text-white/95 max-w-4xl mx-auto leading-relaxed font-light animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-300">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl mb-8 md:mb-12 text-white/95 max-w-4xl mx-auto leading-relaxed font-light animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-300 px-4">
               Get <span className="font-semibold text-gold">precision-engineered</span> club recommendations tailored to your swing. Professional fitting technology at your fingertips.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-500">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center items-center animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-500 px-4">
               <Button 
                 size="lg" 
                 asChild 
-                className="text-lg px-12 py-8 bg-gold text-gold-foreground hover:bg-gold/90 shadow-2xl hover:shadow-gold/40 hover:scale-105 transition-all duration-300 group"
+                className="w-full sm:w-auto text-base md:text-lg px-8 md:px-12 py-6 md:py-8 bg-gold text-gold-foreground hover:bg-gold/90 shadow-2xl hover:shadow-gold/40 hover:scale-105 transition-all duration-300 group"
               >
-                <Link href={user ? "/fitting/new" : "/auth/register"} className="flex items-center gap-3">
+                <Link href={user ? "/fitting/new" : "/auth/register"} className="flex items-center gap-3 justify-center">
                   <span className="font-semibold">Start Your Fitting</span>
-                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="h-4 w-4 md:h-5 md:w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
               
@@ -115,54 +115,54 @@ export default function Home() {
                 size="lg" 
                 variant="outline" 
                 asChild 
-                className="text-lg px-12 py-8 bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white/20 hover:border-white/50 shadow-xl transition-all duration-300"
+                className="w-full sm:w-auto text-base md:text-lg px-8 md:px-12 py-6 md:py-8 bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white/20 hover:border-white/50 shadow-xl transition-all duration-300"
               >
                 <Link href="#how-it-works">Learn More</Link>
               </Button>
             </div>
 
-            <div className="mt-16 grid grid-cols-3 gap-8 max-w-3xl mx-auto animate-in fade-in duration-1000 delay-700">
+            <div className="mt-12 md:mt-16 grid grid-cols-3 gap-4 md:gap-8 max-w-3xl mx-auto animate-in fade-in duration-1000 delay-700 px-4">
               <div className="text-center">
-                <div className="text-4xl font-bold text-gold mb-2">6</div>
-                <div className="text-sm text-white/80 uppercase tracking-wide">Step Process</div>
+                <div className="text-2xl md:text-4xl font-bold text-gold mb-1 md:mb-2">6</div>
+                <div className="text-xs md:text-sm text-white/80 uppercase tracking-wide">Step Process</div>
               </div>
               <div className="text-center border-x border-white/20">
-                <div className="text-4xl font-bold text-gold mb-2">100%</div>
-                <div className="text-sm text-white/80 uppercase tracking-wide">Personalized</div>
+                <div className="text-2xl md:text-4xl font-bold text-gold mb-1 md:mb-2">100%</div>
+                <div className="text-xs md:text-sm text-white/80 uppercase tracking-wide">Personalized</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-bold text-gold mb-2">5 Min</div>
-                <div className="text-sm text-white/80 uppercase tracking-wide">To Complete</div>
+                <div className="text-2xl md:text-4xl font-bold text-gold mb-1 md:mb-2">5 Min</div>
+                <div className="text-xs md:text-sm text-white/80 uppercase tracking-wide">To Complete</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 animate-bounce">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 animate-bounce hidden md:block">
           <div className="w-8 h-12 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
             <div className="w-1.5 h-3 bg-white/60 rounded-full" />
           </div>
         </div>
       </section>
 
-      <section id="how-it-works" className="py-20 bg-muted/30">
+      <section id="how-it-works" className="py-12 md:py-20 bg-muted/30">
         <div className="container">
           <div className="max-w-6xl mx-auto">
             <AnimatedSection>
-              <div className="text-center mb-16">
-                <div className="inline-flex items-center gap-2 bg-success/10 text-success px-4 py-2 rounded-full mb-4">
-                  <Target className="h-4 w-4" />
-                  <span className="text-sm font-semibold">Premium Fitting Experience</span>
+              <div className="text-center mb-10 md:mb-16">
+                <div className="inline-flex items-center gap-2 bg-success/10 text-success px-3 md:px-4 py-2 rounded-full mb-3 md:mb-4">
+                  <Target className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="text-xs md:text-sm font-semibold">Premium Fitting Experience</span>
                 </div>
-                <h2 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-3 md:mb-4 text-foreground">
                   How It Works
                 </h2>
-                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
                   Three simple steps to unlock your perfect golf club setup
                 </p>
               </div>
             </AnimatedSection>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
               <AnimatedSection delay={0}>
                 <Card className="text-center hover:shadow-2xl transition-all duration-300 border-2 hover:border-accent/50 group h-full">
                   <CardContent className="pt-10 pb-8">

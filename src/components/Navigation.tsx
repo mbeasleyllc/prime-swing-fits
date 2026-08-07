@@ -36,7 +36,7 @@ export function Navigation() {
               alt="Prime Swing Fits" 
               width={225}
               height={50}
-              className="h-12 w-auto"
+              className="h-10 md:h-12 w-auto"
               priority
             />
           </Link>
@@ -106,7 +106,7 @@ export function Navigation() {
           {/* Mobile Menu Button */}
           <div className="lg:hidden flex items-center gap-2">
             {!isLoading && !user && (
-              <Button size="sm" asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button size="sm" asChild className="bg-accent text-accent-foreground hover:bg-accent/90 text-xs px-3 py-2">
                 <Link href="/auth/register">Get Started</Link>
               </Button>
             )}
@@ -123,12 +123,12 @@ export function Navigation() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-border py-4 space-y-2">
+          <div className="lg:hidden border-t border-border py-4 space-y-1">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="block px-4 py-2 text-base font-medium text-muted-foreground hover:text-gold hover:bg-gold/5 rounded-md transition-colors"
+                className="block px-4 py-3 text-base font-medium text-muted-foreground hover:text-gold hover:bg-gold/5 rounded-md transition-colors active:bg-gold/10"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.label}
@@ -140,7 +140,7 @@ export function Navigation() {
                 variant="outline"
                 size="sm"
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="w-full justify-center"
+                className="w-full justify-start text-base py-3"
               >
                 {theme === "dark" ? (
                   <>
@@ -158,48 +158,50 @@ export function Navigation() {
 
             <div className="border-t border-border pt-4 mt-4 space-y-2">
               {isLoading ? (
-                <div className="h-10 bg-muted animate-pulse rounded mx-4" />
+                <div className="h-12 bg-muted animate-pulse rounded mx-4" />
               ) : user ? (
                 <>
                   <Link
                     href="/dashboard"
-                    className="flex items-center px-4 py-2 text-base font-medium text-muted-foreground hover:text-gold hover:bg-gold/5 rounded-md transition-colors"
+                    className="flex items-center px-4 py-3 text-base font-medium text-muted-foreground hover:text-gold hover:bg-gold/5 rounded-md transition-colors active:bg-gold/10"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    <LayoutDashboard className="w-4 h-4 mr-3" />
                     Dashboard
                   </Link>
                   {user.user_metadata?.role === "admin" && (
                     <Link
                       href="/admin"
-                      className="flex items-center px-4 py-2 text-base font-medium text-gold hover:bg-gold/5 rounded-md transition-colors"
+                      className="flex items-center px-4 py-3 text-base font-medium text-gold hover:bg-gold/5 rounded-md transition-colors active:bg-gold/10"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <Shield className="w-4 h-4 mr-2" />
+                      <Shield className="w-4 h-4 mr-3" />
                       Admin
                     </Link>
                   )}
-                  <button
-                    onClick={() => {
-                      signOut();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex items-center justify-center w-full px-4 py-2 text-base font-medium bg-gold text-gold-foreground hover:bg-gold/90 rounded-md transition-colors"
-                  >
-                    Sign Out
-                  </button>
+                  <div className="px-4 pt-2">
+                    <button
+                      onClick={() => {
+                        signOut();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="flex items-center justify-center w-full px-4 py-3 text-base font-medium bg-gold text-gold-foreground hover:bg-gold/90 rounded-md transition-colors active:bg-gold/80"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
                 </>
               ) : (
                 <>
                   <Link
                     href="/auth/login"
-                    className="block px-4 py-2 text-base font-medium text-muted-foreground hover:text-gold hover:bg-gold/5 rounded-md transition-colors"
+                    className="block px-4 py-3 text-base font-medium text-muted-foreground hover:text-gold hover:bg-gold/5 rounded-md transition-colors active:bg-gold/10"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Sign In
                   </Link>
-                  <div className="px-4">
-                    <Button asChild className="w-full bg-gold text-gold-foreground hover:bg-gold/90">
+                  <div className="px-4 pt-2">
+                    <Button asChild className="w-full bg-gold text-gold-foreground hover:bg-gold/90 py-3 text-base">
                       <Link href="/auth/register" onClick={() => setMobileMenuOpen(false)}>
                         Get Started
                       </Link>
