@@ -1,20 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ProgressBar } from "@/components/wizard/ProgressBar";
+import { MeasurementTooltip } from "@/components/wizard/MeasurementTooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
+import { swingCharacteristicsSchema, type SwingCharacteristics } from "@/lib/wizardValidation";
+import { Loader2, ArrowLeft } from "lucide-react";
+
+const athleticBackgrounds = [
+  "Baseball/Softball",
+  "Tennis",
+  "Hockey",
+  "Basketball",
+  "Football",
+  "Soccer",
+  "Track & Field",
+  "Martial Arts",
+  "None",
+];
 
 export default function Step4() {
   const { user } = useAuth();
@@ -24,14 +39,23 @@ export default function Step4() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [heightFt, setHeightFt] = useState("");
-  const [heightIn, setHeightIn] = useState("");
-  const [wristToFloor, setWristToFloor] = useState("");
-  const [handSize, setHandSize] = useState("");
-  const [injuries, setInjuries] = useState<string[]>([]);
-  const [mobilityLimit, setMobilityLimit] = useState("");
-  const [showWristVideo, setShowWristVideo] = useState(false);
-  const [showHandVideo, setShowHandVideo] = useState(false);
+  const [selectedBackgrounds, setSelectedBackgrounds] = useState<string[]>([]);
+
+  const form = useForm<SwingCharacteristics>({
+    resolver: zodResolver(swingCharacteristicsSchema),
+    defaultValues: {
+      driver_swing_speed: "90-100",
+      swing_tempo: "moderate",
+      transition_speed: "average",
+      swing_type: "neutral",
+      athletic_background: [],
+      typical_ball_flight: undefined,
+      typical_trajectory: undefined,
+      most_common_miss: undefined,
+      miss_percentage: undefined,
+      fairway_accuracy: undefined,
+    },
+  });
 
   useEffect(() => {
     if (!id || !user) return;
@@ -40,94 +64,79 @@ export default function Step4() {
       const sessionId = Array.isArray(id) ? id[0] : id;
       
       const { data } = await supabase
-        .from("physical_profile")
+        .from("fitting_sessions")
         .select("*")
-        .eq("session_id", sessionId)
+        .eq("id", sessionId)
         .eq("user_id", user.id)
-        .maybeSingle();
+        .single();
 
       if (data) {
-        setHeightFt(data.height_ft?.toString() || "");
-        setHeightIn(data.height_in?.toString() || "");
-        setWristToFloor(data.wrist_to_floor?.toString() || "");
-        setHandSize(data.hand_size || "");
-        setInjuries(data.injuries || []);
-        setMobilityLimit(data.mobility_limit || "");
+        const backgrounds = (data.athletic_background as string[]) || [];
+        setSelectedBackgrounds(backgrounds);
+
+        form.reset({
+          driver_swing_speed: (data.driver_swing_speed as any) || "90-100",
+          swing_tempo: (data.swing_tempo as any) || "moderate",
+          transition_speed: (data.transition_speed as any) || "average",
+          swing_type: (data.swing_type as any) || "neutral",
+          athletic_background: backgrounds,
+          typical_ball_flight: (data.typical_ball_flight as any) || undefined,
+          typical_trajectory: (data.typical_trajectory as any) || undefined,
+          most_common_miss: (data.most_common_miss as any) || undefined,
+          miss_percentage: data.miss_percentage || undefined,
+          fairway_accuracy: data.fairway_accuracy || undefined,
+        });
       }
 
       setIsLoading(false);
     };
 
     loadData();
-  }, [id, user]);
+  }, [id, user, form]);
 
-  const handleInjuryToggle = (value: string) => {
-    if (value === "none") {
-      setInjuries(["none"]);
+  const toggleBackground = (background: string) => {
+    if (background === "None") {
+      setSelectedBackgrounds(["None"]);
+      form.setValue("athletic_background", ["None"]);
     } else {
-      const filtered = injuries.filter((i) => i !== "none");
-      if (injuries.includes(value)) {
-        setInjuries(filtered.filter((i) => i !== value));
-      } else {
-        setInjuries([...filtered, value]);
-      }
+      const filtered = selectedBackgrounds.filter(b => b !== "None");
+      const newBackgrounds = selectedBackgrounds.includes(background)
+        ? filtered.filter(b => b !== background)
+        : [...filtered, background];
+      setSelectedBackgrounds(newBackgrounds);
+      form.setValue("athletic_background", newBackgrounds);
     }
   };
-
-  const isFormValid = heightFt && heightIn && wristToFloor && handSize && injuries.length > 0 && mobilityLimit;
 
   const handleBack = () => {
     const sessionId = Array.isArray(id) ? id[0] : id;
     router.push(`/fitting/${sessionId}/step/3`);
   };
 
-  const handleNext = async () => {
+  const onSubmit = async (values: SwingCharacteristics) => {
     if (!user || !id) return;
 
     const sessionId = Array.isArray(id) ? id[0] : id;
     setIsSaving(true);
 
-    // Check if physical profile exists
-    const { data: existingProfile } = await supabase
-      .from("physical_profile")
-      .select("id")
-      .eq("session_id", sessionId)
-      .maybeSingle();
+    const { error } = await supabase
+      .from("fitting_sessions")
+      .update({
+        driver_swing_speed: values.driver_swing_speed,
+        swing_tempo: values.swing_tempo,
+        transition_speed: values.transition_speed,
+        swing_type: values.swing_type,
+        athletic_background: selectedBackgrounds,
+        typical_ball_flight: values.typical_ball_flight || null,
+        typical_trajectory: values.typical_trajectory || null,
+        most_common_miss: values.most_common_miss || null,
+        miss_percentage: values.miss_percentage || null,
+        fairway_accuracy: values.fairway_accuracy || null,
+        current_step: 5,
+      })
+      .eq("id", sessionId);
 
-    let profileError;
-    
-    if (existingProfile) {
-      // Update existing profile
-      const { error } = await supabase
-        .from("physical_profile")
-        .update({
-          height_ft: parseInt(heightFt),
-          height_in: parseInt(heightIn),
-          wrist_to_floor: parseFloat(wristToFloor),
-          hand_size: handSize,
-          injuries,
-          mobility_limit: mobilityLimit,
-        })
-        .eq("session_id", sessionId);
-      profileError = error;
-    } else {
-      // Insert new profile
-      const { error } = await supabase
-        .from("physical_profile")
-        .insert({
-          session_id: sessionId,
-          user_id: user.id,
-          height_ft: parseInt(heightFt),
-          height_in: parseInt(heightIn),
-          wrist_to_floor: parseFloat(wristToFloor),
-          hand_size: handSize,
-          injuries,
-          mobility_limit: mobilityLimit,
-        });
-      profileError = error;
-    }
-
-    if (profileError) {
+    if (error) {
       toast({
         title: "Error",
         description: "Failed to save your progress. Please try again.",
@@ -137,18 +146,9 @@ export default function Step4() {
       return;
     }
 
-    const { error: sessionError } = await supabase
-      .from("fitting_sessions")
-      .update({ current_step: 5 })
-      .eq("id", sessionId);
-
-    if (sessionError) {
-      console.error("Failed to update session step:", sessionError);
-    }
-
     toast({
       title: "Progress saved ✓",
-      description: "Moving to next step...",
+      description: "Moving to long game...",
     });
 
     router.push(`/fitting/${sessionId}/step/5`);
@@ -158,7 +158,7 @@ export default function Step4() {
     return (
       <ProtectedRoute>
         <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin" />
+          <Loader2 className="w-8 h-8 animate-spin text-accent" />
         </div>
       </ProtectedRoute>
     );
@@ -169,158 +169,279 @@ export default function Step4() {
       <div className="min-h-screen flex flex-col bg-background">
         <Navigation />
         <div className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full">
-          <ProgressBar currentStep={4} totalSteps={6} />
+          <ProgressBar currentStep={4} totalSteps={8} />
 
           <Card>
             <CardHeader>
-              <CardTitle>Physical Measurements</CardTitle>
-              <CardDescription>Accurate measurements ensure the best club fitting recommendations</CardDescription>
+              <CardTitle>Section 4: Swing Characteristics</CardTitle>
+              <CardDescription>Help us understand your swing dynamics</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="heightFt">
-                    Height - Feet <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="heightFt"
-                    type="number"
-                    min="4"
-                    max="7"
-                    value={heightFt}
-                    onChange={(e) => setHeightFt(e.target.value)}
-                    placeholder="5"
-                    required
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="driver_swing_speed"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center gap-2">
+                          <FormLabel>Driver Swing Speed <span className="text-destructive">*</span></FormLabel>
+                          <MeasurementTooltip type="swing-speed" />
+                        </div>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select speed" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="under_70">Under 70 mph</SelectItem>
+                            <SelectItem value="70-80">70-80 mph</SelectItem>
+                            <SelectItem value="80-90">80-90 mph</SelectItem>
+                            <SelectItem value="90-100">90-100 mph</SelectItem>
+                            <SelectItem value="100-110">100-110 mph</SelectItem>
+                            <SelectItem value="110_plus">110+ mph</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="heightIn">
-                    Height - Inches <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="heightIn"
-                    type="number"
-                    min="0"
-                    max="11"
-                    value={heightIn}
-                    onChange={(e) => setHeightIn(e.target.value)}
-                    placeholder="10"
-                    required
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="swing_tempo"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-center gap-2">
+                            <FormLabel>Swing Tempo <span className="text-destructive">*</span></FormLabel>
+                            <MeasurementTooltip type="tempo" />
+                          </div>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select tempo" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="smooth">Smooth</SelectItem>
+                              <SelectItem value="moderate">Moderate</SelectItem>
+                              <SelectItem value="aggressive">Aggressive</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="transition_speed"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-center gap-2">
+                            <FormLabel>Transition <span className="text-destructive">*</span></FormLabel>
+                            <MeasurementTooltip type="transition" />
+                          </div>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select transition" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="smooth">Smooth</SelectItem>
+                              <SelectItem value="average">Average</SelectItem>
+                              <SelectItem value="quick">Quick</SelectItem>
+                              <SelectItem value="very_aggressive">Very Aggressive</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="swing_type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Swing Type <span className="text-destructive">*</span></FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="sweeper">Sweeper (shallow)</SelectItem>
+                            <SelectItem value="neutral">Neutral</SelectItem>
+                            <SelectItem value="digger">Digger (steep)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="wristToFloor">
-                  Wrist-to-Floor Distance (inches) <span className="text-destructive">*</span>
-                </Label>
-                <Collapsible open={showWristVideo} onOpenChange={setShowWristVideo}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm" className="mb-2 gap-2">
-                      How to measure wrist-to-floor distance
-                      {showWristVideo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  <div className="space-y-2">
+                    <FormLabel>Athletic Background</FormLabel>
+                    <div className="grid grid-cols-2 gap-2">
+                      {athleticBackgrounds.map((background) => (
+                        <div key={background} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={background}
+                            checked={selectedBackgrounds.includes(background)}
+                            onCheckedChange={() => toggleBackground(background)}
+                          />
+                          <label htmlFor={background} className="text-sm font-medium cursor-pointer">
+                            {background}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="typical_ball_flight"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Typical Ball Flight</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select flight" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="draw">Draw</SelectItem>
+                              <SelectItem value="straight">Straight</SelectItem>
+                              <SelectItem value="fade">Fade</SelectItem>
+                              <SelectItem value="slice">Slice</SelectItem>
+                              <SelectItem value="hook">Hook</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="typical_trajectory"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Typical Trajectory</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select trajectory" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="low">Low</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="high">High</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="most_common_miss"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Most Common Miss</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select miss" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="left">Left</SelectItem>
+                            <SelectItem value="right">Right</SelectItem>
+                            <SelectItem value="short">Short</SelectItem>
+                            <SelectItem value="long">Long</SelectItem>
+                            <SelectItem value="thin">Thin</SelectItem>
+                            <SelectItem value="fat">Fat</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="miss_percentage"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Miss Percentage (%)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                              min={0}
+                              max={100}
+                              placeholder="30"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="fairway_accuracy"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Fairway Accuracy (%)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                              min={0}
+                              max={100}
+                              placeholder="60"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="flex justify-between gap-4 pt-4">
+                    <Button onClick={handleBack} variant="outline" size="lg">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back
                     </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="mb-4">
-                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center text-muted-foreground">
-                      <p className="text-sm">Video: How to Measure Wrist-to-Floor Distance</p>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-                <Input
-                  id="wristToFloor"
-                  type="number"
-                  step="0.1"
-                  min="25.0"
-                  max="45.0"
-                  value={wristToFloor}
-                  onChange={(e) => setWristToFloor(e.target.value)}
-                  placeholder="32.5"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="handSize">
-                  Hand Size <span className="text-destructive">*</span>
-                </Label>
-                <Collapsible open={showHandVideo} onOpenChange={setShowHandVideo}>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm" className="mb-2 gap-2">
-                      How to measure your hand size
-                      {showHandVideo ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    <Button
+                      type="submit"
+                      disabled={isSaving}
+                      size="lg"
+                    >
+                      {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Next
                     </Button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="mb-4">
-                    <div className="aspect-video bg-muted rounded-lg flex items-center justify-center text-muted-foreground">
-                      <p className="text-sm">Video: How to Measure Hand Size</p>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-                <Select value={handSize} onValueChange={setHandSize}>
-                  <SelectTrigger id="handSize">
-                    <SelectValue placeholder="Select hand size" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="small">Small</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="large">Large</SelectItem>
-                    <SelectItem value="extra_large">Extra Large</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>
-                  Physical Limitations <span className="text-destructive">*</span>
-                </Label>
-                <div className="space-y-2">
-                  {["back", "wrist", "shoulder", "knee", "none"].map((injury) => (
-                    <div key={injury} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={injury}
-                        checked={injuries.includes(injury)}
-                        onCheckedChange={() => handleInjuryToggle(injury)}
-                      />
-                      <Label htmlFor={injury} className="font-normal capitalize cursor-pointer">
-                        {injury}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="mobilityLimit">
-                  Mobility Level <span className="text-destructive">*</span>
-                </Label>
-                <Select value={mobilityLimit} onValueChange={setMobilityLimit}>
-                  <SelectTrigger id="mobilityLimit">
-                    <SelectValue placeholder="Select mobility level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No Limitations</SelectItem>
-                    <SelectItem value="mild">Mild</SelectItem>
-                    <SelectItem value="moderate">Moderate</SelectItem>
-                    <SelectItem value="severe">Severe</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex justify-between gap-4 pt-4">
-                <Button onClick={handleBack} variant="outline" size="lg">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back
-                </Button>
-                <Button
-                  onClick={handleNext}
-                  disabled={!isFormValid || isSaving}
-                  size="lg"
-                >
-                  {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Next
-                </Button>
-              </div>
+                  </div>
+                </form>
+              </Form>
             </CardContent>
           </Card>
         </div>
