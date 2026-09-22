@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ProgressBar } from "@/components/wizard/ProgressBar";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { golfExperienceSchema, type GolfExperience } from "@/lib/wizardValidation";
 import { Loader2, ArrowLeft } from "lucide-react";
 
 export default function Step2() {
@@ -21,11 +26,17 @@ export default function Step2() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [typicalShot, setTypicalShot] = useState("");
-  const [missTendency, setMissTendency] = useState("");
-  const [ballFlight, setBallFlight] = useState("");
-  const [swingTempo, setSwingTempo] = useState("");
-  const [swingStrength, setSwingStrength] = useState("");
+
+  const form = useForm<GolfExperience>({
+    resolver: zodResolver(golfExperienceSchema),
+    defaultValues: {
+      handicap_index: undefined,
+      average_score: undefined,
+      years_playing: "1-3",
+      playing_frequency: "weekly",
+      practice_frequency: "weekly",
+    },
+  });
 
   useEffect(() => {
     if (!id || !user) return;
@@ -34,78 +45,52 @@ export default function Step2() {
       const sessionId = Array.isArray(id) ? id[0] : id;
       
       const { data } = await supabase
-        .from("swing_profile")
+        .from("fitting_sessions")
         .select("*")
-        .eq("session_id", sessionId)
+        .eq("id", sessionId)
         .eq("user_id", user.id)
-        .maybeSingle();
+        .single();
 
       if (data) {
-        setTypicalShot(data.typical_shot || "");
-        setMissTendency(data.miss_tendency || "");
-        setBallFlight(data.ball_flight || "");
-        setSwingTempo(data.swing_tempo || "");
-        setSwingStrength(data.swing_strength || "");
+        form.reset({
+          handicap_index: data.handicap_index || undefined,
+          average_score: data.average_score || undefined,
+          years_playing: (data.years_playing as any) || "1-3",
+          playing_frequency: (data.playing_frequency as any) || "weekly",
+          practice_frequency: (data.practice_frequency as any) || "weekly",
+        });
       }
 
       setIsLoading(false);
     };
 
     loadData();
-  }, [id, user]);
-
-  const isFormValid = typicalShot && missTendency && ballFlight && swingTempo && swingStrength;
+  }, [id, user, form]);
 
   const handleBack = () => {
     const sessionId = Array.isArray(id) ? id[0] : id;
     router.push(`/fitting/${sessionId}/step/1`);
   };
 
-  const handleNext = async () => {
+  const onSubmit = async (values: GolfExperience) => {
     if (!user || !id) return;
 
     const sessionId = Array.isArray(id) ? id[0] : id;
     setIsSaving(true);
 
-    // Check if swing profile exists
-    const { data: existingProfile } = await supabase
-      .from("swing_profile")
-      .select("id")
-      .eq("session_id", sessionId)
-      .maybeSingle();
+    const { error } = await supabase
+      .from("fitting_sessions")
+      .update({
+        handicap_index: values.handicap_index,
+        average_score: values.average_score,
+        years_playing: values.years_playing,
+        playing_frequency: values.playing_frequency,
+        practice_frequency: values.practice_frequency,
+        current_step: 3,
+      })
+      .eq("id", sessionId);
 
-    let profileError;
-    
-    if (existingProfile) {
-      // Update existing profile
-      const { error } = await supabase
-        .from("swing_profile")
-        .update({
-          typical_shot: typicalShot,
-          miss_tendency: missTendency,
-          ball_flight: ballFlight,
-          swing_tempo: swingTempo,
-          swing_strength: swingStrength,
-        })
-        .eq("session_id", sessionId);
-      profileError = error;
-    } else {
-      // Insert new profile
-      const { error } = await supabase
-        .from("swing_profile")
-        .insert({
-          session_id: sessionId,
-          user_id: user.id,
-          typical_shot: typicalShot,
-          miss_tendency: missTendency,
-          ball_flight: ballFlight,
-          swing_tempo: swingTempo,
-          swing_strength: swingStrength,
-        });
-      profileError = error;
-    }
-
-    if (profileError) {
+    if (error) {
       toast({
         title: "Error",
         description: "Failed to save your progress. Please try again.",
@@ -115,18 +100,9 @@ export default function Step2() {
       return;
     }
 
-    const { error: sessionError } = await supabase
-      .from("fitting_sessions")
-      .update({ current_step: 3 })
-      .eq("id", sessionId);
-
-    if (sessionError) {
-      console.error("Failed to update session step:", sessionError);
-    }
-
     toast({
       title: "Progress saved ✓",
-      description: "Moving to next step...",
+      description: "Moving to current bag setup...",
     });
 
     router.push(`/fitting/${sessionId}/step/3`);
@@ -136,7 +112,7 @@ export default function Step2() {
     return (
       <ProtectedRoute>
         <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin" />
+          <Loader2 className="w-8 h-8 animate-spin text-accent" />
         </div>
       </ProtectedRoute>
     );
@@ -147,111 +123,157 @@ export default function Step2() {
       <div className="min-h-screen flex flex-col bg-background">
         <Navigation />
         <div className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full">
-          <ProgressBar currentStep={2} totalSteps={6} />
+          <ProgressBar currentStep={2} totalSteps={8} />
 
           <Card>
             <CardHeader>
-              <CardTitle>Swing Profile</CardTitle>
-              <CardDescription>Help us understand your typical swing characteristics</CardDescription>
+              <CardTitle>Section 2: Golf Experience & Ability</CardTitle>
+              <CardDescription>Help us understand your skill level and playing habits</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="typicalShot">
-                  Typical Shot Shape <span className="text-destructive">*</span>
-                </Label>
-                <Select value={typicalShot} onValueChange={setTypicalShot}>
-                  <SelectTrigger id="typicalShot">
-                    <SelectValue placeholder="Select shot shape" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="straight">Straight</SelectItem>
-                    <SelectItem value="fade">Fade</SelectItem>
-                    <SelectItem value="draw">Draw</SelectItem>
-                    <SelectItem value="slice">Slice</SelectItem>
-                    <SelectItem value="hook">Hook</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="handicap_index"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Handicap Index</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                              min={-5}
+                              max={54}
+                              step={0.1}
+                              placeholder="12.5"
+                            />
+                          </FormControl>
+                          <FormDescription>Your official USGA handicap</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              <div className="space-y-2">
-                <Label htmlFor="missTendency">
-                  Miss Tendency <span className="text-destructive">*</span>
-                </Label>
-                <Select value={missTendency} onValueChange={setMissTendency}>
-                  <SelectTrigger id="missTendency">
-                    <SelectValue placeholder="Select miss direction" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="left">Left</SelectItem>
-                    <SelectItem value="right">Right</SelectItem>
-                    <SelectItem value="long">Long</SelectItem>
-                    <SelectItem value="short">Short</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                    <FormField
+                      control={form.control}
+                      name="average_score"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Average Score</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                              min={60}
+                              max={150}
+                              placeholder="90"
+                            />
+                          </FormControl>
+                          <FormDescription>Typical 18-hole score</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="ballFlight">
-                  Typical Ball Flight <span className="text-destructive">*</span>
-                </Label>
-                <Select value={ballFlight} onValueChange={setBallFlight}>
-                  <SelectTrigger id="ballFlight">
-                    <SelectValue placeholder="Select ball flight" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="mid">Mid</SelectItem>
-                    <SelectItem value="low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <FormField
+                    control={form.control}
+                    name="years_playing"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Years Playing <span className="text-destructive">*</span></FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select years" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="less_than_1">Less than 1 year</SelectItem>
+                            <SelectItem value="1-3">1-3 years</SelectItem>
+                            <SelectItem value="3-5">3-5 years</SelectItem>
+                            <SelectItem value="5-10">5-10 years</SelectItem>
+                            <SelectItem value="10_plus">10+ years</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="space-y-2">
-                <Label htmlFor="swingTempo">
-                  Swing Tempo <span className="text-destructive">*</span>
-                </Label>
-                <Select value={swingTempo} onValueChange={setSwingTempo}>
-                  <SelectTrigger id="swingTempo">
-                    <SelectValue placeholder="Select tempo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="slow">Slow</SelectItem>
-                    <SelectItem value="moderate">Moderate</SelectItem>
-                    <SelectItem value="fast">Fast</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <FormField
+                    control={form.control}
+                    name="playing_frequency"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>How often do you play? <span className="text-destructive">*</span></FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select frequency" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="rarely">Rarely (few times per year)</SelectItem>
+                            <SelectItem value="monthly">Monthly</SelectItem>
+                            <SelectItem value="weekly">Weekly</SelectItem>
+                            <SelectItem value="multiple_weekly">Multiple times per week</SelectItem>
+                            <SelectItem value="daily">Daily</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="space-y-2">
-                <Label htmlFor="swingStrength">
-                  Swing Strength <span className="text-destructive">*</span>
-                </Label>
-                <Select value={swingStrength} onValueChange={setSwingStrength}>
-                  <SelectTrigger id="swingStrength">
-                    <SelectValue placeholder="Select strength" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="moderate">Moderate</SelectItem>
-                    <SelectItem value="strong">Strong</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <FormField
+                    control={form.control}
+                    name="practice_frequency"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>How often do you practice? <span className="text-destructive">*</span></FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select frequency" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="rarely">Rarely</SelectItem>
+                            <SelectItem value="monthly">Monthly</SelectItem>
+                            <SelectItem value="weekly">Weekly</SelectItem>
+                            <SelectItem value="multiple_weekly">Multiple times per week</SelectItem>
+                            <SelectItem value="daily">Daily</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>Including range, putting green, short game area</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="flex justify-between gap-4 pt-4">
-                <Button onClick={handleBack} variant="outline" size="lg">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back
-                </Button>
-                <Button
-                  onClick={handleNext}
-                  disabled={!isFormValid || isSaving}
-                  size="lg"
-                >
-                  {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Next
-                </Button>
-              </div>
+                  <div className="flex justify-between gap-4 pt-4">
+                    <Button onClick={handleBack} variant="outline" size="lg">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={isSaving}
+                      size="lg"
+                    >
+                      {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Next
+                    </Button>
+                  </div>
+                </form>
+              </Form>
             </CardContent>
           </Card>
         </div>

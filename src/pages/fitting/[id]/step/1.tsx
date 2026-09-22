@@ -1,18 +1,27 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ProgressBar } from "@/components/wizard/ProgressBar";
+import { MeasurementTooltip } from "@/components/wizard/MeasurementTooltip";
+import { UnitToggle } from "@/components/wizard/UnitToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { playerProfileSchema, type PlayerProfile } from "@/lib/wizardValidation";
+import { feetInchesToCm, cmToFeetInches } from "@/lib/unitConversion";
+import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function Step1() {
   const { user } = useAuth();
@@ -22,13 +31,27 @@ export default function Step1() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [fullName, setFullName] = useState("");
-  const [age, setAge] = useState("");
-  const [dominantHand, setDominantHand] = useState("");
-  const [experience, setExperience] = useState("");
-  const [handicap, setHandicap] = useState("");
-  const [primaryGoal, setPrimaryGoal] = useState("");
-  const [budgetRange, setBudgetRange] = useState("mid_range");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [unitPreference, setUnitPreference] = useState<"imperial" | "metric">("imperial");
+
+  const form = useForm<PlayerProfile>({
+    resolver: zodResolver(playerProfileSchema),
+    defaultValues: {
+      player_name: "",
+      player_age: 35,
+      handedness: "right",
+      unit_preference: "imperial",
+      height_ft: 5,
+      height_in: 10,
+      height_cm: 178,
+      wrist_to_floor: 34,
+      glove_size: "M",
+      hand_length: undefined,
+      longest_finger: undefined,
+      has_physical_limitations: false,
+      physical_limitations_text: "",
+    },
+  });
 
   useEffect(() => {
     if (!id || !user) return;
@@ -37,79 +60,87 @@ export default function Step1() {
       const sessionId = Array.isArray(id) ? id[0] : id;
       
       const { data, error } = await supabase
-        .from("player_profile")
+        .from("fitting_sessions")
         .select("*")
-        .eq("session_id", sessionId)
+        .eq("id", sessionId)
         .eq("user_id", user.id)
-        .maybeSingle();
+        .single();
 
       if (data) {
-        setFullName(data.full_name || "");
-        setAge(data.age?.toString() || "");
-        setDominantHand(data.dominant_hand || "");
-        setExperience(data.experience || "");
-        setHandicap(data.handicap || "");
-        setPrimaryGoal(data.primary_goal || "");
-        setBudgetRange(data.budget_range || "mid_range");
+        const unit = (data.unit_preference as "imperial" | "metric") || "imperial";
+        setUnitPreference(unit);
+        
+        form.reset({
+          player_name: data.player_name || "",
+          player_age: data.player_age || 35,
+          handedness: (data.handedness as "right" | "left") || "right",
+          unit_preference: unit,
+          height_ft: data.height_ft || 5,
+          height_in: data.height_in || 10,
+          height_cm: data.height_cm || 178,
+          wrist_to_floor: data.wrist_to_floor || 34,
+          glove_size: (data.glove_size as "S" | "M" | "ML" | "L" | "XL") || "M",
+          hand_length: data.hand_length || undefined,
+          longest_finger: data.longest_finger || undefined,
+          has_physical_limitations: data.has_physical_limitations || false,
+          physical_limitations_text: data.physical_limitations_text || "",
+        });
+
+        if (data.hand_length || data.longest_finger) {
+          setShowAdvanced(true);
+        }
       }
 
       setIsLoading(false);
     };
 
     loadData();
-  }, [id, user]);
+  }, [id, user, form]);
 
-  const isFormValid = fullName && age && dominantHand && experience && handicap && primaryGoal && budgetRange;
+  const handleUnitChange = (newUnit: "imperial" | "metric") => {
+    setUnitPreference(newUnit);
+    form.setValue("unit_preference", newUnit);
 
-  const handleNext = async () => {
+    if (newUnit === "metric") {
+      const feet = form.getValues("height_ft") || 5;
+      const inches = form.getValues("height_in") || 10;
+      const cm = feetInchesToCm(feet, inches);
+      form.setValue("height_cm", cm);
+    } else {
+      const cm = form.getValues("height_cm") || 178;
+      const { feet, inches } = cmToFeetInches(cm);
+      form.setValue("height_ft", feet);
+      form.setValue("height_in", inches);
+    }
+  };
+
+  const onSubmit = async (values: PlayerProfile) => {
     if (!user || !id) return;
 
     const sessionId = Array.isArray(id) ? id[0] : id;
     setIsSaving(true);
 
-    // First check if profile exists
-    const { data: existingProfile } = await supabase
-      .from("player_profile")
-      .select("id")
-      .eq("session_id", sessionId)
-      .maybeSingle();
+    const { error } = await supabase
+      .from("fitting_sessions")
+      .update({
+        player_name: values.player_name,
+        player_age: values.player_age,
+        handedness: values.handedness,
+        unit_preference: values.unit_preference,
+        height_ft: values.height_ft,
+        height_in: values.height_in,
+        height_cm: values.height_cm,
+        wrist_to_floor: values.wrist_to_floor,
+        glove_size: values.glove_size,
+        hand_length: values.hand_length,
+        longest_finger: values.longest_finger,
+        has_physical_limitations: values.has_physical_limitations,
+        physical_limitations_text: values.physical_limitations_text,
+        current_step: 2,
+      })
+      .eq("id", sessionId);
 
-    let profileError;
-    
-    if (existingProfile) {
-      // Update existing profile
-      const { error } = await supabase
-        .from("player_profile")
-        .update({
-          full_name: fullName,
-          age: parseInt(age),
-          dominant_hand: dominantHand,
-          experience,
-          handicap,
-          primary_goal: primaryGoal,
-          budget_range: budgetRange,
-        })
-        .eq("session_id", sessionId);
-      profileError = error;
-    } else {
-      // Insert new profile
-      const { error } = await supabase
-        .from("player_profile")
-        .insert({
-          session_id: sessionId,
-          user_id: user.id,
-          full_name: fullName,
-          age: parseInt(age),
-          dominant_hand: dominantHand,
-          experience,
-          handicap,
-          primary_goal: primaryGoal,
-          budget_range: budgetRange,
-        });
-      profileError = error;
-    }
-
-    if (profileError) {
+    if (error) {
       toast({
         title: "Error",
         description: "Failed to save your progress. Please try again.",
@@ -119,18 +150,9 @@ export default function Step1() {
       return;
     }
 
-    const { error: sessionError } = await supabase
-      .from("fitting_sessions")
-      .update({ current_step: 2 })
-      .eq("id", sessionId);
-
-    if (sessionError) {
-      console.error("Failed to update session step:", sessionError);
-    }
-
     toast({
       title: "Progress saved ✓",
-      description: "Moving to next step...",
+      description: "Moving to golf experience...",
     });
 
     router.push(`/fitting/${sessionId}/step/2`);
@@ -140,7 +162,7 @@ export default function Step1() {
     return (
       <ProtectedRoute>
         <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin" />
+          <Loader2 className="w-8 h-8 animate-spin text-accent" />
         </div>
       </ProtectedRoute>
     );
@@ -151,133 +173,314 @@ export default function Step1() {
       <div className="min-h-screen flex flex-col bg-background">
         <Navigation />
         <div className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full">
-          <ProgressBar currentStep={1} totalSteps={6} />
+          <ProgressBar currentStep={1} totalSteps={8} />
 
           <Card>
             <CardHeader>
-              <CardTitle>Player Profile</CardTitle>
-              <CardDescription>Tell us about your golf background and goals</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Section 1: Player Profile</CardTitle>
+                  <CardDescription>Basic information about you and your physical measurements</CardDescription>
+                </div>
+                <UnitToggle unit={unitPreference} onUnitChange={handleUnitChange} />
+              </div>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="fullName">
-                  Full Name <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="John Doe"
-                  required
-                />
-              </div>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="player_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Full Name <span className="text-destructive">*</span></FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="John Doe" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="space-y-2">
-                <Label htmlFor="age">
-                  Age <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="age"
-                  type="number"
-                  min="10"
-                  max="99"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  placeholder="35"
-                  required
-                />
-              </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="player_age"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Age <span className="text-destructive">*</span></FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value))}
+                              min={10}
+                              max={100}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              <div className="space-y-2">
-                <Label htmlFor="dominantHand">
-                  Dominant Hand <span className="text-destructive">*</span>
-                </Label>
-                <Select value={dominantHand} onValueChange={setDominantHand}>
-                  <SelectTrigger id="dominantHand">
-                    <SelectValue placeholder="Select hand" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="right">Right</SelectItem>
-                    <SelectItem value="left">Left</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                    <FormField
+                      control={form.control}
+                      name="handedness"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Handedness <span className="text-destructive">*</span></FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="right">Right</SelectItem>
+                              <SelectItem value="left">Left</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="experience">
-                  Experience Level <span className="text-destructive">*</span>
-                </Label>
-                <Select value={experience} onValueChange={setExperience}>
-                  <SelectTrigger id="experience">
-                    <SelectValue placeholder="Select experience" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="beginner">Beginner</SelectItem>
-                    <SelectItem value="intermediate">Intermediate</SelectItem>
-                    <SelectItem value="advanced">Advanced</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  {unitPreference === "imperial" ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="height_ft"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Height (Feet) <span className="text-destructive">*</span></FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                {...field}
+                                onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                min={3}
+                                max={8}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="height_in"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Height (Inches) <span className="text-destructive">*</span></FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                {...field}
+                                onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                min={0}
+                                max={11}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  ) : (
+                    <FormField
+                      control={form.control}
+                      name="height_cm"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Height (cm) <span className="text-destructive">*</span></FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value))}
+                              min={90}
+                              max={250}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
 
-              <div className="space-y-2">
-                <Label htmlFor="handicap">
-                  Handicap <span className="text-destructive">*</span>
-                </Label>
-                <Select value={handicap} onValueChange={setHandicap}>
-                  <SelectTrigger id="handicap">
-                    <SelectValue placeholder="Select handicap" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="0-5">0-5</SelectItem>
-                    <SelectItem value="6-15">6-15</SelectItem>
-                    <SelectItem value="16-25">16-25</SelectItem>
-                    <SelectItem value="26+">26+</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <FormField
+                    control={form.control}
+                    name="wrist_to_floor"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center gap-2">
+                          <FormLabel>Wrist-to-Floor (inches) <span className="text-destructive">*</span></FormLabel>
+                          <MeasurementTooltip type="wrist-to-floor" />
+                        </div>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                            min={20}
+                            max={50}
+                            step={0.5}
+                            placeholder="34"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="space-y-2">
-                <Label htmlFor="primaryGoal">
-                  Primary Goal <span className="text-destructive">*</span>
-                </Label>
-                <Select value={primaryGoal} onValueChange={setPrimaryGoal}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select your primary goal" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="distance">Distance</SelectItem>
-                    <SelectItem value="accuracy">Accuracy</SelectItem>
-                    <SelectItem value="consistency">Consistency</SelectItem>
-                    <SelectItem value="all_around">All-Around</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <FormField
+                    control={form.control}
+                    name="glove_size"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center gap-2">
+                          <FormLabel>Golf Glove Size <span className="text-destructive">*</span></FormLabel>
+                          <MeasurementTooltip type="glove-size" />
+                        </div>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select size" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="S">Small</SelectItem>
+                            <SelectItem value="M">Medium</SelectItem>
+                            <SelectItem value="ML">Medium-Large</SelectItem>
+                            <SelectItem value="L">Large</SelectItem>
+                            <SelectItem value="XL">X-Large</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="space-y-2">
-                <Label htmlFor="budget_range">Budget Range</Label>
-                <Select value={budgetRange} onValueChange={setBudgetRange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select your budget range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="budget">Budget ($0-$500)</SelectItem>
-                    <SelectItem value="mid_range">Mid-Range ($500-$1500)</SelectItem>
-                    <SelectItem value="premium">Premium ($1500+)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div className="border-t pt-4">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setShowAdvanced(!showAdvanced)}
+                      className="w-full justify-between"
+                    >
+                      <span>Advanced Measurements (Optional)</span>
+                      {showAdvanced ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </Button>
 
-              <div className="flex justify-end gap-4 pt-4">
-                <Button
-                  onClick={handleNext}
-                  disabled={!isFormValid || isSaving}
-                  size="lg"
-                >
-                  {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Next
-                </Button>
-              </div>
+                    {showAdvanced && (
+                      <div className="space-y-4 mt-4">
+                        <FormField
+                          control={form.control}
+                          name="hand_length"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center gap-2">
+                                <FormLabel>Hand Length (inches)</FormLabel>
+                                <MeasurementTooltip type="hand-length" />
+                              </div>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  {...field}
+                                  value={field.value || ""}
+                                  onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                  min={6}
+                                  max={12}
+                                  step={0.1}
+                                  placeholder="7.5"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="longest_finger"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center gap-2">
+                                <FormLabel>Longest Finger (inches)</FormLabel>
+                                <MeasurementTooltip type="finger-length" />
+                              </div>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  {...field}
+                                  value={field.value || ""}
+                                  onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                                  min={2}
+                                  max={5}
+                                  step={0.1}
+                                  placeholder="3.5"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="has_physical_limitations"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>I have physical limitations or injuries</FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {form.watch("has_physical_limitations") && (
+                    <FormField
+                      control={form.control}
+                      name="physical_limitations_text"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Please describe</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              placeholder="e.g., Lower back issues, shoulder injury..."
+                              className="resize-none"
+                              rows={3}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  <div className="flex justify-end gap-4 pt-4">
+                    <Button
+                      type="submit"
+                      disabled={isSaving}
+                      size="lg"
+                    >
+                      {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Next
+                    </Button>
+                  </div>
+                </form>
+              </Form>
             </CardContent>
           </Card>
         </div>
