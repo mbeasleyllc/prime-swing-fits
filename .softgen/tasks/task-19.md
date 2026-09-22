@@ -1,6 +1,6 @@
 ---
 title: Extend Database Schema for Full-Bag Fitting
-status: in_progress
+status: done
 priority: urgent
 type: feature
 tags: [database, schema, migration]
@@ -14,16 +14,16 @@ Extend fitting_sessions table and related tables to support comprehensive full-b
 
 ## Checklist
 - [x] Create migration adding new fields to fitting_sessions
-- [ ] Update current_step constraint to support 8 sections
-- [ ] Add unit_preference field (imperial/metric)
-- [ ] Add driver-specific fields (loft, flex, shaft weight, length, carry, ball flight, miss, preferences)
-- [ ] Add fairway wood/hybrid fields (carries, trouble clubs, use cases, distance gaps)
-- [ ] Add iron fields (length, choke frequency, flight, miss, launch monitor data)
-- [ ] Add wedge fields (challenges, miss, PW loft)
-- [ ] Add putter fields (eye position, posture, stroke type, preferences)
-- [ ] Add goals ranking structure (9 priority dimensions)
-- [ ] Regenerate Supabase types
-- [ ] Verify RLS policies cover new fields
+- [x] Update current_step constraint to support 8 sections
+- [x] Add unit_preference field (imperial/metric)
+- [x] Add driver-specific fields (loft, flex, shaft weight, length, carry, ball flight, miss, preferences)
+- [x] Add fairway wood/hybrid fields (carries, trouble clubs, use cases, distance gaps)
+- [x] Add iron fields (length, choke frequency, flight, miss, launch monitor data)
+- [x] Add wedge fields (challenges, miss, PW loft)
+- [x] Add putter fields (eye position, posture, stroke type, preferences)
+- [x] Add goals ranking structure (9 priority dimensions)
+- [x] Regenerate Supabase types
+- [x] Verify RLS policies cover new fields
 
 ## Acceptance
 - Database schema includes all new fields for 8-section wizard
