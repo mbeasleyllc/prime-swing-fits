@@ -36,18 +36,15 @@ interface MeasurementTooltipProps {
 const tooltipContent: Record<MeasurementType, { title: string; description: string; diagram?: string }> = {
   "wrist-to-floor": {
     title: "Wrist-to-Floor Measurement",
-    description: "The distance from your wrist crease to the floor, used to determine optimal club length.",
-    howTo: "Stand naturally with shoes on, arms hanging relaxed. Measure from the wrist crease where your hand bends to the floor.",
+    description: "Stand naturally with shoes on, arms hanging relaxed. Measure from the wrist crease where your hand bends to the floor. Used to determine optimal club length.",
   },
   "hand-length": {
     title: "Hand Length",
-    description: "Measured from wrist crease to tip of middle finger. Used for precise grip sizing.",
-    howTo: "Place hand flat, measure from where your hand meets your wrist to the tip of your middle finger.",
+    description: "Place hand flat, measure from where your hand meets your wrist to the tip of your middle finger. Used for precise grip sizing.",
   },
   "finger-length": {
     title: "Longest Finger",
-    description: "Length of your longest finger (usually middle), used for grip thickness recommendations.",
-    howTo: "Measure from the base knuckle to the fingertip of your longest finger.",
+    description: "Measure from the base knuckle to the fingertip of your longest finger. Used for grip thickness recommendations.",
   },
   "glove-size": {
     title: "Golf Glove Size",
@@ -140,11 +137,6 @@ export function MeasurementTooltip({ type, className = "" }: MeasurementTooltipP
           <div className="space-y-2">
             <p className="font-semibold text-sm">{content.title}</p>
             <p className="text-sm text-muted-foreground">{content.description}</p>
-            {content.howTo && (
-              <p className="text-sm text-accent font-medium mt-2">
-                How to measure: {content.howTo}
-              </p>
-            )}
           </div>
         </TooltipContent>
       </Tooltip>

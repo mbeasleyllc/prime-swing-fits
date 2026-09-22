@@ -101,25 +101,23 @@ export const ironWedgeFittingSchema = z.object({
   pw_loft: z.number().min(42).max(50).optional(),
 });
 
-export type IronWedgeFitting = z.infer<typeof ironWedgeFittingSchema>;
-
 // Section 7: Putter Fitting
 export const putterFittingSchema = z.object({
-  putter_eye_position: z.enum(["inside", "over", "outside"], { required_error: "Please select eye position" }),
-  putter_posture: z.enum(["upright", "neutral", "bent"], { required_error: "Please select posture" }),
-  putter_arm_hang: z.enum(["tight", "natural", "extended"], { required_error: "Please select arm hang" }),
-  putter_sole_flush: z.boolean(),
-  putter_stroke_type: z.enum(["straight", "slight_arc", "moderate_arc", "strong_arc"], { required_error: "Please select stroke type" }),
-  putter_face_rotation: z.enum(["minimal", "moderate", "significant"], { required_error: "Please select face rotation" }),
-  putter_common_miss: z.enum(["left", "right", "short", "long", "inconsistent"]).optional(),
+  putter_eye_position: z.enum(["inside", "over", "outside", "unsure"]).optional(),
+  putter_posture: z.enum(["upright", "moderate", "bent"]).optional(),
+  putter_arm_hang: z.enum(["natural", "extended", "bent"]).optional(),
+  putter_sole_flush: z.enum(["toe_up", "flat", "heel_up", "unsure"]).optional(),
+  putter_stroke_type: z.enum(["straight", "slight_arc", "moderate_arc", "strong_arc"]).optional(),
+  putter_face_rotation: z.enum(["minimal", "moderate", "significant", "unsure"]).optional(),
+  putter_common_miss: z.enum(["left", "right", "short", "long", "inconsistent_speed"]).optional(),
   putter_head_style_pref: z.enum(["blade", "mid_mallet", "mallet", "no_preference"]).optional(),
-  putter_alignment_pref: z.enum(["single_line", "multi_line", "dots", "none", "no_preference"]).optional(),
-  putter_forgiveness_priority: z.enum(["low", "medium", "high"], { required_error: "Please select priority" }),
-  putter_feel_pref: z.enum(["soft", "medium_soft", "medium", "medium_firm", "firm"]).optional(),
-  putter_green_speed: z.enum(["slow", "medium", "fast"], { required_error: "Please select green speed" }),
-  putter_forward_press: z.boolean(),
-  putter_grip_size_pref: z.enum(["standard", "midsize", "jumbo", "no_preference"]).optional(),
-  putter_hand_activity: z.enum(["minimal", "moderate", "active"], { required_error: "Please select hand activity" }),
+  putter_alignment_pref: z.enum(["minimal", "moderate", "prominent"]).optional(),
+  putter_forgiveness_priority: z.enum(["low", "moderate", "high"]).optional(),
+  putter_feel_pref: z.enum(["soft", "medium", "firm"]).optional(),
+  putter_green_speed: z.enum(["slow", "medium", "fast"]).optional(),
+  putter_forward_press: z.enum(["yes", "no"]),
+  putter_grip_size_pref: z.enum(["standard", "midsize", "oversize"]),
+  putter_hand_activity: z.enum(["quiet", "moderate", "active"]).optional(),
   putter_current_length: z.number().min(28).max(40).optional(),
   putter_satisfaction: z.enum(["very_dissatisfied", "dissatisfied", "neutral", "satisfied", "very_satisfied"]).optional(),
 });
