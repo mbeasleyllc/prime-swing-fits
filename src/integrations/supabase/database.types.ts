@@ -609,31 +609,319 @@ export type Database = {
       }
       fitting_sessions: {
         Row: {
+          athletic_background: string[] | null
+          average_score: number | null
+          carries_driver: boolean | null
+          carries_fairway_woods: string[] | null
+          carries_hybrids: string[] | null
+          carries_irons: string[] | null
+          carries_putter: boolean | null
+          carries_wedges: string[] | null
+          carry_3wood: number | null
+          carry_4iron: number | null
+          carry_5iron: number | null
+          carry_5wood: number | null
+          choke_down_frequency: string | null
           completed_at: string | null
           created_at: string | null
+          current_7iron_carry: number | null
+          current_putter_length: number | null
+          current_putter_model: string | null
           current_step: number | null
+          distance_gap_target: number | null
+          driver_avg_carry: number | null
+          driver_avg_total: number | null
+          driver_ball_flight: string | null
+          driver_best_distance: number | null
+          driver_common_miss: string | null
+          driver_current_flex: string | null
+          driver_current_loft: number | null
+          driver_face_pref: string | null
+          driver_head_shape_pref: string | null
+          driver_length: number | null
+          driver_make: string | null
+          driver_miss_percentage: number | null
+          driver_model: string | null
+          driver_shaft_weight: number | null
+          driver_sound_pref: string | null
+          driver_swing_speed: string | null
+          driver_trajectory: string | null
+          fairway_accuracy: number | null
           flagged: boolean | null
+          glove_size: string | null
+          goals_ranking: Json | null
+          hand_length: number | null
+          handedness: string | null
+          handicap_index: number | null
+          has_physical_limitations: boolean | null
+          height_cm: number | null
+          height_ft: number | null
+          height_in: number | null
+          hybrid_desired_flight: string | null
+          hybrid_primary_use: string | null
           id: string
+          iron_7_carry: number | null
+          iron_7_flight: string | null
+          iron_ball_speed: number | null
+          iron_common_miss: string | null
+          iron_current_length: string | null
+          iron_descent_angle: number | null
+          iron_dispersion: number | null
+          iron_launch_angle: number | null
+          iron_peak_height: number | null
+          iron_priority_miss: string | null
+          iron_shot_shape: string | null
+          iron_spin_rate: number | null
+          long_iron_miss_type: string | null
+          long_iron_trouble_club: string | null
+          longest_finger: number | null
+          miss_percentage: number | null
+          most_common_miss: string | null
+          physical_limitations_text: string | null
+          player_age: number | null
+          player_name: string | null
+          playing_frequency: string | null
+          practice_frequency: string | null
+          putter_alignment_pref: string | null
+          putter_arm_hang: string | null
+          putter_common_miss: string | null
+          putter_current_length: number | null
+          putter_eye_position: string | null
+          putter_face_rotation: string | null
+          putter_feel_pref: string | null
+          putter_forgiveness_priority: string | null
+          putter_forward_press: boolean | null
+          putter_green_speed: string | null
+          putter_grip_size_pref: string | null
+          putter_hand_activity: string | null
+          putter_head_style_pref: string | null
+          putter_posture: string | null
+          putter_satisfaction: string | null
+          putter_sole_flush: boolean | null
+          putter_stroke_type: string | null
+          pw_loft: number | null
           status: string | null
+          swing_tempo: string | null
+          swing_type: string | null
+          transition_speed: string | null
+          typical_ball_flight: string | null
+          typical_trajectory: string | null
+          unit_preference: string | null
           user_id: string
+          wedge_common_miss: string | null
+          wedge_current_challenge: string | null
+          wrist_to_floor: number | null
+          years_playing: string | null
         }
         Insert: {
+          athletic_background?: string[] | null
+          average_score?: number | null
+          carries_driver?: boolean | null
+          carries_fairway_woods?: string[] | null
+          carries_hybrids?: string[] | null
+          carries_irons?: string[] | null
+          carries_putter?: boolean | null
+          carries_wedges?: string[] | null
+          carry_3wood?: number | null
+          carry_4iron?: number | null
+          carry_5iron?: number | null
+          carry_5wood?: number | null
+          choke_down_frequency?: string | null
           completed_at?: string | null
           created_at?: string | null
+          current_7iron_carry?: number | null
+          current_putter_length?: number | null
+          current_putter_model?: string | null
           current_step?: number | null
+          distance_gap_target?: number | null
+          driver_avg_carry?: number | null
+          driver_avg_total?: number | null
+          driver_ball_flight?: string | null
+          driver_best_distance?: number | null
+          driver_common_miss?: string | null
+          driver_current_flex?: string | null
+          driver_current_loft?: number | null
+          driver_face_pref?: string | null
+          driver_head_shape_pref?: string | null
+          driver_length?: number | null
+          driver_make?: string | null
+          driver_miss_percentage?: number | null
+          driver_model?: string | null
+          driver_shaft_weight?: number | null
+          driver_sound_pref?: string | null
+          driver_swing_speed?: string | null
+          driver_trajectory?: string | null
+          fairway_accuracy?: number | null
           flagged?: boolean | null
+          glove_size?: string | null
+          goals_ranking?: Json | null
+          hand_length?: number | null
+          handedness?: string | null
+          handicap_index?: number | null
+          has_physical_limitations?: boolean | null
+          height_cm?: number | null
+          height_ft?: number | null
+          height_in?: number | null
+          hybrid_desired_flight?: string | null
+          hybrid_primary_use?: string | null
           id?: string
+          iron_7_carry?: number | null
+          iron_7_flight?: string | null
+          iron_ball_speed?: number | null
+          iron_common_miss?: string | null
+          iron_current_length?: string | null
+          iron_descent_angle?: number | null
+          iron_dispersion?: number | null
+          iron_launch_angle?: number | null
+          iron_peak_height?: number | null
+          iron_priority_miss?: string | null
+          iron_shot_shape?: string | null
+          iron_spin_rate?: number | null
+          long_iron_miss_type?: string | null
+          long_iron_trouble_club?: string | null
+          longest_finger?: number | null
+          miss_percentage?: number | null
+          most_common_miss?: string | null
+          physical_limitations_text?: string | null
+          player_age?: number | null
+          player_name?: string | null
+          playing_frequency?: string | null
+          practice_frequency?: string | null
+          putter_alignment_pref?: string | null
+          putter_arm_hang?: string | null
+          putter_common_miss?: string | null
+          putter_current_length?: number | null
+          putter_eye_position?: string | null
+          putter_face_rotation?: string | null
+          putter_feel_pref?: string | null
+          putter_forgiveness_priority?: string | null
+          putter_forward_press?: boolean | null
+          putter_green_speed?: string | null
+          putter_grip_size_pref?: string | null
+          putter_hand_activity?: string | null
+          putter_head_style_pref?: string | null
+          putter_posture?: string | null
+          putter_satisfaction?: string | null
+          putter_sole_flush?: boolean | null
+          putter_stroke_type?: string | null
+          pw_loft?: number | null
           status?: string | null
+          swing_tempo?: string | null
+          swing_type?: string | null
+          transition_speed?: string | null
+          typical_ball_flight?: string | null
+          typical_trajectory?: string | null
+          unit_preference?: string | null
           user_id: string
+          wedge_common_miss?: string | null
+          wedge_current_challenge?: string | null
+          wrist_to_floor?: number | null
+          years_playing?: string | null
         }
         Update: {
+          athletic_background?: string[] | null
+          average_score?: number | null
+          carries_driver?: boolean | null
+          carries_fairway_woods?: string[] | null
+          carries_hybrids?: string[] | null
+          carries_irons?: string[] | null
+          carries_putter?: boolean | null
+          carries_wedges?: string[] | null
+          carry_3wood?: number | null
+          carry_4iron?: number | null
+          carry_5iron?: number | null
+          carry_5wood?: number | null
+          choke_down_frequency?: string | null
           completed_at?: string | null
           created_at?: string | null
+          current_7iron_carry?: number | null
+          current_putter_length?: number | null
+          current_putter_model?: string | null
           current_step?: number | null
+          distance_gap_target?: number | null
+          driver_avg_carry?: number | null
+          driver_avg_total?: number | null
+          driver_ball_flight?: string | null
+          driver_best_distance?: number | null
+          driver_common_miss?: string | null
+          driver_current_flex?: string | null
+          driver_current_loft?: number | null
+          driver_face_pref?: string | null
+          driver_head_shape_pref?: string | null
+          driver_length?: number | null
+          driver_make?: string | null
+          driver_miss_percentage?: number | null
+          driver_model?: string | null
+          driver_shaft_weight?: number | null
+          driver_sound_pref?: string | null
+          driver_swing_speed?: string | null
+          driver_trajectory?: string | null
+          fairway_accuracy?: number | null
           flagged?: boolean | null
+          glove_size?: string | null
+          goals_ranking?: Json | null
+          hand_length?: number | null
+          handedness?: string | null
+          handicap_index?: number | null
+          has_physical_limitations?: boolean | null
+          height_cm?: number | null
+          height_ft?: number | null
+          height_in?: number | null
+          hybrid_desired_flight?: string | null
+          hybrid_primary_use?: string | null
           id?: string
+          iron_7_carry?: number | null
+          iron_7_flight?: string | null
+          iron_ball_speed?: number | null
+          iron_common_miss?: string | null
+          iron_current_length?: string | null
+          iron_descent_angle?: number | null
+          iron_dispersion?: number | null
+          iron_launch_angle?: number | null
+          iron_peak_height?: number | null
+          iron_priority_miss?: string | null
+          iron_shot_shape?: string | null
+          iron_spin_rate?: number | null
+          long_iron_miss_type?: string | null
+          long_iron_trouble_club?: string | null
+          longest_finger?: number | null
+          miss_percentage?: number | null
+          most_common_miss?: string | null
+          physical_limitations_text?: string | null
+          player_age?: number | null
+          player_name?: string | null
+          playing_frequency?: string | null
+          practice_frequency?: string | null
+          putter_alignment_pref?: string | null
+          putter_arm_hang?: string | null
+          putter_common_miss?: string | null
+          putter_current_length?: number | null
+          putter_eye_position?: string | null
+          putter_face_rotation?: string | null
+          putter_feel_pref?: string | null
+          putter_forgiveness_priority?: string | null
+          putter_forward_press?: boolean | null
+          putter_green_speed?: string | null
+          putter_grip_size_pref?: string | null
+          putter_hand_activity?: string | null
+          putter_head_style_pref?: string | null
+          putter_posture?: string | null
+          putter_satisfaction?: string | null
+          putter_sole_flush?: boolean | null
+          putter_stroke_type?: string | null
+          pw_loft?: number | null
           status?: string | null
+          swing_tempo?: string | null
+          swing_type?: string | null
+          transition_speed?: string | null
+          typical_ball_flight?: string | null
+          typical_trajectory?: string | null
+          unit_preference?: string | null
           user_id?: string
+          wedge_common_miss?: string | null
+          wedge_current_challenge?: string | null
+          wrist_to_floor?: number | null
+          years_playing?: string | null
         }
         Relationships: [
           {
@@ -1469,12 +1757,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1498,11 +1786,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1523,11 +1811,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1548,11 +1836,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1565,11 +1853,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
