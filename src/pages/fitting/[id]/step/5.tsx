@@ -63,11 +63,13 @@ export default function Step5() {
         .single();
 
       if (data) {
-        const troubleClubs = (data.long_iron_trouble_club as string[]) || [];
+        const troubleClubs = Array.isArray(data.long_iron_trouble_club) 
+          ? data.long_iron_trouble_club as string[]
+          : [];
         setSelectedTroubleClubs(troubleClubs);
 
         form.reset({
-          carry_driver: data.carry_driver || undefined,
+          carry_driver: data.driver_avg_carry || undefined,
           carry_3wood: data.carry_3wood || undefined,
           carry_5wood: data.carry_5wood || undefined,
           carry_4iron: data.carry_4iron || undefined,
@@ -110,7 +112,7 @@ export default function Step5() {
     const { error } = await supabase
       .from("fitting_sessions")
       .update({
-        carry_driver: values.carry_driver || null,
+        driver_avg_carry: values.carry_driver || null,
         carry_3wood: values.carry_3wood || null,
         carry_5wood: values.carry_5wood || null,
         carry_4iron: values.carry_4iron || null,

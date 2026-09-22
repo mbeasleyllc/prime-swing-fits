@@ -6,14 +6,34 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+type MeasurementType =
+  | "wrist-to-floor"
+  | "hand-length"
+  | "finger-length"
+  | "glove-size"
+  | "swing-speed"
+  | "tempo"
+  | "transition"
+  | "toe"
+  | "heel"
+  | "thin"
+  | "fat"
+  | "face-rotation"
+  | "toe-hang"
+  | "bounce"
+  | "choke-down"
+  | "strike-pattern"
+  | "eye-position"
+  | "arm-hang"
+  | "sole-flush"
+  | "stroke-arc";
+
 interface MeasurementTooltipProps {
-  type: "wrist-to-floor" | "hand-length" | "finger-length" | "glove-size" | 
-        "thin" | "fat" | "toe" | "heel" | "face-rotation" | "toe-hang" | 
-        "bounce" | "swing-speed" | "tempo" | "transition";
+  type: MeasurementType;
   className?: string;
 }
 
-const tooltipContent: Record<string, { title: string; description: string; howTo?: string }> = {
+const tooltipContent: Record<MeasurementType, { title: string; description: string; diagram?: string }> = {
   "wrist-to-floor": {
     title: "Wrist-to-Floor Measurement",
     description: "The distance from your wrist crease to the floor, used to determine optimal club length.",
@@ -72,6 +92,30 @@ const tooltipContent: Record<string, { title: string; description: string; howTo
   "transition": {
     title: "Transition Speed",
     description: "How quickly you change direction from backswing to downswing. Smooth: gradual. Average: balanced. Quick/Aggressive: explosive.",
+  },
+  "choke-down": {
+    title: "Choke Down",
+    description: "Gripping down on the club shaft for more control. Common when clubs feel too long.",
+  },
+  "strike-pattern": {
+    title: "Strike Pattern",
+    description: "Where the ball contacts the clubface. Toe = outer edge, Heel = inner edge, Thin = below center, Fat = ground before ball.",
+  },
+  "eye-position": {
+    title: "Eye Position at Address",
+    description: "Where your eyes are positioned relative to the ball at address. Affects your perception of the putting line.",
+  },
+  "arm-hang": {
+    title: "Arm Hang",
+    description: "How your arms hang from your shoulders at address. Natural hang promotes a consistent stroke path.",
+  },
+  "sole-flush": {
+    title: "Sole Flush at Address",
+    description: "Whether the putter sole sits flat on the ground or tilted (toe up/heel up) at address. Affects impact angle.",
+  },
+  "stroke-arc": {
+    title: "Stroke Arc/Pattern",
+    description: "The path your putter head takes. Straight = minimal arc, Arc = inside-to-square-to-inside like full swing.",
   },
 };
 

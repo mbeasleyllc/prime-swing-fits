@@ -57,7 +57,9 @@ export default function Step6() {
         .single();
 
       if (data) {
-        const painPoints = (data.wedge_current_challenge as string[]) || [];
+        const painPoints = Array.isArray(data.wedge_current_challenge)
+          ? data.wedge_current_challenge as string[]
+          : [];
         setSelectedWedgePainPoints(painPoints);
 
         form.reset({

@@ -73,48 +73,35 @@ export const swingCharacteristicsSchema = z.object({
   fairway_accuracy: z.number().int().min(0).max(100).optional(),
 });
 
-// Section 5: Long Game (Driver + Fairway Wood/Hybrid)
+// Section 5: Long Game (Driver + Woods/Hybrids)
 export const longGameSchema = z.object({
-  driver_avg_carry: z.number().int().min(100).max(400).optional(),
-  driver_avg_total: z.number().int().min(100).max(450).optional(),
-  driver_best_distance: z.number().int().min(150).max(450).optional(),
-  carry_3wood: z.number().int().min(100).max(350).optional(),
-  carry_5wood: z.number().int().min(100).max(300).optional(),
-  carry_4iron: z.number().int().min(100).max(250).optional(),
-  carry_5iron: z.number().int().min(100).max(250).optional(),
-  long_iron_trouble_club: z.string().optional(),
-  long_iron_miss_type: z.string().optional(),
+  carry_driver: z.number().min(100).max(350).optional(),
+  carry_3wood: z.number().min(100).max(300).optional(),
+  carry_5wood: z.number().min(100).max(280).optional(),
+  carry_4iron: z.number().min(100).max(250).optional(),
+  carry_5iron: z.number().min(100).max(230).optional(),
+  long_iron_trouble_club: z.array(z.string()),
+  long_iron_miss_type: z.enum(["slice", "hook", "thin", "fat", "inconsistent_distance", "low_flight"]).optional(),
+  hybrid_desired_flight: z.enum(["high", "mid", "penetrating"]).optional(),
   hybrid_primary_use: z.enum(["tee", "approach", "rough", "utility"]).optional(),
-  hybrid_desired_flight: z.enum(["low", "medium", "high"]).optional(),
-  distance_gap_target: z.number().int().min(5).max(30).optional(),
-  driver_ball_flight: z.enum(["draw", "straight", "fade", "slice", "hook"]).optional(),
-  driver_trajectory: z.enum(["low", "medium", "high"]).optional(),
-  driver_common_miss: z.enum(["left", "right", "slice", "hook"]).optional(),
-  driver_miss_percentage: z.number().int().min(0).max(100).optional(),
   driver_head_shape_pref: z.enum(["traditional", "modern", "square", "no_preference"]).optional(),
-  driver_face_pref: z.enum(["open", "neutral", "closed", "no_preference"]).optional(),
-  driver_sound_pref: z.enum(["muted", "neutral", "loud", "no_preference"]).optional(),
+  driver_face_pref: z.enum(["open", "square", "closed", "no_preference"]).optional(),
+  driver_sound_pref: z.enum(["loud", "moderate", "muted", "no_preference"]).optional(),
 });
 
-// Section 6: Iron & Wedge
-export const ironWedgeSchema = z.object({
-  iron_7_carry: z.number().int().min(50).max(250),
-  iron_7_flight: z.enum(["too_low", "ideal", "too_high"], { required_error: "Please select flight" }),
-  choke_down_frequency: z.enum(["never", "rarely", "sometimes", "often", "always"], { required_error: "Please select frequency" }),
-  iron_current_length: z.enum(["standard", "longer", "shorter", "unsure"], { required_error: "Please select length" }),
-  iron_common_miss: z.array(z.string()).optional(),
-  iron_shot_shape: z.enum(["draw", "straight", "fade"]).optional(),
-  iron_priority_miss: z.string().optional(),
-  iron_ball_speed: z.number().min(50).max(150).optional(),
-  iron_launch_angle: z.number().min(10).max(40).optional(),
-  iron_spin_rate: z.number().int().min(3000).max(12000).optional(),
-  iron_peak_height: z.number().min(50).max(200).optional(),
-  iron_descent_angle: z.number().min(30).max(60).optional(),
-  iron_dispersion: z.number().min(5).max(50).optional(),
-  wedge_current_challenge: z.array(z.string()).optional(),
-  wedge_common_miss: z.string().optional(),
+// Section 6: Iron & Wedge Fitting
+export const ironWedgeFittingSchema = z.object({
+  iron_7_carry: z.number().min(50).max(250).optional(),
+  iron_7_flight: z.enum(["too_low", "ideal", "too_high"]).optional(),
+  choke_down_frequency: z.enum(["never", "sometimes", "often", "always"]),
+  iron_current_length: z.enum(["shorter", "standard", "longer", "unsure"]),
+  iron_common_miss: z.enum(["slice", "push", "fade", "pull", "hook", "thin", "fat", "toe", "heel"]).optional(),
+  wedge_current_challenge: z.array(z.string()),
+  wedge_common_miss: z.enum(["thin", "fat", "left", "right", "short", "long"]).optional(),
   pw_loft: z.number().min(42).max(50).optional(),
 });
+
+export type IronWedgeFitting = z.infer<typeof ironWedgeFittingSchema>;
 
 // Section 7: Putter Fitting
 export const putterFittingSchema = z.object({
@@ -158,6 +145,6 @@ export type GolfExperience = z.infer<typeof golfExperienceSchema>;
 export type CurrentBag = z.infer<typeof currentBagSchema>;
 export type SwingCharacteristics = z.infer<typeof swingCharacteristicsSchema>;
 export type LongGame = z.infer<typeof longGameSchema>;
-export type IronWedge = z.infer<typeof ironWedgeSchema>;
+export type IronWedgeFitting = z.infer<typeof ironWedgeFittingSchema>;
 export type PutterFitting = z.infer<typeof putterFittingSchema>;
 export type GoalsPriorities = z.infer<typeof goalsPrioritiesSchema>;
