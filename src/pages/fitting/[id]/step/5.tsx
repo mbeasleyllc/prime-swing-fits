@@ -117,7 +117,7 @@ export default function Step5() {
         carry_5wood: values.carry_5wood || null,
         carry_4iron: values.carry_4iron || null,
         carry_5iron: values.carry_5iron || null,
-        long_iron_trouble_club: selectedTroubleClubs,
+        long_iron_trouble_club: selectedTroubleClubs as any,
         long_iron_miss_type: values.long_iron_miss_type || null,
         hybrid_desired_flight: values.hybrid_desired_flight || null,
         hybrid_primary_use: values.hybrid_primary_use || null,

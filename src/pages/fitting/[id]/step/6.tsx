@@ -107,7 +107,7 @@ export default function Step6() {
         choke_down_frequency: values.choke_down_frequency,
         iron_current_length: values.iron_current_length,
         iron_common_miss: values.iron_common_miss || null,
-        wedge_current_challenge: selectedWedgePainPoints,
+        wedge_current_challenge: selectedWedgePainPoints as any,
         wedge_common_miss: values.wedge_common_miss || null,
         pw_loft: values.pw_loft || null,
         current_step: 7,
