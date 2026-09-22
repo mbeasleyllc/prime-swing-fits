@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ProgressBar } from "@/components/wizard/ProgressBar";
+import { MeasurementTooltip } from "@/components/wizard/MeasurementTooltip";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, Edit, Check } from "lucide-react";
+import { ironWedgeFittingSchema, type IronWedgeFitting } from "@/lib/wizardValidation";
+import { Loader2, ArrowLeft } from "lucide-react";
 
 export default function Step6() {
   const { user } = useAuth();
@@ -19,105 +26,115 @@ export default function Step6() {
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [sessionData, setSessionData] = useState<any>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [selectedWedgePainPoints, setSelectedWedgePainPoints] = useState<string[]>([]);
+
+  const form = useForm<IronWedgeFitting>({
+    resolver: zodResolver(ironWedgeFittingSchema),
+    defaultValues: {
+      iron_7_carry: undefined,
+      iron_7_flight: undefined,
+      choke_down_frequency: "never",
+      iron_current_length: "standard",
+      iron_common_miss: undefined,
+      wedge_current_challenge: [],
+      wedge_common_miss: undefined,
+      pw_loft: undefined,
+    },
+  });
 
   useEffect(() => {
     if (!id || !user) return;
 
-    const loadAllData = async () => {
+    const loadData = async () => {
       const sessionId = Array.isArray(id) ? id[0] : id;
+      
+      const { data } = await supabase
+        .from("fitting_sessions")
+        .select("*")
+        .eq("id", sessionId)
+        .eq("user_id", user.id)
+        .single();
 
-      const [playerRes, swingRes, courseRes, physicalRes, equipmentRes] = await Promise.all([
-        supabase.from("player_profile").select("*").eq("session_id", sessionId).eq("user_id", user.id).maybeSingle(),
-        supabase.from("swing_profile").select("*").eq("session_id", sessionId).eq("user_id", user.id).maybeSingle(),
-        supabase.from("course_conditions").select("*").eq("session_id", sessionId).eq("user_id", user.id).maybeSingle(),
-        supabase.from("physical_profile").select("*").eq("session_id", sessionId).eq("user_id", user.id).maybeSingle(),
-        supabase.from("current_equipment").select("*").eq("session_id", sessionId).eq("user_id", user.id).maybeSingle(),
-      ]);
+      if (data) {
+        const painPoints = (data.wedge_current_challenge as string[]) || [];
+        setSelectedWedgePainPoints(painPoints);
 
-      setSessionData({
-        player: playerRes.data,
-        swing: swingRes.data,
-        course: courseRes.data,
-        physical: physicalRes.data,
-        equipment: equipmentRes.data,
-      });
+        form.reset({
+          iron_7_carry: data.iron_7_carry || undefined,
+          iron_7_flight: (data.iron_7_flight as any) || undefined,
+          choke_down_frequency: (data.choke_down_frequency as any) || "never",
+          iron_current_length: (data.iron_current_length as any) || "standard",
+          iron_common_miss: (data.iron_common_miss as any) || undefined,
+          wedge_current_challenge: painPoints,
+          wedge_common_miss: (data.wedge_common_miss as any) || undefined,
+          pw_loft: data.pw_loft || undefined,
+        });
+      }
 
       setIsLoading(false);
     };
 
-    loadAllData();
-  }, [id, user]);
+    loadData();
+  }, [id, user, form]);
 
-  const handleEditStep = (step: number) => {
-    const sessionId = Array.isArray(id) ? id[0] : id;
-    router.push(`/fitting/${sessionId}/step/${step}`);
+  const toggleWedgePainPoint = (point: string) => {
+    const newSelection = selectedWedgePainPoints.includes(point)
+      ? selectedWedgePainPoints.filter(p => p !== point)
+      : [...selectedWedgePainPoints, point];
+    setSelectedWedgePainPoints(newSelection);
+    form.setValue("wedge_current_challenge", newSelection);
   };
 
-  const handleGenerateRecommendations = async () => {
+  const handleBack = () => {
+    const sessionId = Array.isArray(id) ? id[0] : id;
+    router.push(`/fitting/${sessionId}/step/5`);
+  };
+
+  const onSubmit = async (values: IronWedgeFitting) => {
     if (!user || !id) return;
 
     const sessionId = Array.isArray(id) ? id[0] : id;
-    setIsGenerating(true);
+    setIsSaving(true);
 
-    try {
-      const response = await fetch("/api/generate-recommendations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, userId: user.id }),
-      });
+    const { error } = await supabase
+      .from("fitting_sessions")
+      .update({
+        iron_7_carry: values.iron_7_carry || null,
+        iron_7_flight: values.iron_7_flight || null,
+        choke_down_frequency: values.choke_down_frequency,
+        iron_current_length: values.iron_current_length,
+        iron_common_miss: values.iron_common_miss || null,
+        wedge_current_challenge: selectedWedgePainPoints,
+        wedge_common_miss: values.wedge_common_miss || null,
+        pw_loft: values.pw_loft || null,
+        current_step: 7,
+      })
+      .eq("id", sessionId);
 
-      if (!response.ok) {
-        throw new Error("Failed to generate recommendations");
-      }
-
-      const { error: sessionError } = await supabase
-        .from("fitting_sessions")
-        .update({
-          status: "completed",
-          completed_at: new Date().toISOString(),
-        })
-        .eq("id", sessionId);
-
-      if (sessionError) {
-        console.error("Failed to update session:", sessionError);
-      }
-
-      toast({
-        title: "Recommendations generated!",
-        description: "Redirecting to your results...",
-      });
-
-      setTimeout(() => {
-        router.push(`/fitting/${sessionId}/results`);
-      }, 1000);
-    } catch (error) {
-      console.error("Error generating recommendations:", error);
+    if (error) {
       toast({
         title: "Error",
-        description: "Failed to generate recommendations. Please try again.",
+        description: "Failed to save your progress. Please try again.",
         variant: "destructive",
       });
-      setIsGenerating(false);
+      setIsSaving(false);
+      return;
     }
+
+    toast({
+      title: "Progress saved ✓",
+      description: "Moving to putter fitting...",
+    });
+
+    router.push(`/fitting/${sessionId}/step/7`);
   };
 
   if (isLoading) {
     return (
       <ProtectedRoute>
         <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin" />
-        </div>
-      </ProtectedRoute>
-    );
-  }
-
-  if (!sessionData) {
-    return (
-      <ProtectedRoute>
-        <div className="min-h-screen flex items-center justify-center">
-          <p>Error loading session data</p>
+          <Loader2 className="w-8 h-8 animate-spin text-accent" />
         </div>
       </ProtectedRoute>
     );
@@ -128,156 +145,237 @@ export default function Step6() {
       <div className="min-h-screen flex flex-col bg-background">
         <Navigation />
         <div className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full">
-          <ProgressBar currentStep={6} totalSteps={6} />
+          <ProgressBar currentStep={6} totalSteps={8} />
 
           <Card>
             <CardHeader>
-              <CardTitle>Review & Submit</CardTitle>
-              <CardDescription>Review your information before generating recommendations</CardDescription>
+              <CardTitle>Section 6: Iron & Wedge Fitting</CardTitle>
+              <CardDescription>Optimize your scoring clubs</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Player Profile */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Check className="w-5 h-5 text-accent" />
-                    Player Profile
-                  </h3>
-                  <Button variant="ghost" size="sm" onClick={() => handleEditStep(1)}>
-                    <Edit className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Name:</span> {sessionData.player?.full_name}</div>
-                  <div><span className="text-muted-foreground">Age:</span> {sessionData.player?.age}</div>
-                  <div><span className="text-muted-foreground">Dominant Hand:</span> {sessionData.player?.dominant_hand}</div>
-                  <div><span className="text-muted-foreground">Experience:</span> {sessionData.player?.experience}</div>
-                  <div><span className="text-muted-foreground">Handicap:</span> {sessionData.player?.handicap}</div>
-                  <div><span className="text-muted-foreground">Primary Goal:</span> {sessionData.player?.primary_goal?.replace("_", " ")}</div>
-                </div>
-              </div>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-sm">Iron Characteristics</h3>
+                    
+                    <FormField
+                      control={form.control}
+                      name="iron_7_carry"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>7-Iron Carry Distance (yards)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                              min={50}
+                              max={250}
+                              placeholder="150"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              <Separator />
+                    <FormField
+                      control={form.control}
+                      name="iron_7_flight"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Typical 7-Iron Flight</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select flight" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="too_low">Too Low</SelectItem>
+                              <SelectItem value="ideal">Ideal</SelectItem>
+                              <SelectItem value="too_high">Too High</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              {/* Swing Profile */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Check className="w-5 h-5 text-accent" />
-                    Swing Profile
-                  </h3>
-                  <Button variant="ghost" size="sm" onClick={() => handleEditStep(2)}>
-                    <Edit className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Shot Shape:</span> {sessionData.swing?.typical_shot}</div>
-                  <div><span className="text-muted-foreground">Miss Tendency:</span> {sessionData.swing?.miss_tendency}</div>
-                  <div><span className="text-muted-foreground">Ball Flight:</span> {sessionData.swing?.ball_flight}</div>
-                  <div><span className="text-muted-foreground">Tempo:</span> {sessionData.swing?.swing_tempo}</div>
-                  <div><span className="text-muted-foreground">Strength:</span> {sessionData.swing?.swing_strength}</div>
-                </div>
-              </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="choke_down_frequency"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-center gap-2">
+                              <FormLabel>Choke Down Habit <span className="text-destructive">*</span></FormLabel>
+                              <MeasurementTooltip type="choke-down" />
+                            </div>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select frequency" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="never">Never</SelectItem>
+                                <SelectItem value="sometimes">Sometimes</SelectItem>
+                                <SelectItem value="often">Often</SelectItem>
+                                <SelectItem value="always">Always</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-              <Separator />
-
-              {/* Course Conditions */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Check className="w-5 h-5 text-accent" />
-                    Course Conditions
-                  </h3>
-                  <Button variant="ghost" size="sm" onClick={() => handleEditStep(3)}>
-                    <Edit className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Turf Type:</span> {sessionData.course?.turf_type}</div>
-                  <div><span className="text-muted-foreground">Weather:</span> {sessionData.course?.typical_weather}</div>
-                  <div><span className="text-muted-foreground">Ball Used:</span> {sessionData.course?.ball_used}</div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Physical Profile */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Check className="w-5 h-5 text-accent" />
-                    Physical Measurements
-                  </h3>
-                  <Button variant="ghost" size="sm" onClick={() => handleEditStep(4)}>
-                    <Edit className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Height:</span> {sessionData.physical?.height_ft}' {sessionData.physical?.height_in}"</div>
-                  <div><span className="text-muted-foreground">Wrist-to-Floor:</span> {sessionData.physical?.wrist_to_floor}"</div>
-                  <div><span className="text-muted-foreground">Hand Size:</span> {sessionData.physical?.hand_size}</div>
-                  <div><span className="text-muted-foreground">Mobility:</span> {sessionData.physical?.mobility_limit}</div>
-                  <div className="sm:col-span-2">
-                    <span className="text-muted-foreground">Physical Limitations:</span> {sessionData.physical?.injuries?.join(", ")}
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Current Equipment */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <Check className="w-5 h-5 text-accent" />
-                    Current Equipment
-                  </h3>
-                  <Button variant="ghost" size="sm" onClick={() => handleEditStep(5)}>
-                    <Edit className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                </div>
-                <div className="grid sm:grid-cols-2 gap-3 text-sm">
-                  {sessionData.equipment?.club_brand && (
-                    <div><span className="text-muted-foreground">Brand:</span> {sessionData.equipment.club_brand}</div>
-                  )}
-                  <div><span className="text-muted-foreground">Club Length:</span> {sessionData.equipment?.club_length}</div>
-                  <div><span className="text-muted-foreground">Shaft Flex:</span> {sessionData.equipment?.shaft_flex}</div>
-                  <div><span className="text-muted-foreground">Grip Size:</span> {sessionData.equipment?.grip_size}</div>
-                  <div><span className="text-muted-foreground">Satisfaction:</span> {sessionData.equipment?.satisfaction}/5 stars</div>
-                  {sessionData.equipment?.pain_points && (
-                    <div className="sm:col-span-2">
-                      <span className="text-muted-foreground">Pain Points:</span> {sessionData.equipment.pain_points}
+                      <FormField
+                        control={form.control}
+                        name="iron_current_length"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Current Iron Length <span className="text-destructive">*</span></FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select length" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="shorter">Shorter than standard</SelectItem>
+                                <SelectItem value="standard">Standard</SelectItem>
+                                <SelectItem value="longer">Longer than standard</SelectItem>
+                                <SelectItem value="unsure">Unsure</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
-                  )}
-                </div>
-              </div>
 
-              <div className="flex justify-between gap-4 pt-6">
-                <Button onClick={() => handleEditStep(5)} variant="outline" size="lg">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back
-                </Button>
-                <Button
-                  onClick={handleGenerateRecommendations}
-                  disabled={isGenerating}
-                  size="lg"
-                  className="bg-accent hover:bg-accent/90"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Analyzing your fitting data...
-                    </>
-                  ) : (
-                    "Generate My Fitting Recommendations"
-                  )}
-                </Button>
-              </div>
+                    <FormField
+                      control={form.control}
+                      name="iron_common_miss"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-center gap-2">
+                            <FormLabel>Iron Miss Tendency</FormLabel>
+                            <MeasurementTooltip type="strike-pattern" />
+                          </div>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select miss tendency" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="slice">Slice</SelectItem>
+                              <SelectItem value="push">Push</SelectItem>
+                              <SelectItem value="fade">Fade</SelectItem>
+                              <SelectItem value="pull">Pull</SelectItem>
+                              <SelectItem value="hook">Hook</SelectItem>
+                              <SelectItem value="thin">Thin (low contact)</SelectItem>
+                              <SelectItem value="fat">Fat (heavy contact)</SelectItem>
+                              <SelectItem value="toe">Toe strikes</SelectItem>
+                              <SelectItem value="heel">Heel strikes</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="space-y-4 border-t pt-4">
+                    <h3 className="font-semibold text-sm">Wedge Play</h3>
+                    
+                    <div className="space-y-2">
+                      <FormLabel>Wedge Pain Points</FormLabel>
+                      <div className="grid grid-cols-2 gap-2">
+                        {["Distance control", "Spin", "Turf contact", "Bunker play"].map((point) => (
+                          <div key={point} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`wedge-${point}`}
+                              checked={selectedWedgePainPoints.includes(point)}
+                              onCheckedChange={() => toggleWedgePainPoint(point)}
+                            />
+                            <label htmlFor={`wedge-${point}`} className="text-sm font-medium cursor-pointer">
+                              {point}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="wedge_common_miss"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Typical Wedge Miss</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select miss" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="thin">Thin</SelectItem>
+                              <SelectItem value="fat">Fat</SelectItem>
+                              <SelectItem value="left">Left</SelectItem>
+                              <SelectItem value="right">Right</SelectItem>
+                              <SelectItem value="short">Short</SelectItem>
+                              <SelectItem value="long">Long</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="pw_loft"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Pitching Wedge Loft (degrees)</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              {...field}
+                              value={field.value || ""}
+                              onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                              min={42}
+                              max={50}
+                              step={1}
+                              placeholder="46"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="flex justify-between gap-4 pt-4">
+                    <Button onClick={handleBack} variant="outline" size="lg">
+                      <ArrowLeft className="mr-2 h-4 w-4" />
+                      Back
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={isSaving}
+                      size="lg"
+                    >
+                      {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Next
+                    </Button>
+                  </div>
+                </form>
+              </Form>
             </CardContent>
           </Card>
         </div>
