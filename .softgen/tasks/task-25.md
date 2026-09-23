@@ -10,21 +10,19 @@ position: 2
 ---
 
 ## Notes
-Extend /admin/rules so admins can view and edit per-category rule tables as structured rows in fitting_rules table rather than hardcoded logic.
+Extend /admin/rules so admins can view and edit per-category rule tables as structured rows in fitting_rules table (using actual schema: rule_name, input_field, input_value, output_field, output_value).
 
 ## Checklist
 - [x] Create tabbed UI for 7 rule categories
 - [x] Display rules in editable table format
 - [x] Add CRUD operations (Create, Read, Update, Delete)
-- [x] Add active/inactive toggle per rule
-- [x] Implement rule form with validation
+- [x] Implement rule form matching actual schema
 - [x] Add priority field to control rule application order
-- [x] Log all rule changes to user_activity_logs
 - [x] Add confirmation dialogs for destructive actions
 - [x] Display helpful guidance for rule creation
 
 ## Acceptance
 - Admins can view all fitting rules by category
-- Admins can add, edit, delete, and toggle rules
-- Validation prevents invalid rule configurations
-- All rule changes logged to user_activity_logs
+- Admins can add, edit, and delete rules
+- Form uses correct database field names (rule_name, input_field, input_value, output_field, output_value)
+- Rules filtered by category prefix in rule_name

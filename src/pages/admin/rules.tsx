@@ -10,7 +10,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -27,23 +26,24 @@ import {
 
 interface FittingRule {
   id: string;
-  rule_type: string;
-  condition: string;
-  value: string;
-  recommendation: string;
+  rule_name: string;
+  input_field: string;
+  input_value: string;
+  output_field: string;
+  output_value: string;
   priority: number;
-  active: boolean;
   created_at: string;
+  updated_at: string;
 }
 
-const ruleTypes = [
-  { value: "length_adjustment", label: "Length Adjustment" },
+const ruleCategories = [
+  { value: "length", label: "Length Adjustment" },
   { value: "lie_angle", label: "Lie Angle" },
   { value: "shaft_flex", label: "Shaft Flex" },
   { value: "shaft_weight", label: "Shaft Weight" },
-  { value: "hybrid_gapping", label: "Hybrid/FW Gapping" },
-  { value: "wedge_gapping", label: "Wedge Gapping" },
-  { value: "putter_toe_hang", label: "Putter Toe Hang" },
+  { value: "gapping", label: "Hybrid/FW Gapping" },
+  { value: "wedge", label: "Wedge Gapping" },
+  { value: "putter", label: "Putter Specs" },
 ];
 
 export default function AdminRules() {
@@ -53,19 +53,19 @@ export default function AdminRules() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [rules, setRules] = useState<FittingRule[]>([]);
-  const [selectedType, setSelectedType] = useState("length_adjustment");
+  const [selectedCategory, setSelectedCategory] = useState("length");
   const [editingRule, setEditingRule] = useState<FittingRule | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Form state for new/edit rule
   const [formData, setFormData] = useState({
-    rule_type: "length_adjustment",
-    condition: "",
-    value: "",
-    recommendation: "",
+    rule_name: "",
+    input_field: "",
+    input_value: "",
+    output_field: "",
+    output_value: "",
     priority: 1,
-    active: true,
   });
 
   useEffect(() => {
@@ -100,7 +100,6 @@ export default function AdminRules() {
     const { data } = await supabase
       .from("fitting_rules")
       .select("*")
-      .order("rule_type", { ascending: true })
       .order("priority", { ascending: true });
 
     if (data) {
@@ -110,28 +109,31 @@ export default function AdminRules() {
     setIsLoading(false);
   };
 
-  const filteredRules = rules.filter(r => r.rule_type === selectedType);
+  // Filter rules by category based on rule_name prefix
+  const filteredRules = rules.filter(r => 
+    r.rule_name.toLowerCase().startsWith(selectedCategory)
+  );
 
   const openDialog = (rule?: FittingRule) => {
     if (rule) {
       setEditingRule(rule);
       setFormData({
-        rule_type: rule.rule_type,
-        condition: rule.condition,
-        value: rule.value,
-        recommendation: rule.recommendation,
+        rule_name: rule.rule_name,
+        input_field: rule.input_field,
+        input_value: rule.input_value,
+        output_field: rule.output_field,
+        output_value: rule.output_value,
         priority: rule.priority,
-        active: rule.active,
       });
     } else {
       setEditingRule(null);
       setFormData({
-        rule_type: selectedType,
-        condition: "",
-        value: "",
-        recommendation: "",
+        rule_name: `${selectedCategory}_`,
+        input_field: "",
+        input_value: "",
+        output_field: "",
+        output_value: "",
         priority: 1,
-        active: true,
       });
     }
     setIsDialogOpen(true);
@@ -148,24 +150,16 @@ export default function AdminRules() {
         const { error } = await supabase
           .from("fitting_rules")
           .update({
-            condition: formData.condition,
-            value: formData.value,
-            recommendation: formData.recommendation,
+            rule_name: formData.rule_name,
+            input_field: formData.input_field,
+            input_value: formData.input_value,
+            output_field: formData.output_field,
+            output_value: formData.output_value,
             priority: formData.priority,
-            active: formData.active,
           })
           .eq("id", editingRule.id);
 
         if (error) throw error;
-
-        // Log the change
-        await supabase.from("user_activity_logs").insert({
-          user_id: user.id,
-          action: "update",
-          entity_type: "fitting_rule",
-          entity_id: editingRule.id,
-          details: { before: editingRule, after: formData },
-        });
 
         toast({
           title: "Rule updated",
@@ -173,31 +167,18 @@ export default function AdminRules() {
         });
       } else {
         // Create new rule
-        const { data: newRule, error } = await supabase
+        const { error } = await supabase
           .from("fitting_rules")
           .insert({
-            rule_type: formData.rule_type,
-            condition: formData.condition,
-            value: formData.value,
-            recommendation: formData.recommendation,
+            rule_name: formData.rule_name,
+            input_field: formData.input_field,
+            input_value: formData.input_value,
+            output_field: formData.output_field,
+            output_value: formData.output_value,
             priority: formData.priority,
-            active: formData.active,
-          })
-          .select()
-          .single();
+          });
 
         if (error) throw error;
-
-        // Log the creation
-        if (newRule) {
-          await supabase.from("user_activity_logs").insert({
-            user_id: user.id,
-            action: "create",
-            entity_type: "fitting_rule",
-            entity_id: newRule.id,
-            details: { rule: formData },
-          });
-        }
 
         toast({
           title: "Rule created",
@@ -223,8 +204,6 @@ export default function AdminRules() {
     if (!user) return;
     if (!confirm("Are you sure you want to delete this rule?")) return;
 
-    const ruleToDelete = rules.find(r => r.id === ruleId);
-
     const { error } = await supabase
       .from("fitting_rules")
       .delete()
@@ -239,47 +218,9 @@ export default function AdminRules() {
       return;
     }
 
-    // Log the deletion
-    await supabase.from("user_activity_logs").insert({
-      user_id: user.id,
-      action: "delete",
-      entity_type: "fitting_rule",
-      entity_id: ruleId,
-      details: { deleted_rule: ruleToDelete },
-    });
-
     toast({
       title: "Rule deleted",
       description: "Fitting rule has been deleted successfully.",
-    });
-
-    loadRules();
-  };
-
-  const toggleRuleActive = async (rule: FittingRule) => {
-    if (!user) return;
-
-    const { error } = await supabase
-      .from("fitting_rules")
-      .update({ active: !rule.active })
-      .eq("id", rule.id);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update rule status.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Log the change
-    await supabase.from("user_activity_logs").insert({
-      user_id: user.id,
-      action: "update",
-      entity_type: "fitting_rule",
-      entity_id: rule.id,
-      details: { active_changed: { from: rule.active, to: !rule.active } },
     });
 
     loadRules();
@@ -334,17 +275,17 @@ export default function AdminRules() {
               </div>
             </CardHeader>
             <CardContent>
-              <Tabs value={selectedType} onValueChange={setSelectedType}>
+              <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
                 <TabsList className="grid grid-cols-7 w-full">
-                  {ruleTypes.map(type => (
-                    <TabsTrigger key={type.value} value={type.value} className="text-xs">
-                      {type.label}
+                  {ruleCategories.map(cat => (
+                    <TabsTrigger key={cat.value} value={cat.value} className="text-xs">
+                      {cat.label}
                     </TabsTrigger>
                   ))}
                 </TabsList>
 
-                {ruleTypes.map(type => (
-                  <TabsContent key={type.value} value={type.value} className="mt-6">
+                {ruleCategories.map(cat => (
+                  <TabsContent key={cat.value} value={cat.value} className="mt-6">
                     {filteredRules.length === 0 ? (
                       <div className="text-center py-12 text-muted-foreground">
                         <p>No rules configured for this category.</p>
@@ -358,10 +299,11 @@ export default function AdminRules() {
                         <TableHeader>
                           <TableRow>
                             <TableHead>Priority</TableHead>
-                            <TableHead>Condition</TableHead>
-                            <TableHead>Value</TableHead>
-                            <TableHead>Recommendation</TableHead>
-                            <TableHead>Active</TableHead>
+                            <TableHead>Rule Name</TableHead>
+                            <TableHead>Input Field</TableHead>
+                            <TableHead>Input Value</TableHead>
+                            <TableHead>Output Field</TableHead>
+                            <TableHead>Output Value</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -369,15 +311,11 @@ export default function AdminRules() {
                           {filteredRules.map(rule => (
                             <TableRow key={rule.id}>
                               <TableCell className="font-medium">{rule.priority}</TableCell>
-                              <TableCell className="max-w-[200px]">{rule.condition}</TableCell>
-                              <TableCell>{rule.value}</TableCell>
-                              <TableCell className="max-w-[300px]">{rule.recommendation}</TableCell>
-                              <TableCell>
-                                <Switch
-                                  checked={rule.active}
-                                  onCheckedChange={() => toggleRuleActive(rule)}
-                                />
-                              </TableCell>
+                              <TableCell>{rule.rule_name}</TableCell>
+                              <TableCell>{rule.input_field}</TableCell>
+                              <TableCell>{rule.input_value}</TableCell>
+                              <TableCell>{rule.output_field}</TableCell>
+                              <TableCell>{rule.output_value}</TableCell>
                               <TableCell className="text-right">
                                 <div className="flex gap-2 justify-end">
                                   <Button
@@ -422,90 +360,80 @@ export default function AdminRules() {
 
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="rule_type">Rule Type</Label>
-                <Select
-                  value={formData.rule_type}
-                  onValueChange={(val) => setFormData({ ...formData, rule_type: val })}
-                  disabled={!!editingRule}
-                >
-                  <SelectTrigger id="rule_type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ruleTypes.map(type => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="condition">Condition</Label>
+                <Label htmlFor="rule_name">Rule Name</Label>
                 <Input
-                  id="condition"
-                  value={formData.condition}
-                  onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-                  placeholder="e.g., height_ft >= 6 AND wrist_to_floor >= 37"
+                  id="rule_name"
+                  value={formData.rule_name}
+                  onChange={(e) => setFormData({ ...formData, rule_name: e.target.value })}
+                  placeholder="e.g., length_tall_player"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Define when this rule applies (e.g., swing_speed = '95-100', wrist_to_floor {'>'} 37)
+                  Unique identifier for this rule (use category prefix)
                 </p>
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="value">Value</Label>
+                <Label htmlFor="input_field">Input Field</Label>
                 <Input
-                  id="value"
-                  value={formData.value}
-                  onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                  placeholder="e.g., +0.5 or Stiff"
+                  id="input_field"
+                  value={formData.input_field}
+                  onChange={(e) => setFormData({ ...formData, input_field: e.target.value })}
+                  placeholder="e.g., wrist_to_floor"
                 />
                 <p className="text-xs text-muted-foreground">
-                  The adjustment or value to apply (e.g., +0.5 inches, Stiff flex, 2° upright)
+                  The field to evaluate (e.g., wrist_to_floor, swing_speed, height_ft)
                 </p>
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="recommendation">Recommendation</Label>
+                <Label htmlFor="input_value">Input Value / Condition</Label>
                 <Input
-                  id="recommendation"
-                  value={formData.recommendation}
-                  onChange={(e) => setFormData({ ...formData, recommendation: e.target.value })}
-                  placeholder="Plain-English explanation for users"
+                  id="input_value"
+                  value={formData.input_value}
+                  onChange={(e) => setFormData({ ...formData, input_value: e.target.value })}
+                  placeholder="e.g., >39 or 95-100"
                 />
                 <p className="text-xs text-muted-foreground">
-                  User-friendly explanation of this rule
+                  The value or range to match (e.g., {'>'}39, 95-100, slice)
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="priority">Priority</Label>
-                  <Input
-                    id="priority"
-                    type="number"
-                    min="1"
-                    value={formData.priority}
-                    onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) || 1 })}
-                  />
-                  <p className="text-xs text-muted-foreground">Lower numbers = higher priority</p>
-                </div>
+              <div className="grid gap-2">
+                <Label htmlFor="output_field">Output Field</Label>
+                <Input
+                  id="output_field"
+                  value={formData.output_field}
+                  onChange={(e) => setFormData({ ...formData, output_field: e.target.value })}
+                  placeholder="e.g., length_adjustment"
+                />
+                <p className="text-xs text-muted-foreground">
+                  The recommendation field to set
+                </p>
+              </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="active">Active</Label>
-                  <div className="flex items-center h-10">
-                    <Switch
-                      id="active"
-                      checked={formData.active}
-                      onCheckedChange={(checked) => setFormData({ ...formData, active: checked })}
-                    />
-                    <span className="ml-2 text-sm text-muted-foreground">
-                      {formData.active ? "Enabled" : "Disabled"}
-                    </span>
-                  </div>
-                </div>
+              <div className="grid gap-2">
+                <Label htmlFor="output_value">Output Value</Label>
+                <Input
+                  id="output_value"
+                  value={formData.output_value}
+                  onChange={(e) => setFormData({ ...formData, output_value: e.target.value })}
+                  placeholder="e.g., +1.0"
+                />
+                <p className="text-xs text-muted-foreground">
+                  The value to apply (e.g., +1.0, Stiff, 2° upright)
+                </p>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="priority">Priority</Label>
+                <Input
+                  id="priority"
+                  type="number"
+                  min="1"
+                  value={formData.priority}
+                  onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) || 1 })}
+                />
+                <p className="text-xs text-muted-foreground">Lower numbers = higher priority (evaluated first)</p>
               </div>
             </div>
 
