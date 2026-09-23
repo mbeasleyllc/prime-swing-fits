@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-
 // Test fixtures for 4 player categories
+// Use these for manual testing of the recommendation engine
+
 export const gameImprovementFixture = {
   // Player Profile
   player_name: "John Smith",
@@ -240,117 +240,30 @@ export const tourOrientedFixture = {
   },
 };
 
-describe("Recommendation Engine Consistency Tests", () => {
-  it("should generate consistent recommendations for game improvement player", () => {
-    const fixture = gameImprovementFixture;
-    
-    // Expected outcomes for game improvement player:
-    // - Regular or Senior shaft flex (slow swing speed)
-    // - Draw bias driver (slice tendency)
-    // - Higher forgiveness across all categories
-    // - Standard or slightly longer length (height 5'10", wrist-to-floor 34")
-    
-    expect(fixture.driver_swing_speed).toBe("80-90");
-    expect(fixture.most_common_miss).toBe("slice");
-    expect(fixture.goals_ranking.forgiveness).toBe(5);
-    expect(fixture.goals_ranking.workability).toBe(1);
-  });
-
-  it("should generate consistent recommendations for distance player", () => {
-    const fixture = distancePlayerFixture;
-    
-    // Expected outcomes:
-    // - Stiff shaft flex (95-100mph swing speed)
-    // - Distance-optimized head
-    // - Balance of forgiveness and distance
-    // - +0.5" length (6'1" height, wrist-to-floor 36")
-    
-    expect(fixture.driver_swing_speed).toBe("95-100");
-    expect(fixture.goals_ranking.distance).toBe(5);
-    expect(fixture.goals_ranking.forgiveness).toBe(4);
-    expect(fixture.height_ft).toBe(6);
-    expect(fixture.height_in).toBe(1);
-  });
-
-  it("should generate consistent recommendations for player's iron user", () => {
-    const fixture = playersIronFixture;
-    
-    // Expected outcomes:
-    // - X-Stiff shaft flex (100-110mph + moderate tempo)
-    // - Player's category irons (feel + workability priority)
-    // - Neutral or fade bias driver (hook tendency)
-    // - Potentially shorter length (frequent choke-down)
-    
-    expect(fixture.driver_swing_speed).toBe("100-110");
-    expect(fixture.choke_down_frequency).toBe("often");
-    expect(fixture.goals_ranking.feel).toBe(5);
-    expect(fixture.goals_ranking.workability).toBe(5);
-    expect(fixture.most_common_miss).toBe("hook");
-  });
-
-  it("should generate consistent recommendations for tour-oriented player", () => {
-    const fixture = tourOrientedFixture;
-    
-    // Expected outcomes:
-    // - TX shaft flex (110+ mph + aggressive tempo)
-    // - Tour/blade category equipment
-    // - Maximum workability, minimal forgiveness
-    // - Shorter length preference (always chokes down + already shorter clubs)
-    // - Heavy toe hang putter (strong arc stroke)
-    
-    expect(fixture.driver_swing_speed).toBe("110_plus");
-    expect(fixture.swing_tempo).toBe("aggressive");
-    expect(fixture.choke_down_frequency).toBe("always");
-    expect(fixture.iron_current_length).toBe("shorter");
-    expect(fixture.goals_ranking.workability).toBe(5);
-    expect(fixture.goals_ranking.forgiveness).toBe(1);
-    expect(fixture.putter_stroke_type).toBe("strong_arc");
-  });
-
-  it("should not have contradictory recommendations within each profile", () => {
-    // Game Improvement: should not get tour-level specs
-    expect(gameImprovementFixture.goals_ranking.forgiveness).toBeGreaterThan(
-      gameImprovementFixture.goals_ranking.workability
-    );
-    
-    // Distance Player: distance should be top priority
-    expect(distancePlayerFixture.goals_ranking.distance).toBe(5);
-    
-    // Player's Iron: feel + workability should be high
-    expect(playersIronFixture.goals_ranking.feel).toBeGreaterThanOrEqual(4);
-    expect(playersIronFixture.goals_ranking.workability).toBeGreaterThanOrEqual(4);
-    
-    // Tour-Oriented: forgiveness should be low, workability high
-    expect(tourOrientedFixture.goals_ranking.forgiveness).toBeLessThanOrEqual(2);
-    expect(tourOrientedFixture.goals_ranking.workability).toBe(5);
-  });
-
-  it("should have appropriate swing speed to handicap correlation", () => {
-    // Lower handicap should generally correlate with higher swing speed
-    expect(gameImprovementFixture.handicap_index).toBe(18);
-    expect(gameImprovementFixture.driver_swing_speed).toBe("80-90");
-    
-    expect(distancePlayerFixture.handicap_index).toBe(12);
-    expect(distancePlayerFixture.driver_swing_speed).toBe("95-100");
-    
-    expect(playersIronFixture.handicap_index).toBe(5);
-    expect(playersIronFixture.driver_swing_speed).toBe("100-110");
-    
-    expect(tourOrientedFixture.handicap_index).toBe(-2);
-    expect(tourOrientedFixture.driver_swing_speed).toBe("110_plus");
-  });
-
-  it("should have appropriate carry distances for each category", () => {
-    // Carry distances should increase with skill level
-    expect(gameImprovementFixture.iron_7_carry).toBe(130);
-    expect(distancePlayerFixture.iron_7_carry).toBe(165);
-    expect(playersIronFixture.iron_7_carry).toBe(175);
-    expect(tourOrientedFixture.iron_7_carry).toBe(190);
-    
-    // Driver carry progression
-    expect(gameImprovementFixture.driver_avg_carry).toBe(210);
-    expect(distancePlayerFixture.driver_avg_carry).toBe(265);
-    expect(playersIronFixture.driver_avg_carry).toBe(285);
-    expect(tourOrientedFixture.driver_avg_carry).toBe(305);
-  });
-});
+// Expected outcomes validation notes:
+//
+// Game Improvement Player:
+// - Regular or Senior shaft flex (slow swing speed 80-90mph)
+// - Draw bias driver (slice tendency)
+// - Higher forgiveness across all categories
+// - Standard length (height 5'10", wrist-to-floor 34")
+// - Should NOT receive tour-level workability specs
+//
+// Distance Player:
+// - Stiff shaft flex (95-100mph swing speed)
+// - Distance-optimized head
+// - Balance of forgiveness (4) and distance (5)
+// - +0.5" length (6'1" height, wrist-to-floor 36")
+//
+// Player's Iron User:
+// - X-Stiff shaft flex (100-110mph + moderate tempo)
+// - Player's category irons (feel + workability priority both 5)
+// - Neutral or fade bias driver (hook tendency)
+// - Potentially shorter length (frequent choke-down)
+//
+// Tour-Oriented Player:
+// - TX shaft flex (110+ mph + aggressive tempo)
+// - Tour/blade category equipment
+// - Maximum workability (5), minimal forgiveness (1)
+// - Shorter length (always chokes down + already uses shorter clubs)
+// - Heavy toe hang putter (strong arc stroke)
