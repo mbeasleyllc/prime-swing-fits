@@ -125,15 +125,15 @@ export const putterFittingSchema = z.object({
 // Section 8: Goals & Priorities
 export const goalsPrioritiesSchema = z.object({
   goals_ranking: z.object({
-    distance: z.number().int().min(1).max(9),
-    accuracy: z.number().int().min(1).max(9),
-    forgiveness: z.number().int().min(1).max(9),
-    consistency: z.number().int().min(1).max(9),
-    feel: z.number().int().min(1).max(9),
-    workability: z.number().int().min(1).max(9),
-    launch: z.number().int().min(1).max(9),
-    short_game: z.number().int().min(1).max(9),
-    putting: z.number().int().min(1).max(9),
+    distance: z.number().min(1).max(5).optional(),
+    accuracy: z.number().min(1).max(5).optional(),
+    consistency: z.number().min(1).max(5).optional(),
+    forgiveness: z.number().min(1).max(5).optional(),
+    feel: z.number().min(1).max(5).optional(),
+    workability: z.number().min(1).max(5).optional(),
+    launch: z.number().min(1).max(5).optional(),
+    short_game: z.number().min(1).max(5).optional(),
+    putting: z.number().min(1).max(5).optional(),
   }),
 });
 

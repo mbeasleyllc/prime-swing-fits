@@ -7,7 +7,6 @@ import { Footer } from "@/components/Footer";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ProgressBar } from "@/components/wizard/ProgressBar";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -41,15 +40,17 @@ export default function Step8() {
   const form = useForm<GoalsPriorities>({
     resolver: zodResolver(goalsPrioritiesSchema),
     defaultValues: {
-      distance: 3,
-      accuracy: 3,
-      forgiveness: 3,
-      consistency: 3,
-      feel: 3,
-      workability: 3,
-      launch: 3,
-      short_game: 3,
-      putting: 3,
+      goals_ranking: {
+        distance: 3,
+        accuracy: 3,
+        forgiveness: 3,
+        consistency: 3,
+        feel: 3,
+        workability: 3,
+        launch: 3,
+        short_game: 3,
+        putting: 3,
+      },
     },
   });
 
@@ -66,18 +67,20 @@ export default function Step8() {
         .eq("user_id", user.id)
         .single();
 
-      if (data && data.goals) {
-        const goals = data.goals as any;
+      if (data && data.goals_ranking) {
+        const goalsRanking = data.goals_ranking as any;
         form.reset({
-          distance: goals.distance || 3,
-          accuracy: goals.accuracy || 3,
-          forgiveness: goals.forgiveness || 3,
-          consistency: goals.consistency || 3,
-          feel: goals.feel || 3,
-          workability: goals.workability || 3,
-          launch: goals.launch || 3,
-          short_game: goals.short_game || 3,
-          putting: goals.putting || 3,
+          goals_ranking: {
+            distance: goalsRanking.distance || 3,
+            accuracy: goalsRanking.accuracy || 3,
+            forgiveness: goalsRanking.forgiveness || 3,
+            consistency: goalsRanking.consistency || 3,
+            feel: goalsRanking.feel || 3,
+            workability: goalsRanking.workability || 3,
+            launch: goalsRanking.launch || 3,
+            short_game: goalsRanking.short_game || 3,
+            putting: goalsRanking.putting || 3,
+          },
         });
       }
 
@@ -101,7 +104,7 @@ export default function Step8() {
     const { error } = await supabase
       .from("fitting_sessions")
       .update({
-        goals: values as any,
+        goals_ranking: values.goals_ranking as any,
         current_step: 8,
         status: "completed",
       })
@@ -160,7 +163,7 @@ export default function Step8() {
                       <FormField
                         key={option.key}
                         control={form.control}
-                        name={option.key as keyof GoalsPriorities}
+                        name={`goals_ranking.${option.key}` as any}
                         render={({ field }) => (
                           <FormItem className="space-y-3">
                             <div className="flex items-start justify-between">
@@ -175,7 +178,7 @@ export default function Step8() {
                               <div className="flex items-center gap-2 min-w-[100px]">
                                 <span className="text-sm text-muted-foreground">Priority:</span>
                                 <span className="text-lg font-bold text-accent w-4">
-                                  {field.value}
+                                  {field.value || 3}
                                 </span>
                               </div>
                             </div>
@@ -184,7 +187,7 @@ export default function Step8() {
                                 min={1}
                                 max={5}
                                 step={1}
-                                value={[field.value]}
+                                value={[field.value || 3]}
                                 onValueChange={(vals) => field.onChange(vals[0])}
                                 className="w-full"
                               />
