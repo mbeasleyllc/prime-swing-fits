@@ -1,6 +1,6 @@
 ---
 title: Validation Schemas & Test Fixtures
-status: todo
+status: in_progress
 priority: high
 type: feature
 tags: [validation, testing, fixtures]
@@ -13,15 +13,16 @@ position: 3
 Update all Zod schemas to match new fields, create 4 test fixture profiles, run through recommendation engine, verify consistency, and add automated tests.
 
 ## Checklist
-- [ ] Update Zod schemas for all 8 wizard sections
-- [ ] Cross-reference with fitting_sessions field list from Prompt 1
-- [ ] Create Game Improvement Player fixture (18 HC, slow swing, slice)
-- [ ] Create Distance Player fixture (12 HC, moderate-fast swing)
-- [ ] Create Player's Iron User fixture (5 HC, consistent striker)
-- [ ] Create Tour-Oriented Player fixture (plus HC, fast aggressive)
-- [ ] Run all fixtures through recommendation engine
+- [x] Update Zod schemas for all 8 wizard sections
+- [x] Cross-reference with fitting_sessions field list from Prompt 1
+- [x] Create Game Improvement Player fixture (18 HC, slow swing, slice)
+- [x] Create Distance Player fixture (12 HC, moderate-fast swing)
+- [x] Create Player's Iron User fixture (5 HC, consistent striker)
+- [x] Create Tour-Oriented Player fixture (plus HC, fast aggressive)
+- [x] Add vitest configuration and test script
+- [x] Add automated test cases validating fixture consistency
+- [ ] Run fixtures through recommendation engine API
 - [ ] Verify output consistency per profile
-- [ ] Add automated test cases (Jest/Vitest)
 
 ## Acceptance
 - All Zod schemas validate correctly

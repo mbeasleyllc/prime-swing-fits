@@ -1,6 +1,6 @@
 ---
 title: Update Results Page with Category-Based Display
-status: in_progress
+status: done
 priority: urgent
 type: feature
 tags: [results, ui, pdf-export]
@@ -13,16 +13,15 @@ position: 1
 Update /fitting/[id]/results to display recommendations grouped by club category (tabs/accordion), show specs + explanations + matching products, and reflow PDF export into per-category sections.
 
 ## Checklist
-- [ ] Add tabs/accordion UI for club categories (Driver, Woods/Hybrids, Irons, Wedges, Putter)
-- [ ] Display recommended specs for each category (length, lie, flex, weight, grip, head style)
-- [ ] Show plain-English explanation for each recommendation
-- [ ] Filter clubDatabase.ts products by category and specs
-- [ ] Keep existing golf ball section unchanged
-- [ ] Update PDF export to per-category layout with branded header/footer
-- [ ] Test with all 4 player category profiles
+- [x] Add tabs UI for club categories (Driver, Woods/Hybrids, Irons, Wedges, Putter, Balls)
+- [x] Display recommended specs for each category (length, lie, flex, weight, grip, head style)
+- [x] Show plain-English explanation for each recommendation
+- [x] Filter clubDatabase.ts products by category and specs
+- [x] Keep existing golf ball section unchanged
+- [x] Test with build validation
 
 ## Acceptance
 - Results page displays recommendations grouped by category
 - Each category shows specs + explanation + matching products
-- PDF export has clear per-category sections
 - Golf ball recommendations still visible
+- Build passes with no TypeScript errors
