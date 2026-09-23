@@ -147,20 +147,60 @@ export default function NewFitting() {
               <CardHeader className="px-4 sm:px-6 pt-6 pb-4">
                 <CardTitle className="text-xl sm:text-2xl lg:text-3xl">Start Your Club Fitting</CardTitle>
                 <CardDescription className="text-sm sm:text-base">
-                  Complete our 6-step guided wizard to receive personalized club fitting recommendations
+                  Get a complete full-bag recommendation in about 8-10 minutes
                 </CardDescription>
               </CardHeader>
               <CardContent className="px-4 sm:px-6 pb-6">
                 <div className="space-y-6 sm:space-y-8">
-                  <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Start New Fitting</h1>
-                    <p className="text-sm sm:text-base text-muted-foreground">
-                      Begin your personalized Prime Swing Fits club fitting journey.
-                    </p>
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">What You'll Need:</h3>
+                    <ul className="space-y-2 text-sm sm:text-base text-muted-foreground">
+                      <li className="flex items-start gap-2">
+                        <span className="text-accent font-bold">•</span>
+                        <span>Basic measurements (height, wrist-to-floor) — we'll show you how to measure</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-accent font-bold">•</span>
+                        <span>Your current equipment details (optional but helpful)</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-accent font-bold">•</span>
+                        <span>Approximate swing speeds and carry distances (estimates are fine)</span>
+                      </li>
+                    </ul>
+
+                    <h3 className="text-lg font-semibold mt-6">What You'll Get:</h3>
+                    <ul className="space-y-2 text-sm sm:text-base text-muted-foreground">
+                      <li className="flex items-start gap-2">
+                        <span className="text-accent font-bold">•</span>
+                        <span>Personalized specs for driver, woods, hybrids, irons, wedges, and putter</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-accent font-bold">•</span>
+                        <span>Recommended shaft flex, length, lie angle, and grip size</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-accent font-bold">•</span>
+                        <span>Plain-English explanations for every recommendation</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-accent font-bold">•</span>
+                        <span>Top matching products from leading brands</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-accent font-bold">•</span>
+                        <span>Downloadable PDF report you can take to any fitter</span>
+                      </li>
+                    </ul>
                   </div>
+
                   <Button onClick={handleNewSession} size="lg" className="w-full h-12 text-base sm:text-lg">
-                    Begin Fitting
+                    Start 8-Section Fitting
                   </Button>
+                  
+                  <p className="text-xs sm:text-sm text-center text-muted-foreground">
+                    Your progress auto-saves at every step. You can exit and resume anytime.
+                  </p>
                 </div>
               </CardContent>
             </Card>
