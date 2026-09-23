@@ -1,6 +1,6 @@
 ---
 title: Implement Full-Bag Recommendation Engine
-status: in_progress
+status: done
 priority: urgent
 type: feature
 tags: [api, recommendation, algorithm]
