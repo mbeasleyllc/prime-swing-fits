@@ -635,7 +635,23 @@ export default function FittingResults() {
           </Tabs>
 
           <div className="flex flex-wrap gap-3">
-            <Button asChild>
+            <Button
+              onClick={handleEmailReport}
+              disabled={isSendingEmail}
+            >
+              {isSendingEmail ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Email Report
+                </>
+              )}
+            </Button>
+            <Button asChild variant="outline">
               <Link href={`/fitting/${id}/report`}>
                 <Download className="h-4 w-4 mr-2" />
                 Download PDF Report
