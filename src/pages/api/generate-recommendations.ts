@@ -552,41 +552,83 @@ function matchGolfBalls(data: FittingSessionData, playerCategory: PlayerCategory
   const swingSpeed = data.driver_swing_speed || "90-100";
   const goals = data.goals_ranking || {};
   
-  // Convert swing speed range to mph value
+  // Convert swing speed range to mph value and category
   let speedMph = 95;
-  if (swingSpeed.includes("under_70")) speedMph = 65;
-  else if (swingSpeed.includes("70-80")) speedMph = 75;
-  else if (swingSpeed.includes("80-90")) speedMph = 85;
-  else if (swingSpeed.includes("90-100")) speedMph = 95;
-  else if (swingSpeed.includes("100-110")) speedMph = 105;
-  else if (swingSpeed.includes("110_plus")) speedMph = 115;
+  let speedCategory: "low" | "medium" | "high" = "medium";
+  
+  if (swingSpeed.includes("under_70") || swingSpeed.includes("70-80")) {
+    speedMph = 75;
+    speedCategory = "low";
+  } else if (swingSpeed.includes("80-90")) {
+    speedMph = 85;
+    speedCategory = "medium";
+  } else if (swingSpeed.includes("90-100")) {
+    speedMph = 95;
+    speedCategory = "medium";
+  } else if (swingSpeed.includes("100-110")) {
+    speedMph = 105;
+    speedCategory = "high";
+  } else if (swingSpeed.includes("110_plus")) {
+    speedMph = 115;
+    speedCategory = "high";
+  }
   
   // Score each ball
   const scoredBalls = GOLF_BALL_DATABASE.map(ball => {
     let score = 100;
     
-    // Speed matching (most important)
-    const speedDiff = Math.abs(ball.optimalSwingSpeed - speedMph);
-    score -= speedDiff * 2;
+    // Swing speed category matching (most important)
+    if (ball.swing_speed_range.includes(speedCategory)) {
+      score += 20;
+    } else if (
+      (speedCategory === "low" && ball.swing_speed_range.includes("medium")) ||
+      (speedCategory === "high" && ball.swing_speed_range.includes("medium")) ||
+      (speedCategory === "medium" && (ball.swing_speed_range.includes("low") || ball.swing_speed_range.includes("high")))
+    ) {
+      score += 5; // Adjacent category still viable
+    } else {
+      score -= 30; // Wrong speed category
+    }
     
     // Compression matching
     if (speedMph < 85 && ball.compression > 90) score -= 20;
     if (speedMph > 105 && ball.compression < 80) score -= 20;
+    if (speedMph >= 85 && speedMph <= 105 && ball.compression >= 70 && ball.compression <= 95) score += 10;
     
-    // Goal alignment
-    if (goals.distance && goals.distance >= 4 && ball.characteristics.includes("distance")) score += 10;
-    if (goals.feel && goals.feel >= 4 && ball.characteristics.includes("soft feel")) score += 10;
-    if (goals.workability && goals.workability >= 4 && ball.spinRate === "High") score += 10;
+    // Goal alignment using best_for array
+    if (goals.distance && goals.distance >= 4) {
+      if (ball.best_for.some(bf => bf.toLowerCase().includes("distance"))) score += 10;
+      if (ball.distance >= 9) score += 5;
+    }
+    if (goals.feel && goals.feel >= 4) {
+      if (ball.best_for.some(bf => bf.toLowerCase().includes("soft") || bf.toLowerCase().includes("feel"))) score += 10;
+      if (ball.feel >= 9) score += 5;
+    }
+    if (goals.workability && goals.workability >= 4) {
+      if (ball.spin_rate === "High") score += 10;
+      if (ball.spin >= 9) score += 5;
+    }
+    if (goals.accuracy && goals.accuracy >= 4) {
+      if (ball.control >= 9) score += 5;
+    }
     
-    // Player category alignment
-    if (playerCategory === "game_improvement" && ball.playerType === "All") score += 5;
-    if (playerCategory === "tour_oriented" && ball.playerType === "Advanced") score += 10;
+    // Player category alignment using recommended_for
+    if (playerCategory === "game_improvement") {
+      if (ball.recommended_for.some(rec => rec.toLowerCase().includes("high handicap") || rec.toLowerCase().includes("forgiveness"))) {
+        score += 10;
+      }
+    }
+    if (playerCategory === "tour_oriented") {
+      if (ball.recommended_for.some(rec => rec.toLowerCase().includes("tour") || rec.toLowerCase().includes("0-") || rec.toLowerCase().includes("advanced"))) {
+        score += 10;
+      }
+    }
     
     return {
       name: ball.name,
       compression: ball.compression,
-      spinRate: ball.spinRate,
-      optimalSpeed: `${ball.optimalSwingSpeed} mph`,
+      spinRate: ball.spin_rate,
+      optimalSpeed: ball.swing_speed_range.join("/"),
       matchScore: Math.max(0, Math.min(100, score))
     };
   });
