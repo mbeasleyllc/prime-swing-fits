@@ -70,11 +70,12 @@ export default function FittingResults() {
       if (sessionData) {
         setSession(sessionData);
         
-        // Parse recommendations from JSON
-        if (sessionData.recommendations) {
-          const recs = typeof sessionData.recommendations === "string" 
-            ? JSON.parse(sessionData.recommendations)
-            : sessionData.recommendations;
+        // Parse recommendations from JSON with type assertion
+        const rawData = sessionData as any;
+        if (rawData.recommendations) {
+          const recs = typeof rawData.recommendations === "string" 
+            ? JSON.parse(rawData.recommendations)
+            : rawData.recommendations;
           setRecommendations(recs);
 
           // Match products for each category
@@ -96,8 +97,8 @@ export default function FittingResults() {
       matched.driver = CLUB_DATABASE
         .filter(club => club.category === "Driver")
         .filter(club => {
-          if (recs.driver?.shaftFlex && club.shaft_flex) {
-            return club.shaft_flex.toLowerCase() === recs.driver.shaftFlex.toLowerCase();
+          if (recs.driver?.shaftFlex && club.flex_category) {
+            return club.flex_category.toLowerCase().includes(recs.driver.shaftFlex.toLowerCase());
           }
           return true;
         })
@@ -118,13 +119,20 @@ export default function FittingResults() {
         .slice(0, 3);
     }
 
-    // Iron products
+    // Iron products - filter by recommended_for text since no player_category field
     if (recs.irons) {
       matched.irons = CLUB_DATABASE
         .filter(club => club.category === "Irons")
         .filter(club => {
-          if (recs.irons?.modelCategory && club.player_category) {
-            return club.player_category.toLowerCase().includes(recs.irons.modelCategory.toLowerCase());
+          if (recs.irons?.modelCategory && club.recommended_for) {
+            const categoryLower = recs.irons.modelCategory.toLowerCase();
+            const recForLower = club.recommended_for.join(" ").toLowerCase();
+            
+            // Map model categories to recommended_for keywords
+            if (categoryLower.includes("game improvement") && recForLower.includes("game improvement")) return true;
+            if (categoryLower.includes("player") && recForLower.includes("scratch")) return true;
+            if (categoryLower.includes("distance") && recForLower.includes("distance")) return true;
+            if (categoryLower.includes("tour") && (recForLower.includes("tour") || recForLower.includes("0-"))) return true;
           }
           return true;
         })
@@ -138,13 +146,19 @@ export default function FittingResults() {
         .slice(0, 3);
     }
 
-    // Putter products
+    // Putter products - filter by recommended_for keywords since no head_type field
     if (recs.putter) {
       matched.putter = CLUB_DATABASE
         .filter(club => club.category === "Putter")
         .filter(club => {
-          if (recs.putter?.headStyle && club.head_type) {
-            return club.head_type.toLowerCase().includes(recs.putter.headStyle.toLowerCase());
+          if (recs.putter?.headStyle && club.recommended_for) {
+            const headStyleLower = recs.putter.headStyle.toLowerCase();
+            const recForLower = club.recommended_for.join(" ").toLowerCase();
+            
+            // Map head styles to putter types
+            if (headStyleLower.includes("blade") && recForLower.includes("blade")) return true;
+            if (headStyleLower.includes("mallet") && recForLower.includes("mallet")) return true;
+            if (headStyleLower.includes("face balanced") && recForLower.includes("straight")) return true;
           }
           return true;
         })
@@ -273,8 +287,8 @@ export default function FittingResults() {
                       <div className="space-y-2">
                         <h4 className="font-semibold text-sm">{product.brand}</h4>
                         <p className="text-xs text-muted-foreground">{product.model_name}</p>
-                        {product.shaft_flex && (
-                          <p className="text-xs">Flex: {product.shaft_flex}</p>
+                        {product.flex_category && (
+                          <p className="text-xs">Flex: {product.flex_category}</p>
                         )}
                         {product.price_usd && (
                           <p className="text-lg font-bold text-accent">${product.price_usd}</p>
