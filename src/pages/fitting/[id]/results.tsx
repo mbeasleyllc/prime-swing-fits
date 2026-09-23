@@ -5,6 +5,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,8 @@ import { AlertCircle, Download, Printer, ArrowLeft, Play, Circle, Target, Trendi
 import { GOLF_BALL_DATABASE } from "@/data/golfBallDatabase";
 import { CLUB_DATABASE } from "@/data/clubDatabase";
 import { sendFittingReportWithPDF } from "@/lib/emailService";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 interface RecommendationCategory {
   length?: string;
@@ -50,6 +53,7 @@ export default function FittingResults() {
   const router = useRouter();
   const { id } = router.query;
   const { user } = useAuth();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
   const [recommendations, setRecommendations] = useState<FullBagRecommendations | null>(null);
