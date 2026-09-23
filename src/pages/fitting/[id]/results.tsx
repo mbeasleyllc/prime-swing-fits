@@ -11,9 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, Download, Printer, ArrowLeft, Play, Circle, Target, TrendingUp } from "lucide-react";
+import { AlertCircle, Download, Printer, ArrowLeft, Play, Circle, Target, TrendingUp, Mail, Loader2 } from "lucide-react";
 import { GOLF_BALL_DATABASE } from "@/data/golfBallDatabase";
 import { CLUB_DATABASE } from "@/data/clubDatabase";
+import { sendFittingReportWithPDF } from "@/lib/emailService";
 
 interface RecommendationCategory {
   length?: string;
@@ -53,6 +54,7 @@ export default function FittingResults() {
   const [session, setSession] = useState<any>(null);
   const [recommendations, setRecommendations] = useState<FullBagRecommendations | null>(null);
   const [matchedProducts, setMatchedProducts] = useState<Record<string, any[]>>({});
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -166,6 +168,84 @@ export default function FittingResults() {
     }
 
     setMatchedProducts(matched);
+  };
+
+  const handleEmailReport = async () => {
+    if (!user || !session) return;
+
+    setIsSendingEmail(true);
+
+    try {
+      // Generate PDF
+      const reportElement = document.getElementById("fitting-report");
+      if (!reportElement) {
+        throw new Error("Report element not found");
+      }
+
+      toast({
+        title: "Preparing email...",
+        description: "Generating your PDF report",
+      });
+
+      const canvas = await html2canvas(reportElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      // Convert PDF to base64
+      const pdfBase64 = pdf.output("datauristring").split(",")[1];
+
+      // Send email
+      const result = await sendFittingReportWithPDF({
+        to: user.email!,
+        userName: session.player_name || user.email!.split("@")[0],
+        sessionId: session.id,
+        pdfBase64,
+        recommendations: recommendations || {},
+      });
+
+      if (result.success) {
+        toast({
+          title: "Email sent! ✓",
+          description: `Your fitting report has been sent to ${user.email}`,
+        });
+      } else {
+        throw new Error("Failed to send email");
+      }
+    } catch (error) {
+      console.error("Email error:", error);
+      toast({
+        title: "Email failed",
+        description: "Could not send report. Please try downloading the PDF instead.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   const renderCategoryCard = (

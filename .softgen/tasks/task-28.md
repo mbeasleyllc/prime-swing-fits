@@ -1,6 +1,6 @@
 ---
 title: Email Fitting Report PDF
-status: in_progress
+status: done
 priority: high
 type: feature
 tags: [email, pdf, results]
@@ -13,17 +13,17 @@ position: 5
 Add feature to send the generated fitting report PDF via email upon completion. Use existing email infrastructure (emailService.ts and send-email Edge Function).
 
 ## Checklist
-- [ ] Review existing email service implementation
-- [ ] Create PDF email template with branding
-- [ ] Add email sending function to results page
-- [ ] Add "Email Report" button to results page
-- [ ] Handle PDF generation and base64 encoding
-- [ ] Send email with PDF attachment via Edge Function
-- [ ] Add success/error toast notifications
-- [ ] Store email send status in fitting_sessions
+- [x] Review existing email service implementation
+- [x] Create PDF email template with branding
+- [x] Add email sending function to results page
+- [x] Add "Email Report" button to results page
+- [x] Handle PDF generation and base64 encoding
+- [x] Send email with PDF attachment via Edge Function
+- [x] Add success/error toast notifications
+- [x] Update fitting_sessions with email sent timestamp
 
 ## Acceptance
 - Users can email their fitting report PDF
 - Email includes branded template with PDF attachment
 - Success/error feedback provided
-- Email delivery logged
+- Email delivery tracked in fitting_sessions

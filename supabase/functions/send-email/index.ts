@@ -1,12 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+
+interface EmailAttachment {
+  filename: string;
+  content: string;
+  type?: string;
+  disposition?: string;
+}
 
 interface EmailRequest {
   to: string;
   subject: string;
   html: string;
+  attachments?: EmailAttachment[];
 }
 
 serve(async (req) => {
@@ -21,7 +28,7 @@ serve(async (req) => {
   }
 
   try {
-    const { to, subject, html }: EmailRequest = await req.json();
+    const { to, subject, html, attachments }: EmailRequest = await req.json();
 
     if (!to || !subject || !html) {
       return new Response(
@@ -33,8 +40,6 @@ serve(async (req) => {
       );
     }
 
-    // Using Resend API for email delivery
-    // Alternative: use SMTP with nodemailer or other email service
     if (!RESEND_API_KEY) {
       console.warn("RESEND_API_KEY not configured, email not sent");
       return new Response(
@@ -49,18 +54,29 @@ serve(async (req) => {
       );
     }
 
+    // Prepare email payload
+    const emailPayload: any = {
+      from: "Prime Swing Fits <noreply@primeswingfits.com>",
+      to: [to],
+      subject: subject,
+      html: html,
+    };
+
+    // Add attachments if provided
+    if (attachments && attachments.length > 0) {
+      emailPayload.attachments = attachments.map(att => ({
+        filename: att.filename,
+        content: att.content,
+      }));
+    }
+
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
-      body: JSON.stringify({
-        from: "Prime Swing Fits <noreply@primeswingfits.com>",
-        to: [to],
-        subject: subject,
-        html: html,
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
     const data = await response.json();
