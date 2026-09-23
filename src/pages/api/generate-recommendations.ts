@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
-import { golfBallDatabase } from "@/data/golfBallDatabase";
+import { GOLF_BALL_DATABASE } from "@/data/golfBallDatabase";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -62,6 +62,7 @@ interface FittingSessionData {
   putter_common_miss?: string;
   putter_forgiveness_priority?: string;
   putter_current_length?: number;
+  putter_grip_size_pref?: string;
   
   // Goals
   goals_ranking?: {
@@ -561,7 +562,7 @@ function matchGolfBalls(data: FittingSessionData, playerCategory: PlayerCategory
   else if (swingSpeed.includes("110_plus")) speedMph = 115;
   
   // Score each ball
-  const scoredBalls = golfBallDatabase.map(ball => {
+  const scoredBalls = GOLF_BALL_DATABASE.map(ball => {
     let score = 100;
     
     // Speed matching (most important)
