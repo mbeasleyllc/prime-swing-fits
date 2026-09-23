@@ -108,7 +108,7 @@ export default function Step7() {
         putter_eye_position: values.putter_eye_position || null,
         putter_posture: values.putter_posture || null,
         putter_arm_hang: values.putter_arm_hang || null,
-        putter_sole_flush: values.putter_sole_flush || null,
+        putter_sole_flush: values.putter_sole_flush as any || null,
         putter_stroke_type: values.putter_stroke_type || null,
         putter_face_rotation: values.putter_face_rotation || null,
         putter_common_miss: values.putter_common_miss || null,
