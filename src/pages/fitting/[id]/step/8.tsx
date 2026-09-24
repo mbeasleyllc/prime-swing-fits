@@ -101,6 +101,7 @@ export default function Step8() {
     const sessionId = Array.isArray(id) ? id[0] : id;
     setIsSaving(true);
 
+    // Save goals and complete the session
     const { error } = await supabase
       .from("fitting_sessions")
       .update({
@@ -120,12 +121,42 @@ export default function Step8() {
       return;
     }
 
+    // Generate recommendations
     toast({
       title: "Fitting complete! ✓",
       description: "Generating your personalized recommendations...",
     });
 
-    router.push(`/fitting/${sessionId}/results`);
+    try {
+      const response = await fetch('/api/generate-recommendations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sessionId }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to generate recommendations");
+      }
+
+      toast({
+        title: "Recommendations ready! ✓",
+        description: "Your personalized fitting results are ready to view.",
+      });
+
+      router.push(`/fitting/${sessionId}/results`);
+    } catch (error) {
+      console.error("Recommendation generation error:", error);
+      toast({
+        title: "Generation failed",
+        description: "Could not generate recommendations. Please try again or contact support.",
+        variant: "destructive",
+      });
+      setIsSaving(false);
+    }
   };
 
   if (isLoading) {
