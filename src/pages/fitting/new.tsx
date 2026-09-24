@@ -202,7 +202,7 @@ export default function NewFitting() {
                 )}
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <Button onClick={handleResumeSession} className="flex-1 h-11 text-base">
-                    Resume (Step {existingSession.current_step} of 6)
+                    Resume (Step {existingSession.current_step} of 8)
                   </Button>
                   <Button onClick={handleNewSession} variant="outline" className="flex-1 h-11 text-base">
                     Start New Fitting
