@@ -697,7 +697,7 @@ export type Database = {
           putter_head_style_pref: string | null
           putter_posture: string | null
           putter_satisfaction: string | null
-          putter_sole_flush: boolean | null
+          putter_sole_flush: string | null
           putter_stroke_type: string | null
           pw_loft: number | null
           status: string | null
@@ -802,7 +802,7 @@ export type Database = {
           putter_head_style_pref?: string | null
           putter_posture?: string | null
           putter_satisfaction?: string | null
-          putter_sole_flush?: boolean | null
+          putter_sole_flush?: string | null
           putter_stroke_type?: string | null
           pw_loft?: number | null
           status?: string | null
@@ -907,7 +907,7 @@ export type Database = {
           putter_head_style_pref?: string | null
           putter_posture?: string | null
           putter_satisfaction?: string | null
-          putter_sole_flush?: boolean | null
+          putter_sole_flush?: string | null
           putter_stroke_type?: string | null
           pw_loft?: number | null
           status?: string | null
