@@ -15,7 +15,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, Download, Printer, ArrowLeft, Play, Circle, Target, TrendingUp, Mail, Loader2 } from "lucide-react";
 import { GOLF_BALL_DATABASE } from "@/data/golfBallDatabase";
 import { CLUB_DATABASE } from "@/data/clubDatabase";
-import { sendFittingReportWithPDF } from "@/lib/emailService";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
@@ -180,7 +179,6 @@ export default function FittingResults() {
     setIsSendingEmail(true);
 
     try {
-      // Generate PDF
       const reportElement = document.getElementById("fitting-report");
       if (!reportElement) {
         throw new Error("Report element not found");
@@ -220,17 +218,23 @@ export default function FittingResults() {
         heightLeft -= pageHeight;
       }
 
-      // Convert PDF to base64
       const pdfBase64 = pdf.output("datauristring").split(",")[1];
 
-      // Send email
-      const result = await sendFittingReportWithPDF({
-        to: user.email!,
-        userName: session.player_name || user.email!.split("@")[0],
-        sessionId: session.id,
-        pdfBase64,
-        recommendations: recommendations || {},
+      const response = await fetch('/api/send-fitting-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: user.email!,
+          userName: session.player_name || user.email!.split("@")[0],
+          sessionId: session.id,
+          pdfBase64,
+          recommendations: recommendations || {},
+        }),
       });
+
+      const result = await response.json();
 
       if (result.success) {
         toast({
@@ -238,7 +242,7 @@ export default function FittingResults() {
           description: `Your fitting report has been sent to ${user.email}`,
         });
       } else {
-        throw new Error("Failed to send email");
+        throw new Error(result.error || "Failed to send email");
       }
     } catch (error) {
       console.error("Email error:", error);
