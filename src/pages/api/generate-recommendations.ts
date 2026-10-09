@@ -307,18 +307,18 @@ function calculateGripSize(data: FittingSessionData): { gripSize: string; explan
   const gloveSize = data.glove_size || "M";
   
   const gripSizeMap: Record<string, string> = {
-    "S": "Undersize",
-    "M": "Standard",
-    "ML": "Standard",
-    "L": "Midsize",
-    "XL": "Oversize"
+    "S": "undersize",
+    "M": "standard",
+    "ML": "standard",
+    "L": "midsize",
+    "XL": "oversize"
   };
   
-  const gripSize = gripSizeMap[gloveSize] || "Standard";
+  const gripSize = gripSizeMap[gloveSize] || "standard";
   
   return {
     gripSize,
-    explanation: `${gripSize} grip matches your ${gloveSize} glove size for optimal comfort and control.`
+    explanation: `${gripSize.charAt(0).toUpperCase() + gripSize.slice(1)} grip matches your ${gloveSize} glove size for optimal comfort and control.`
   };
 }
 
