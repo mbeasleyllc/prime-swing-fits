@@ -139,6 +139,7 @@ export default function Step8() {
       const result = await response.json();
 
       if (!result.success) {
+        console.error("Recommendation API error:", result);
         throw new Error(result.error || "Failed to generate recommendations");
       }
 
@@ -150,9 +151,10 @@ export default function Step8() {
       router.push(`/fitting/${sessionId}/results`);
     } catch (error) {
       console.error("Recommendation generation error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
       toast({
         title: "Generation failed",
-        description: "Could not generate recommendations. Please try again or contact support.",
+        description: errorMessage,
         variant: "destructive",
       });
       setIsSaving(false);
