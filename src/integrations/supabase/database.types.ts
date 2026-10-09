@@ -468,6 +468,7 @@ export type Database = {
           gaps_identified: string[] | null
           generated_at: string | null
           golf_ball_rec: string | null
+          golf_balls_spec: Json | null
           grip_size_rec: string | null
           hybrids: string | null
           id: string
@@ -501,6 +502,7 @@ export type Database = {
           gaps_identified?: string[] | null
           generated_at?: string | null
           golf_ball_rec?: string | null
+          golf_balls_spec?: Json | null
           grip_size_rec?: string | null
           hybrids?: string | null
           id?: string
@@ -534,6 +536,7 @@ export type Database = {
           gaps_identified?: string[] | null
           generated_at?: string | null
           golf_ball_rec?: string | null
+          golf_balls_spec?: Json | null
           grip_size_rec?: string | null
           hybrids?: string | null
           id?: string

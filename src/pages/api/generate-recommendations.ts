@@ -764,6 +764,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         putter_spec: JSON.stringify(recommendations.putter || {}),
         fairway_woods: JSON.stringify(recommendations.fairwayWood || {}),
         hybrids: JSON.stringify(recommendations.hybrid || {}),
+        golf_balls_spec: JSON.stringify(recommendations.golfBalls || []),
         golf_ball_rec: recommendations.golfBalls?.[0]?.name || null,
         ball_compression: recommendations.golfBalls?.[0]?.compression || null,
         ball_spin_rating: recommendations.golfBalls?.[0]?.spinRate || null,

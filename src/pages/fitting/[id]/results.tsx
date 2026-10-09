@@ -94,13 +94,15 @@ export default function FittingResults() {
             irons: recommendationsData.irons_spec ? JSON.parse(recommendationsData.irons_spec) : undefined,
             wedges: recommendationsData.wedges_spec ? JSON.parse(recommendationsData.wedges_spec) : undefined,
             putter: recommendationsData.putter_spec ? JSON.parse(recommendationsData.putter_spec) : undefined,
-            golfBalls: recommendationsData.golf_ball_rec ? [{
-              name: recommendationsData.golf_ball_rec,
-              compression: recommendationsData.ball_compression || 0,
-              spinRate: recommendationsData.ball_spin_rating || "",
-              optimalSpeed: recommendationsData.ball_optimal_swing_speed || "",
-              matchScore: 95
-            }] : undefined
+            golfBalls: recommendationsData.golf_balls_spec 
+              ? JSON.parse(recommendationsData.golf_balls_spec) 
+              : (recommendationsData.golf_ball_rec ? [{
+                  name: recommendationsData.golf_ball_rec,
+                  compression: recommendationsData.ball_compression || 0,
+                  spinRate: recommendationsData.ball_spin_rating || "",
+                  optimalSpeed: recommendationsData.ball_optimal_swing_speed || "",
+                  matchScore: 95
+                }] : undefined)
           };
           
           setRecommendations(recs);
