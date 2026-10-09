@@ -744,14 +744,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       playerCategory: playerCategory.replace(/_/g, " ")
     };
 
-    // Save recommendations to database - use the fitting_recommendations table
+    // Save recommendations to database - use the actual table columns
     const { error: insertError } = await supabase
       .from("fitting_recommendations")
       .insert({
         session_id: sessionId,
-        club_type: "full_bag",
-        recommendation_data: recommendations as any,
-        created_at: new Date().toISOString()
+        user_id: session.user_id,
+        club_type_rec: recommendations.driver?.modelCategory || null,
+        shaft_flex_rec: recommendations.driver?.shaftFlex || null,
+        shaft_weight: recommendations.driver?.shaftWeight || null,
+        grip_size_rec: recommendations.driver?.gripSize || null,
+        club_length_adj: recommendations.driver?.length || null,
+        lie_angle_adj: recommendations.driver?.lieAngle || null,
+        driver_spec: JSON.stringify(recommendations.driver || {}),
+        irons_spec: JSON.stringify(recommendations.irons || {}),
+        wedges_spec: JSON.stringify(recommendations.wedges || {}),
+        putter_spec: JSON.stringify(recommendations.putter || {}),
+        fairway_woods: JSON.stringify(recommendations.fairwayWood || {}),
+        hybrids: JSON.stringify(recommendations.hybrid || {}),
+        golf_ball_rec: recommendations.golfBalls?.[0]?.name || null,
+        ball_compression: recommendations.golfBalls?.[0]?.compression || null,
+        ball_spin_rating: recommendations.golfBalls?.[0]?.spinRate || null,
+        ball_optimal_swing_speed: recommendations.golfBalls?.[0]?.optimalSpeed || null,
+        driver_confidence: 85,
+        irons_confidence: 85,
+        wedge_confidence: 85,
+        putter_confidence: 85,
+        generated_at: new Date().toISOString()
       });
 
     if (insertError) {
