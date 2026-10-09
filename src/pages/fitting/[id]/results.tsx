@@ -493,13 +493,49 @@ export default function FittingResults() {
           </Card>
 
           <Tabs defaultValue="driver" className="mb-8">
-            <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="driver">Driver</TabsTrigger>
-              <TabsTrigger value="woods">Woods & Hybrids</TabsTrigger>
-              <TabsTrigger value="irons">Irons</TabsTrigger>
-              <TabsTrigger value="wedges">Wedges</TabsTrigger>
-              <TabsTrigger value="putter">Putter</TabsTrigger>
-              <TabsTrigger value="balls">Golf Balls</TabsTrigger>
+            <TabsList className="w-full h-auto flex-wrap md:flex-nowrap justify-start gap-2 bg-muted/50 p-2 overflow-x-auto">
+              <TabsTrigger 
+                value="driver" 
+                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
+              >
+                Driver
+              </TabsTrigger>
+              <TabsTrigger 
+                value="woods" 
+                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
+              >
+                Woods
+              </TabsTrigger>
+              <TabsTrigger 
+                value="hybrids" 
+                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
+              >
+                Hybrids
+              </TabsTrigger>
+              <TabsTrigger 
+                value="irons" 
+                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
+              >
+                Irons
+              </TabsTrigger>
+              <TabsTrigger 
+                value="wedges" 
+                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
+              >
+                Wedges
+              </TabsTrigger>
+              <TabsTrigger 
+                value="putter" 
+                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
+              >
+                Putter
+              </TabsTrigger>
+              <TabsTrigger 
+                value="balls" 
+                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
+              >
+                Golf Balls
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="driver" className="mt-6">
@@ -518,6 +554,9 @@ export default function FittingResults() {
                 recommendations.fairwayWood,
                 matchedProducts.fairwayWood || []
               )}
+            </TabsContent>
+
+            <TabsContent value="hybrids" className="mt-6 space-y-8">
               {renderCategoryCard(
                 "Hybrid",
                 <Target className="w-5 h-5 text-accent" />,
