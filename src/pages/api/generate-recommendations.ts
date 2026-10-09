@@ -749,8 +749,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .from("fitting_recommendations")
       .insert({
         session_id: sessionId,
-        user_id: session.user_id,
-        club_type_rec: recommendations.driver?.modelCategory || null,
+        user_id: data.user_id,
+        club_type_rec: recommendations.irons?.headStyle || null,
         shaft_flex_rec: recommendations.driver?.shaftFlex || null,
         shaft_weight: recommendations.driver?.shaftWeight || null,
         grip_size_rec: recommendations.driver?.gripSize || null,
