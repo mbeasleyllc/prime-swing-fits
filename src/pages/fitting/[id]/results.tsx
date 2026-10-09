@@ -65,6 +65,7 @@ export default function FittingResults() {
     const loadResults = async () => {
       const sessionId = Array.isArray(id) ? id[0] : id;
 
+      // Fetch session data
       const { data: sessionData } = await supabase
         .from("fitting_sessions")
         .select("*")
@@ -75,12 +76,19 @@ export default function FittingResults() {
       if (sessionData) {
         setSession(sessionData);
         
-        // Parse recommendations from JSON with type assertion
-        const rawData = sessionData as any;
-        if (rawData.recommendations) {
-          const recs = typeof rawData.recommendations === "string" 
-            ? JSON.parse(rawData.recommendations)
-            : rawData.recommendations;
+        // Fetch recommendations from fitting_recommendations table
+        const { data: recommendationsData } = await supabase
+          .from("fitting_recommendations")
+          .select("*")
+          .eq("session_id", sessionId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (recommendationsData) {
+          const recs = typeof recommendationsData.recommendation_data === "string" 
+            ? JSON.parse(recommendationsData.recommendation_data)
+            : recommendationsData.recommendation_data;
           setRecommendations(recs);
 
           // Match products for each category
