@@ -81,7 +81,7 @@ export default function FittingResults() {
           .from("fitting_recommendations")
           .select("*")
           .eq("session_id", sessionId)
-          .order("created_at", { ascending: false })
+          .order("generated_at", { ascending: false })
           .limit(1)
           .maybeSingle();
 
