@@ -88,14 +88,14 @@ export default function FittingResults() {
         if (recommendationsData) {
           // Reconstruct recommendations from individual columns
           const recs: FullBagRecommendations = {
-            driver: recommendationsData.driver_spec ? JSON.parse(recommendationsData.driver_spec) : undefined,
-            fairwayWood: recommendationsData.fairway_woods ? JSON.parse(recommendationsData.fairway_woods) : undefined,
-            hybrid: recommendationsData.hybrids ? JSON.parse(recommendationsData.hybrids) : undefined,
-            irons: recommendationsData.irons_spec ? JSON.parse(recommendationsData.irons_spec) : undefined,
-            wedges: recommendationsData.wedges_spec ? JSON.parse(recommendationsData.wedges_spec) : undefined,
-            putter: recommendationsData.putter_spec ? JSON.parse(recommendationsData.putter_spec) : undefined,
+            driver: recommendationsData.driver_spec ? JSON.parse(recommendationsData.driver_spec as string) : undefined,
+            fairwayWood: recommendationsData.fairway_woods ? JSON.parse(recommendationsData.fairway_woods as string) : undefined,
+            hybrid: recommendationsData.hybrids ? JSON.parse(recommendationsData.hybrids as string) : undefined,
+            irons: recommendationsData.irons_spec ? JSON.parse(recommendationsData.irons_spec as string) : undefined,
+            wedges: recommendationsData.wedges_spec ? JSON.parse(recommendationsData.wedges_spec as string) : undefined,
+            putter: recommendationsData.putter_spec ? JSON.parse(recommendationsData.putter_spec as string) : undefined,
             golfBalls: recommendationsData.golf_balls_spec 
-              ? JSON.parse(recommendationsData.golf_balls_spec) 
+              ? JSON.parse(recommendationsData.golf_balls_spec as string) 
               : (recommendationsData.golf_ball_rec ? [{
                   name: recommendationsData.golf_ball_rec,
                   compression: recommendationsData.ball_compression || 0,
