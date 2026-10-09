@@ -218,23 +218,24 @@ function calculateShaftFlex(data: FittingSessionData): { shaftFlex: string; expl
   const swingSpeed = data.driver_swing_speed || "";
   const tempo = data.swing_tempo || "";
   
-  let baseFlex = "Regular";
+  let baseFlex = "R";
   
-  // Determine base flex from swing speed
+  // Determine base flex from swing speed - use single letter codes
   if (swingSpeed.includes("under_70") || swingSpeed.includes("70-80")) {
-    baseFlex = "Senior";
+    baseFlex = "A"; // Senior/A-flex
   } else if (swingSpeed.includes("80-90")) {
-    baseFlex = "Regular";
+    baseFlex = "R"; // Regular
   } else if (swingSpeed.includes("90-100")) {
-    baseFlex = "Regular"; // Will be modified by tempo
+    baseFlex = "R"; // Regular (will be modified by tempo)
   } else if (swingSpeed.includes("100-110")) {
-    baseFlex = "Stiff";
+    baseFlex = "S"; // Stiff
   } else if (swingSpeed.includes("110_plus")) {
-    baseFlex = "X-Stiff";
+    baseFlex = "X"; // X-Stiff
   }
   
   // Tempo modifier
-  const flexOrder = ["Ladies", "Senior", "Regular", "Stiff", "X-Stiff", "TX"];
+  const flexOrder = ["L", "A", "R", "S", "X"];
+  const flexNames = ["Ladies", "Senior", "Regular", "Stiff", "X-Stiff"];
   let flexIndex = flexOrder.indexOf(baseFlex);
   
   if (tempo === "smooth") {
@@ -244,8 +245,9 @@ function calculateShaftFlex(data: FittingSessionData): { shaftFlex: string; expl
   }
   
   const finalFlex = flexOrder[flexIndex];
+  const flexName = flexNames[flexIndex];
   
-  const explanation = `${finalFlex} flex matches your ${swingSpeed.replace(/_/g, " ")} swing speed${tempo !== "moderate" ? ` with ${tempo} tempo` : ""}. This optimizes energy transfer and control.`;
+  const explanation = `${flexName} flex matches your ${swingSpeed.replace(/_/g, " ")} swing speed${tempo !== "moderate" ? ` with ${tempo} tempo` : ""}. This optimizes energy transfer and control.`;
   
   return { shaftFlex: finalFlex, explanation };
 }
