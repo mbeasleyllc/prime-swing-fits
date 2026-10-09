@@ -744,24 +744,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       playerCategory: playerCategory.replace(/_/g, " ")
     };
 
-    // Save recommendations to database
-    const { error: updateError } = await supabase
-      .from("fitting_sessions")
-      .update({
-        recommendations: recommendations as any,
-        status: "completed"
-      })
-      .eq("id", sessionId);
+    // Save recommendations to database - use the fitting_recommendations table
+    const { error: insertError } = await supabase
+      .from("fitting_recommendations")
+      .insert({
+        session_id: sessionId,
+        club_type: "full_bag",
+        recommendation_data: recommendations as any,
+        created_at: new Date().toISOString()
+      });
 
-    if (updateError) {
-      console.error("Failed to save recommendations:", updateError);
+    if (insertError) {
+      console.error("Failed to save recommendations:", insertError);
       console.error("Recommendations object:", JSON.stringify(recommendations, null, 2));
       console.error("Session ID:", sessionId);
       return res.status(500).json({ 
         success: false,
-        error: `Failed to save recommendations: ${updateError.message}`,
-        details: updateError
+        error: `Failed to save recommendations: ${insertError.message}`,
+        details: insertError
       });
+    }
+
+    // Update session status to completed
+    const { error: statusError } = await supabase
+      .from("fitting_sessions")
+      .update({
+        status: "completed"
+      })
+      .eq("id", sessionId);
+
+    if (statusError) {
+      console.error("Failed to update session status:", statusError);
     }
 
     return res.status(200).json({ 
