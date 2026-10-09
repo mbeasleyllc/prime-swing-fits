@@ -755,7 +755,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (updateError) {
       console.error("Failed to save recommendations:", updateError);
-      return res.status(500).json({ error: "Failed to save recommendations" });
+      console.error("Recommendations object:", JSON.stringify(recommendations, null, 2));
+      console.error("Session ID:", sessionId);
+      return res.status(500).json({ 
+        success: false,
+        error: `Failed to save recommendations: ${updateError.message}`,
+        details: updateError
+      });
     }
 
     return res.status(200).json({ 
@@ -766,6 +772,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
   } catch (error) {
     console.error("Recommendation generation error:", error);
-    return res.status(500).json({ error: "Failed to generate recommendations" });
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    return res.status(500).json({ 
+      success: false,
+      error: `Failed to generate recommendations: ${errorMessage}`,
+      details: error
+    });
   }
 }
