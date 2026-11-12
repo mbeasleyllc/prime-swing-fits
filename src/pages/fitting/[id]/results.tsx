@@ -174,25 +174,9 @@ export default function FittingResults() {
     const matched: Record<string, any[]> = {};
 
     Object.keys(recs).forEach(category => {
-      const rec = recs[category];
-      
-      let categoryName = category;
-      if (category === "fairway_woods") categoryName = "Fairway Wood";
-      if (category === "hybrids") categoryName = "Hybrid";
-      if (category === "irons") categoryName = "Irons";
-      if (category === "wedges") categoryName = "Wedge";
-      if (category === "putter") categoryName = "Putter";
-      if (category === "driver") categoryName = "Driver";
-
-      matched[category] = CLUB_DATABASE
-        .filter(club => club.category === categoryName)
-        .filter(club => {
-          if (rec.shaft_flex && club.flex_category) {
-            return club.flex_category.toLowerCase().includes(rec.shaft_flex.toLowerCase());
-          }
-          return true;
-        })
-        .slice(0, 3);
+      // Products will be matched via API in future
+      // For now, return empty array
+      matched[category] = [];
     });
 
     setMatchedProducts(matched);

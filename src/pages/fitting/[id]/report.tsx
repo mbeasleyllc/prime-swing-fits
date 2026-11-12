@@ -23,7 +23,7 @@ export default function FittingReport() {
   const [physicalProfile, setPhysicalProfile] = useState<any>(null);
   const [currentEquipment, setCurrentEquipment] = useState<any>(null);
   const [session, setSession] = useState<any>(null);
-  const [recommendedBalls, setRecommendedBalls] = useState<GolfBall[]>([]);
+  const [recommendedBalls, setRecommendedBalls] = useState<any[]>([]);
   const [swingData, setSwingData] = useState<any>(null);
   const [recentSessions, setRecentSessions] = useState<any[]>([]);
 
@@ -57,21 +57,8 @@ export default function FittingReport() {
         setRecentSessions(swingSessionsRes.data);
       }
 
-      if (recRes.data && playerRes.data && swingRes.data) {
-        const balls = getRecommendedBalls({
-          swingSpeed: swingRes.data.swing_strength === "powerful" ? "high" : 
-                     swingRes.data.swing_strength === "moderate" ? "medium" : "low",
-          skillLevel: playerRes.data.experience === "beginner" ? "beginner" :
-                     playerRes.data.experience === "intermediate" ? "intermediate" : "advanced",
-          shotShape: swingRes.data.typical_shot || "straight",
-          primaryGoal: playerRes.data.primary_goal || "distance",
-          handicap: typeof playerRes.data.handicap === "number" ? playerRes.data.handicap : parseInt(playerRes.data.handicap) || 20,
-          weather: "moderate",
-          budget: playerRes.data.budget_range === "budget_conscious" ? "budget" :
-                 playerRes.data.budget_range === "mid_range" ? "mid" : "premium"
-        });
-        setRecommendedBalls(balls);
-      }
+      // Golf ball recommendations will be added via separate API
+      setRecommendedBalls([]);
 
       setIsLoading(false);
     };
@@ -450,71 +437,6 @@ export default function FittingReport() {
                   <h4 className="font-semibold mb-0.5">Putter</h4>
                   <p className="text-muted-foreground">{recommendations.putter_spec}</p>
                 </div>
-              </div>
-            </section>
-          )}
-
-          {/* Recommended Golf Balls */}
-          {recommendedBalls.length > 0 && (
-            <section className="mb-8 break-inside-avoid">
-              <h3 className="text-xl font-bold text-primary mb-4 border-b pb-2">Recommended Golf Balls</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Based on your swing profile and skill level, these golf balls are optimized for your game:
-              </p>
-              <div className="space-y-3">
-                {recommendedBalls.slice(0, 3).map((ball, index) => (
-                  <div key={ball.id} className="border border-border rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="font-bold text-base">{ball.name}</h4>
-                        <p className="text-sm text-muted-foreground">{ball.manufacturer}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-accent">${ball.price_per_dozen}</p>
-                        <p className="text-xs text-muted-foreground">per dozen</p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs mb-2">
-                      <div>
-                        <span className="text-muted-foreground">Construction:</span>
-                        <span className="ml-1 font-medium">{ball.construction}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Compression:</span>
-                        <span className="ml-1 font-medium">{ball.compression}</span>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-4 gap-2 text-xs">
-                      <div>
-                        <div className="text-muted-foreground mb-1">Distance</div>
-                        <div className="w-full bg-muted rounded-full h-1.5">
-                          <div className="bg-accent h-1.5 rounded-full" style={{ width: `${ball.distance * 10}%` }} />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground mb-1">Control</div>
-                        <div className="w-full bg-muted rounded-full h-1.5">
-                          <div className="bg-accent h-1.5 rounded-full" style={{ width: `${ball.control * 10}%` }} />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground mb-1">Spin</div>
-                        <div className="w-full bg-muted rounded-full h-1.5">
-                          <div className="bg-accent h-1.5 rounded-full" style={{ width: `${ball.spin * 10}%` }} />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-muted-foreground mb-1">Feel</div>
-                        <div className="w-full bg-muted rounded-full h-1.5">
-                          <div className="bg-accent h-1.5 rounded-full" style={{ width: `${ball.feel * 10}%` }} />
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      <strong>Best for:</strong> {ball.best_for.slice(0, 3).join(", ")}
-                    </p>
-                  </div>
-                ))}
               </div>
             </section>
           )}
