@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 
+import { useTheme } from "next-themes";
 // Force dynamic rendering (skip static generation at build time)
 export const dynamic = 'force-dynamic';
-import { useTheme } from "next-themes";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
