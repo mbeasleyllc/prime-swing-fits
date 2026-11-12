@@ -16,6 +16,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Users, Activity, Award, TrendingUp, FileText, BarChart3, Download, RefreshCw, Shield, Tag, Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 
+// Force dynamic rendering (skip static generation at build time)
+export const dynamic = 'force-dynamic';
+
 interface ActivityLog {
   id: string;
   timestamp: string;

@@ -1,5 +1,9 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+
+// Force dynamic rendering (skip static generation at build time)
+export const dynamic = 'force-dynamic';
+
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";

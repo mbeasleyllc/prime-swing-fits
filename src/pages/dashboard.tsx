@@ -1,5 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+
+// Force dynamic rendering (skip static generation at build time)
+export const dynamic = 'force-dynamic';
 import { useTheme } from "next-themes";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";

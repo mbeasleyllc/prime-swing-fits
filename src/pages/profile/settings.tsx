@@ -75,6 +75,9 @@ import {
 import { useRouter } from "next/router";
 import { DeviceSetup } from "@/components/device-integration/DeviceSetup";
 
+// Force dynamic rendering (skip static generation at build time)
+export const dynamic = 'force-dynamic';
+
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
 export default function Settings() {

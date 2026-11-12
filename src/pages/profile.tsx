@@ -62,6 +62,9 @@ import {
 } from "@/components/ui/tooltip";
 import { useRouter } from "next/router";
 
+// Force dynamic rendering (skip static generation at build time)
+export const dynamic = 'force-dynamic';
+
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 type FittingSession = Database["public"]["Tables"]["fitting_sessions"]["Row"];
 
