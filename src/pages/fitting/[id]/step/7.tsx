@@ -1,52 +1,55 @@
-import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Navigation } from "@/components/Navigation";
-import { Footer } from "@/components/Footer";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { ProgressBar } from "@/components/wizard/ProgressBar";
-import { MeasurementTooltip } from "@/components/wizard/MeasurementTooltip";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useAuth } from "@/hooks/useAuth";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ProgressBar } from "@/components/wizard/ProgressBar";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { putterFittingSchema, type PutterFitting } from "@/lib/wizardValidation";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+
+const putterSchema = z.object({
+  putter_current_length: z.number().min(28).max(40).optional(),
+  putter_current_make: z.string().max(50).optional(),
+  putter_current_model: z.string().max(50).optional(),
+  putter_eye_position: z.enum(["inside", "over", "outside", "unsure"]),
+  putter_posture: z.enum(["upright", "moderate", "bent"]),
+  putter_stroke_type: z.enum(["straight", "slight_arc", "moderate_arc", "strong_arc"]),
+  putter_common_miss: z.enum(["left", "right", "short", "long", "inconsistent_speed"]).optional(),
+  putter_head_style_pref: z.enum(["blade", "mid_mallet", "mallet", "no_preference"]),
+  putter_alignment_pref: z.enum(["minimal", "moderate", "prominent"]),
+  putter_feel_pref: z.enum(["soft", "medium", "firm"]),
+  putter_grip_size_pref: z.enum(["standard", "midsize", "oversize"]),
+  putter_satisfaction: z.enum(["very_dissatisfied", "dissatisfied", "neutral", "satisfied", "very_satisfied"]),
+});
+
+type PutterData = z.infer<typeof putterSchema>;
 
 export default function Step7() {
-  const { user } = useAuth();
   const router = useRouter();
   const { id } = router.query;
+  const { user } = useAuth();
   const { toast } = useToast();
-
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  const form = useForm<PutterFitting>({
-    resolver: zodResolver(putterFittingSchema),
+  const form = useForm<PutterData>({
+    resolver: zodResolver(putterSchema),
     defaultValues: {
-      putter_eye_position: undefined,
-      putter_posture: undefined,
-      putter_arm_hang: undefined,
-      putter_sole_flush: undefined,
-      putter_stroke_type: undefined,
-      putter_face_rotation: undefined,
-      putter_common_miss: undefined,
-      putter_head_style_pref: undefined,
-      putter_alignment_pref: undefined,
-      putter_forgiveness_priority: undefined,
-      putter_feel_pref: undefined,
-      putter_green_speed: undefined,
-      putter_forward_press: "no",
+      putter_eye_position: "over",
+      putter_posture: "moderate",
+      putter_stroke_type: "slight_arc",
+      putter_head_style_pref: "mid_mallet",
+      putter_alignment_pref: "moderate",
+      putter_feel_pref: "medium",
       putter_grip_size_pref: "standard",
-      putter_hand_activity: undefined,
-      putter_current_length: undefined,
-      putter_satisfaction: undefined,
+      putter_satisfaction: "neutral",
     },
   });
 
@@ -65,23 +68,18 @@ export default function Step7() {
 
       if (data) {
         form.reset({
-          putter_eye_position: (data.putter_eye_position as any) || undefined,
-          putter_posture: (data.putter_posture as any) || undefined,
-          putter_arm_hang: (data.putter_arm_hang as any) || undefined,
-          putter_sole_flush: (data.putter_sole_flush as any) || undefined,
-          putter_stroke_type: (data.putter_stroke_type as any) || undefined,
-          putter_face_rotation: (data.putter_face_rotation as any) || undefined,
-          putter_common_miss: (data.putter_common_miss as any) || undefined,
-          putter_head_style_pref: (data.putter_head_style_pref as any) || undefined,
-          putter_alignment_pref: (data.putter_alignment_pref as any) || undefined,
-          putter_forgiveness_priority: (data.putter_forgiveness_priority as any) || undefined,
-          putter_feel_pref: (data.putter_feel_pref as any) || undefined,
-          putter_green_speed: (data.putter_green_speed as any) || undefined,
-          putter_forward_press: data.putter_forward_press === true ? "yes" : "no",
-          putter_grip_size_pref: (data.putter_grip_size_pref as string || "standard") as "standard" | "midsize" | "oversize",
-          putter_hand_activity: (data.putter_hand_activity as any) || undefined,
-          putter_current_length: data.putter_current_length || undefined,
-          putter_satisfaction: (data.putter_satisfaction as any) || undefined,
+          putter_current_length: (data as any).putter_current_length || undefined,
+          putter_current_make: (data as any).putter_current_make || undefined,
+          putter_current_model: (data as any).putter_current_model || undefined,
+          putter_eye_position: (data as any).putter_eye_position || "over",
+          putter_posture: (data as any).putter_posture || "moderate",
+          putter_stroke_type: (data as any).putter_stroke_type || "slight_arc",
+          putter_common_miss: (data as any).putter_common_miss,
+          putter_head_style_pref: (data as any).putter_head_style_pref || "mid_mallet",
+          putter_alignment_pref: (data as any).putter_alignment_pref || "moderate",
+          putter_feel_pref: (data as any).putter_feel_pref || "medium",
+          putter_grip_size_pref: (data as any).putter_grip_size_pref || "standard",
+          putter_satisfaction: (data as any).putter_satisfaction || "neutral",
         });
       }
 
@@ -91,12 +89,7 @@ export default function Step7() {
     loadData();
   }, [id, user, form]);
 
-  const handleBack = () => {
-    const sessionId = Array.isArray(id) ? id[0] : id;
-    router.push(`/fitting/${sessionId}/step/6`);
-  };
-
-  const onSubmit = async (values: PutterFitting) => {
+  const onSubmit = async (values: PutterData) => {
     if (!user || !id) return;
 
     const sessionId = Array.isArray(id) ? id[0] : id;
@@ -105,23 +98,18 @@ export default function Step7() {
     const { error } = await supabase
       .from("fitting_sessions")
       .update({
-        putter_eye_position: values.putter_eye_position || null,
-        putter_posture: values.putter_posture || null,
-        putter_arm_hang: values.putter_arm_hang || null,
-        putter_sole_flush: values.putter_sole_flush as any || null,
-        putter_stroke_type: values.putter_stroke_type || null,
-        putter_face_rotation: values.putter_face_rotation || null,
-        putter_common_miss: values.putter_common_miss || null,
-        putter_head_style_pref: values.putter_head_style_pref || null,
-        putter_alignment_pref: values.putter_alignment_pref || null,
-        putter_forgiveness_priority: values.putter_forgiveness_priority || null,
-        putter_feel_pref: values.putter_feel_pref || null,
-        putter_green_speed: values.putter_green_speed || null,
-        putter_forward_press: values.putter_forward_press === "yes" ? true : false,
-        putter_grip_size_pref: values.putter_grip_size_pref as any,
-        putter_hand_activity: values.putter_hand_activity || null,
-        putter_current_length: values.putter_current_length || null,
-        putter_satisfaction: values.putter_satisfaction || null,
+        putter_current_length: values.putter_current_length,
+        putter_current_make: values.putter_current_make,
+        putter_current_model: values.putter_current_model,
+        putter_eye_position: values.putter_eye_position,
+        putter_posture: values.putter_posture,
+        putter_stroke_type: values.putter_stroke_type,
+        putter_common_miss: values.putter_common_miss,
+        putter_head_style_pref: values.putter_head_style_pref,
+        putter_alignment_pref: values.putter_alignment_pref,
+        putter_feel_pref: values.putter_feel_pref,
+        putter_grip_size_pref: values.putter_grip_size_pref,
+        putter_satisfaction: values.putter_satisfaction,
         current_step: 8,
       })
       .eq("id", sessionId);
@@ -137,491 +125,350 @@ export default function Step7() {
     }
 
     toast({
-      title: "Progress saved ✓",
-      description: "Moving to final step...",
+      title: "Putter data saved ✓",
+      description: "Moving to golf ball fitting...",
     });
 
     router.push(`/fitting/${sessionId}/step/8`);
   };
 
+  const handleBack = () => {
+    router.push(`/fitting/${id}/step/6`);
+  };
+
   if (isLoading) {
     return (
-      <ProtectedRoute>
-        <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-accent" />
-        </div>
-      </ProtectedRoute>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+      </div>
     );
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen flex flex-col bg-background">
-        <Navigation />
-        <div className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full">
-          <ProgressBar currentStep={7} totalSteps={8} />
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 py-8 max-w-3xl">
+        <ProgressBar currentStep={7} totalSteps={9} />
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Section 7: Putter Fitting</CardTitle>
-              <CardDescription>Let's find the perfect putter for your stroke</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="font-semibold text-sm">Setup & Posture</h3>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="putter_eye_position"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="flex items-center gap-2">
-                              <FormLabel>Eye Position</FormLabel>
-                              <MeasurementTooltip type="eye-position" />
-                            </div>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select position" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="inside">Inside ball</SelectItem>
-                                <SelectItem value="over">Over ball</SelectItem>
-                                <SelectItem value="outside">Outside ball</SelectItem>
-                                <SelectItem value="unsure">Unsure</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+        <div className="mt-8">
+          <Card className="p-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Putter Fitting 🎱</h2>
+              <p className="text-muted-foreground">
+                Find the right putter specs for your stroke
+              </p>
+            </div>
 
-                      <FormField
-                        control={form.control}
-                        name="putter_posture"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Posture</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select posture" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="upright">Upright</SelectItem>
-                                <SelectItem value="moderate">Moderate</SelectItem>
-                                <SelectItem value="bent">Bent over</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="border-b pb-6">
+                  <h3 className="text-lg font-semibold mb-4">Current Putter</h3>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="putter_current_make"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Make/Brand</FormLabel>
+                          <FormControl>
+                            <input {...field} placeholder="e.g., Scotty Cameron" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                      <FormField
-                        control={form.control}
-                        name="putter_arm_hang"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="flex items-center gap-2">
-                              <FormLabel>Arm Hang</FormLabel>
-                              <MeasurementTooltip type="arm-hang" />
-                            </div>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select hang" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="natural">Natural/relaxed</SelectItem>
-                                <SelectItem value="extended">Extended</SelectItem>
-                                <SelectItem value="bent">Bent/close</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="putter_sole_flush"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="flex items-center gap-2">
-                              <FormLabel>Sole Flush</FormLabel>
-                              <MeasurementTooltip type="sole-flush" />
-                            </div>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="toe_up">Toe up</SelectItem>
-                                <SelectItem value="flat">Flat</SelectItem>
-                                <SelectItem value="heel_up">Heel up</SelectItem>
-                                <SelectItem value="unsure">Unsure</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="putter_current_model"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Model</FormLabel>
+                          <FormControl>
+                            <input {...field} placeholder="e.g., Newport 2" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
 
-                  <div className="space-y-4 border-t pt-4">
-                    <h3 className="font-semibold text-sm">Stroke Characteristics</h3>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="putter_stroke_type"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="flex items-center gap-2">
-                              <FormLabel>Stroke Pattern</FormLabel>
-                              <MeasurementTooltip type="stroke-arc" />
-                            </div>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select pattern" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="straight">Straight back/through</SelectItem>
-                                <SelectItem value="slight_arc">Slight arc</SelectItem>
-                                <SelectItem value="moderate_arc">Moderate arc</SelectItem>
-                                <SelectItem value="strong_arc">Strong arc</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                  <FormField
+                    control={form.control}
+                    name="putter_current_length"
+                    render={({ field }) => (
+                      <FormItem className="mt-4">
+                        <FormLabel>Current Length (inches)</FormLabel>
+                        <FormControl>
+                          <input
+                            type="number"
+                            {...field}
+                            value={field.value || ""}
+                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                            min={28}
+                            max={40}
+                            step={0.25}
+                            placeholder="34"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                      <FormField
-                        control={form.control}
-                        name="putter_face_rotation"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="flex items-center gap-2">
-                              <FormLabel>Face Rotation</FormLabel>
-                              <MeasurementTooltip type="face-rotation" />
-                            </div>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select rotation" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="minimal">Minimal</SelectItem>
-                                <SelectItem value="moderate">Moderate</SelectItem>
-                                <SelectItem value="significant">Significant</SelectItem>
-                                <SelectItem value="unsure">Unsure</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                  <FormField
+                    control={form.control}
+                    name="putter_satisfaction"
+                    render={({ field }) => (
+                      <FormItem className="mt-4">
+                        <FormLabel>Overall Satisfaction <span className="text-destructive">*</span></FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="very_dissatisfied">Very Dissatisfied</SelectItem>
+                            <SelectItem value="dissatisfied">Dissatisfied</SelectItem>
+                            <SelectItem value="neutral">Neutral</SelectItem>
+                            <SelectItem value="satisfied">Satisfied</SelectItem>
+                            <SelectItem value="very_satisfied">Very Satisfied</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
-                      <FormField
-                        control={form.control}
-                        name="putter_hand_activity"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Hand Activity</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select activity" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="quiet">Quiet hands</SelectItem>
-                                <SelectItem value="moderate">Moderate</SelectItem>
-                                <SelectItem value="active">Active hands</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="putter_common_miss"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Typical Miss</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select miss" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="left">Left</SelectItem>
-                                <SelectItem value="right">Right</SelectItem>
-                                <SelectItem value="short">Short</SelectItem>
-                                <SelectItem value="long">Long</SelectItem>
-                                <SelectItem value="inconsistent_speed">Inconsistent speed</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 border-t pt-4">
-                    <h3 className="font-semibold text-sm">Preferences</h3>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="putter_head_style_pref"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Head Style</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select style" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="blade">Blade</SelectItem>
-                                <SelectItem value="mid_mallet">Mid-mallet</SelectItem>
-                                <SelectItem value="mallet">Mallet</SelectItem>
-                                <SelectItem value="no_preference">No preference</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="putter_alignment_pref"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Alignment Aid</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select preference" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="minimal">Minimal/none</SelectItem>
-                                <SelectItem value="moderate">Moderate</SelectItem>
-                                <SelectItem value="prominent">Prominent</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="putter_forgiveness_priority"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Forgiveness Priority</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select priority" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="low">Low (prefer feel)</SelectItem>
-                                <SelectItem value="moderate">Moderate</SelectItem>
-                                <SelectItem value="high">High (max forgiveness)</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="putter_feel_pref"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Feel Preference</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select feel" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="soft">Soft</SelectItem>
-                                <SelectItem value="medium">Medium</SelectItem>
-                                <SelectItem value="firm">Firm</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="putter_green_speed"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Typical Green Speed</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select speed" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="slow">Slow (8-9)</SelectItem>
-                                <SelectItem value="medium">Medium (9-11)</SelectItem>
-                                <SelectItem value="fast">Fast (11+)</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="putter_forward_press"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Forward Press <span className="text-destructive">*</span></FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="yes">Yes</SelectItem>
-                                <SelectItem value="no">No</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="putter_grip_size_pref"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Grip Size <span className="text-destructive">*</span></FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select size" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="standard">Standard</SelectItem>
-                                <SelectItem value="midsize">Midsize</SelectItem>
-                                <SelectItem value="oversize">Oversize/jumbo</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="putter_current_length"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Current Length (inches)</FormLabel>
+                <div className="border-b pb-6">
+                  <h3 className="text-lg font-semibold mb-4">Setup & Posture</h3>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="putter_eye_position"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Eye Position <span className="text-destructive">*</span></FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                              <Input
-                                type="number"
-                                {...field}
-                                value={field.value || ""}
-                                onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                                min={28}
-                                max={40}
-                                step={0.5}
-                                placeholder="34"
-                              />
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
                             </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                            <SelectContent>
+                              <SelectItem value="inside">Inside the ball</SelectItem>
+                              <SelectItem value="over">Directly over</SelectItem>
+                              <SelectItem value="outside">Outside the ball</SelectItem>
+                              <SelectItem value="unsure">Not sure</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>Where your eyes are relative to the ball</FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                      <FormField
-                        control={form.control}
-                        name="putter_satisfaction"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Current Putter Satisfaction</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Rate satisfaction" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="very_dissatisfied">Very dissatisfied</SelectItem>
-                                <SelectItem value="dissatisfied">Dissatisfied</SelectItem>
-                                <SelectItem value="neutral">Neutral</SelectItem>
-                                <SelectItem value="satisfied">Satisfied</SelectItem>
-                                <SelectItem value="very_satisfied">Very satisfied</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="putter_posture"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Putting Posture <span className="text-destructive">*</span></FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="upright">Upright - More standing</SelectItem>
+                              <SelectItem value="moderate">Moderate bend</SelectItem>
+                              <SelectItem value="bent">Bent over - Low hands</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="border-b pb-6">
+                  <h3 className="text-lg font-semibold mb-4">Stroke Characteristics</h3>
+                  
+                  <FormField
+                    control={form.control}
+                    name="putter_stroke_type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Stroke Path <span className="text-destructive">*</span></FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="straight">Straight back & through</SelectItem>
+                            <SelectItem value="slight_arc">Slight arc</SelectItem>
+                            <SelectItem value="moderate_arc">Moderate arc</SelectItem>
+                            <SelectItem value="strong_arc">Strong arc</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>How your putter moves during the stroke</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="putter_common_miss"
+                    render={({ field }) => (
+                      <FormItem className="mt-4">
+                        <FormLabel>Most Common Miss</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select miss pattern" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="left">Misses left</SelectItem>
+                            <SelectItem value="right">Misses right</SelectItem>
+                            <SelectItem value="short">Leaves putts short</SelectItem>
+                            <SelectItem value="long">Putts run past</SelectItem>
+                            <SelectItem value="inconsistent_speed">Inconsistent speed control</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Preferences</h3>
+                  
+                  <FormField
+                    control={form.control}
+                    name="putter_head_style_pref"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Head Style Preference <span className="text-destructive">*</span></FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="blade">Blade - Traditional look</SelectItem>
+                            <SelectItem value="mid_mallet">Mid-Mallet - Modern classic</SelectItem>
+                            <SelectItem value="mallet">Full Mallet - High MOI</SelectItem>
+                            <SelectItem value="no_preference">No Preference</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <FormField
+                      control={form.control}
+                      name="putter_alignment_pref"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Alignment Aids <span className="text-destructive">*</span></FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="minimal">Minimal - Clean look</SelectItem>
+                              <SelectItem value="moderate">Moderate - Single line</SelectItem>
+                              <SelectItem value="prominent">Prominent - Multiple aids</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="putter_feel_pref"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Feel Preference <span className="text-destructive">*</span></FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="soft">Soft - Muted feedback</SelectItem>
+                              <SelectItem value="medium">Medium - Balanced</SelectItem>
+                              <SelectItem value="firm">Firm - Crisp feedback</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
 
-                  <div className="flex justify-between gap-4 pt-4">
-                    <Button onClick={handleBack} variant="outline" size="lg">
-                      <ArrowLeft className="mr-2 h-4 w-4" />
-                      Back
-                    </Button>
-                    <Button
-                      type="submit"
-                      disabled={isSaving}
-                      size="lg"
-                    >
-                      {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      Next
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
+                  <FormField
+                    control={form.control}
+                    name="putter_grip_size_pref"
+                    render={({ field }) => (
+                      <FormItem className="mt-4">
+                        <FormLabel>Grip Size Preference <span className="text-destructive">*</span></FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="standard">Standard</SelectItem>
+                            <SelectItem value="midsize">Midsize - Slightly larger</SelectItem>
+                            <SelectItem value="oversize">Oversize - SuperStroke style</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="flex justify-between gap-4 pt-4">
+                  <Button onClick={handleBack} variant="outline" size="lg">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSaving}
+                    size="lg"
+                  >
+                    {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Next
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </Card>
         </div>
-        <Footer />
       </div>
-    </ProtectedRoute>
+    </div>
   );
 }
