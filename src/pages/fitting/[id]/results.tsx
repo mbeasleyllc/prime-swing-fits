@@ -641,3 +641,10 @@ export default function FittingResults() {
     </ProtectedRoute>
   );
 }
+
+// Force server-side rendering (skip static generation at build time)
+export async function getServerSideProps() {
+  return {
+    props: {},
+  };
+}

@@ -644,3 +644,10 @@ export default function Step3Driver() {
     </div>
   );
 }
+
+// Force server-side rendering (skip static generation at build time)
+export async function getServerSideProps() {
+  return {
+    props: {},
+  };
+}

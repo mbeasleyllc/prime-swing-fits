@@ -357,3 +357,10 @@ export default function Step0() {
     </div>
   );
 }
+
+// Force server-side rendering (skip static generation at build time)
+export async function getServerSideProps() {
+  return {
+    props: {},
+  };
+}
