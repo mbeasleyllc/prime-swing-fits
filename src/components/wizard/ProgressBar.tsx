@@ -8,19 +8,22 @@ interface ProgressBarProps {
 }
 
 const stepLabels = [
+  "Club Selection",
   "Player Profile",
+  "Physical Info",
   "Swing Profile",
+  "Equipment",
+  "Goals",
   "Course Conditions",
-  "Physical Measurements",
-  "Current Equipment",
-  "Review & Submit",
+  "Golf Ball",
+  "Review"
 ];
 
 export function ProgressBar({ currentStep, totalSteps }: ProgressBarProps) {
   return (
     <div className="w-full mb-8">
       <div className="flex items-center justify-between">
-        {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => {
+        {Array.from({ length: totalSteps }, (_, i) => i).map((step) => {
           const isCompleted = step < currentStep;
           const isCurrent = step === currentStep;
 
@@ -35,7 +38,7 @@ export function ProgressBar({ currentStep, totalSteps }: ProgressBarProps) {
                     !isCompleted && !isCurrent && "bg-muted text-muted-foreground"
                   )}
                 >
-                  {isCompleted ? <Check className="w-5 h-5" /> : step}
+                  {isCompleted ? <Check className="w-5 h-5" /> : step + 1}
                 </div>
                 <span
                   className={cn(
@@ -43,10 +46,10 @@ export function ProgressBar({ currentStep, totalSteps }: ProgressBarProps) {
                     (isCurrent || isCompleted) ? "text-foreground font-medium" : "text-muted-foreground"
                   )}
                 >
-                  {stepLabels[step - 1]}
+                  {stepLabels[step]}
                 </span>
               </div>
-              {step < totalSteps && (
+              {step < totalSteps - 1 && (
                 <div
                   className={cn(
                     "flex-1 h-1 mx-2 transition-colors",
