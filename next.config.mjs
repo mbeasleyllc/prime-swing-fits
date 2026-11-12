@@ -28,7 +28,8 @@ function getTurboRules() {
 }
 
 const nextConfig = {
-  reactStrictMode: true,
+    reactStrictMode: true,
+  output: 'standalone',
   turbopack: {
     rules: getTurboRules(),
   },
@@ -42,5 +43,23 @@ const nextConfig = {
   },
   allowedDevOrigins: ["*.daytona.work", "*.softgen.dev"],
 };
+experimental: {
+workerThreads: false,
+cpus: 1,
+},
+webpack: (config, { isServer }) => {
+config.optimization = {
+ moduleIds: 'deterministic',
+ splitChunks: {
+   chunks: 'all',
+   cacheGroups: {
+     default: false,
+     vendors: false,
+   },
+ },
+};
+config.infrastructureLogging = { level: 'error' };
+return config;
+},
 
 export default nextConfig;
