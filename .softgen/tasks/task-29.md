@@ -1,6 +1,6 @@
 ---
 title: Category-Specific Questionnaires (Fairway Woods, Hybrids, Irons)
-status: todo
+status: in_progress
 priority: high
 type: feature
 tags: [fitting, phase3]
