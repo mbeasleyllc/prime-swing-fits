@@ -112,10 +112,12 @@ export default function Step0() {
 
   const loadExistingData = async () => {
     try {
+      const sessionId = Array.isArray(id) ? id[0] : id;
+      
       const { data: session, error } = await supabase
         .from("fitting_sessions")
         .select("*")
-        .eq("id", id)
+        .eq("id", sessionId)
         .single();
 
       if (error) throw error;
@@ -124,7 +126,7 @@ export default function Step0() {
       setSubscriptionTier(session.subscription_tier || "free_trial");
       
       if (session.selected_categories && Array.isArray(session.selected_categories)) {
-        setSelectedCategories(session.selected_categories);
+        setSelectedCategories(session.selected_categories as string[]);
       }
     } catch (error) {
       console.error("Error loading session:", error);
@@ -169,6 +171,8 @@ export default function Step0() {
     setSaving(true);
 
     try {
+      const sessionId = Array.isArray(id) ? id[0] : id;
+      
       const { error } = await supabase
         .from("fitting_sessions")
         .update({
@@ -181,7 +185,7 @@ export default function Step0() {
             selected_at: new Date().toISOString()
           }
         })
-        .eq("id", id);
+        .eq("id", sessionId);
 
       if (error) throw error;
 
@@ -190,7 +194,7 @@ export default function Step0() {
         description: `${selectedCategories.length} ${selectedCategories.length === 1 ? 'category' : 'categories'} selected`,
       });
 
-      router.push(`/fitting/${id}/step/1`);
+      router.push(`/fitting/${sessionId}/step/1`);
     } catch (error) {
       console.error("Error saving categories:", error);
       toast({

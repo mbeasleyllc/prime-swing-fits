@@ -99,21 +99,21 @@ export default function Step3Driver() {
       if (data) {
         form.reset({
           current_driver_loft: data.current_driver_loft || undefined,
-          current_driver_flex: data.current_driver_flex || undefined,
+          current_driver_flex: (data.current_driver_flex as "ladies" | "senior" | "regular" | "stiff" | "x-stiff") || undefined,
           current_driver_length: data.current_driver_length || undefined,
           current_driver_make: data.current_driver_make || undefined,
           current_driver_model: data.current_driver_model || undefined,
-          driver_distance_satisfaction: data.driver_distance_satisfaction || "neutral",
-          driver_accuracy_satisfaction: data.driver_accuracy_satisfaction || "neutral",
-          driver_ball_flight: data.driver_ball_flight || "straight",
-          driver_trajectory: data.driver_trajectory || "ideal",
-          driver_miss_pattern: data.driver_miss_pattern || [],
-          driver_swing_speed: data.driver_swing_speed || "90-100",
-          driver_tempo: data.driver_tempo || "moderate",
-          driver_performance_goals: data.driver_performance_goals || [],
-          driver_head_size_pref: data.driver_head_size_pref || "460cc",
-          driver_sound_pref: data.driver_sound_pref || "no_preference",
-          driver_adjustability_importance: data.driver_adjustability_importance || "somewhat_important",
+          driver_distance_satisfaction: (data.driver_distance_satisfaction as "very_dissatisfied" | "dissatisfied" | "neutral" | "satisfied" | "very_satisfied") || "neutral",
+          driver_accuracy_satisfaction: (data.driver_accuracy_satisfaction as "very_dissatisfied" | "dissatisfied" | "neutral" | "satisfied" | "very_satisfied") || "neutral",
+          driver_ball_flight: (data.driver_ball_flight as "slice" | "fade" | "straight" | "draw" | "hook") || "straight",
+          driver_trajectory: (data.driver_trajectory as "too_low" | "low" | "ideal" | "high" | "too_high") || "ideal",
+          driver_miss_pattern: (data.driver_miss_pattern as string[]) || [],
+          driver_swing_speed: (data.driver_swing_speed as "under_80" | "80-90" | "90-100" | "100-110" | "110_plus") || "90-100",
+          driver_tempo: (data.driver_tempo as "smooth" | "moderate" | "aggressive") || "moderate",
+          driver_performance_goals: (data.driver_performance_goals as string[]) || [],
+          driver_head_size_pref: (data.driver_head_size_pref as "traditional_440" | "460cc" | "no_preference") || "460cc",
+          driver_sound_pref: (data.driver_sound_pref as "loud" | "moderate" | "muted" | "no_preference") || "no_preference",
+          driver_adjustability_importance: (data.driver_adjustability_importance as "not_important" | "somewhat_important" | "very_important") || "somewhat_important",
         });
       }
 
