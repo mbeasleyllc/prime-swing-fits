@@ -32,11 +32,17 @@ export const playerProfileSchema = z.object({
 
 // Section 2: Golf Experience & Ability
 export const golfExperienceSchema = z.object({
+  experience_level: z.enum(["beginner", "intermediate", "advanced", "expert"], { required_error: "Please select experience level" }),
   handicap_index: z.number().min(-5).max(54).optional(),
+  handicap_goal: z.number().min(-5).max(54).optional(),
   average_score: z.number().int().min(60).max(150).optional(),
   years_playing: z.enum(["less_than_1", "1-3", "3-5", "5-10", "10_plus"], { required_error: "Please select years playing" }),
   playing_frequency: z.enum(["rarely", "monthly", "weekly", "multiple_weekly", "daily"], { required_error: "Please select playing frequency" }),
   practice_frequency: z.enum(["rarely", "monthly", "weekly", "multiple_weekly", "daily"], { required_error: "Please select practice frequency" }),
+  ball_striking_quality: z.enum(["struggling", "inconsistent", "decent", "solid", "excellent"], { required_error: "Please select ball-striking quality" }),
+  has_clubs: z.boolean(),
+  clubs_age: z.enum(["new", "1-2_years", "3-5_years", "5-10_years", "10_plus_years"]).optional(),
+  replacement_scope: z.enum(["full_bag", "one_club", "partial_set", "undecided"]).optional(),
 }).refine(
   (data) => data.handicap_index !== undefined || data.average_score !== undefined,
   { message: "Either handicap or average score is required", path: ["handicap_index"] }
