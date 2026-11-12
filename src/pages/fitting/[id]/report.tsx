@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Download, Printer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getRecommendedBalls, type GolfBall } from "@/data/golfBallDatabase";
 
 export default function FittingReport() {
   const router = useRouter();

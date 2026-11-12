@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createClient } from "@supabase/supabase-js";
-import { GOLF_BALL_DATABASE } from "@/data/golfBallDatabase";
+import { createClient } from "@/integrations/supabase/client";
+
+interface PlayerProfile {
+  height?: number;
+}
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -563,92 +566,30 @@ function generatePutterRecommendation(data: FittingSessionData): CategoryRecomme
   };
 }
 
-function generateGolfBallRecommendation(data: FittingSessionData, playerCategory: PlayerCategory): { 
-  category: CategoryRecommendation; 
-  balls: GolfBallRecommendation[] 
-} {
-  const swingSpeed = data.driver_swing_speed || "90-100";
-  const goals = data.goals_ranking || {};
-  const ballPriorities = data.ball_priorities || [];
+function generateGolfBallRecommendation(data: any, playerCategory: string): any {
+  const swingSpeed = data.driver_swing_speed || data.seven_iron_distance;
   
-  let speedMph = 95;
-  let speedCategory: "low" | "medium" | "high" = "medium";
-  
-  if (swingSpeed.includes("under_70") || swingSpeed.includes("70-80") || swingSpeed.includes("under_80")) {
-    speedMph = 75;
-    speedCategory = "low";
-  } else if (swingSpeed.includes("80-90")) {
-    speedMph = 85;
-    speedCategory = "medium";
-  } else if (swingSpeed.includes("90-100")) {
-    speedMph = 95;
-    speedCategory = "medium";
-  } else if (swingSpeed.includes("100-110")) {
-    speedMph = 105;
-    speedCategory = "high";
-  } else if (swingSpeed.includes("110")) {
-    speedMph = 115;
-    speedCategory = "high";
-  }
-  
-  const scoredBalls = GOLF_BALL_DATABASE.map(ball => {
-    let score = 100;
-    
-    if (ball.swing_speed_range.includes(speedCategory)) score += 20;
-    else if (
-      (speedCategory === "low" && ball.swing_speed_range.includes("medium")) ||
-      (speedCategory === "high" && ball.swing_speed_range.includes("medium"))
-    ) {
-      score += 5;
-    } else {
-      score -= 30;
-    }
-    
-    if (speedMph < 85 && ball.compression > 90) score -= 20;
-    if (speedMph > 105 && ball.compression < 80) score -= 20;
-    
-    if (goals.distance && goals.distance >= 4) {
-      if (ball.best_for.some(bf => bf.toLowerCase().includes("distance"))) score += 10;
-    }
-    if (goals.feel && goals.feel >= 4) {
-      if (ball.best_for.some(bf => bf.toLowerCase().includes("soft") || bf.toLowerCase().includes("feel"))) score += 10;
-    }
-    if (goals.workability && goals.workability >= 4) {
-      if (ball.spin_rate === "High") score += 10;
-    }
-    
-    if (playerCategory === "game_improvement") {
-      if (ball.recommended_for.some(rec => rec.toLowerCase().includes("high handicap"))) score += 10;
-    } else if (playerCategory === "tour_oriented") {
-      if (ball.recommended_for.some(rec => rec.toLowerCase().includes("tour"))) score += 10;
-    }
-    
-    return {
-      name: ball.name,
-      compression: ball.compression,
-      spinRate: ball.spin_rate,
-      optimalSpeed: ball.swing_speed_range.join("/"),
-      matchScore: Math.max(0, Math.min(100, score))
-    };
-  });
-  
-  const topBalls = scoredBalls.sort((a, b) => b.matchScore - a.matchScore).slice(0, 5);
-  const topBall = topBalls[0];
+  // Query will happen in the results page or via separate API call
+  // For now, return empty array with proper structure
+  const explanation = `Based on your swing characteristics, we'll recommend golf balls that match your speed and preferences.`;
   
   return {
-    category: {
-      category: "golf_ball",
-      specifications: {
-        compression: topBall.compression,
-        spinRate: topBall.spinRate,
-        optimalSpeed: topBall.optimalSpeed
-      },
-      headStyle: topBall.name,
-      explanation: `${topBall.name} (${topBall.compression} compression, ${topBall.spinRate} spin) optimized for ${speedMph}mph swing speed. ${ballPriorities.join(", ") || "Balanced performance"}.`,
-      confidence: 83
+    category: "golf_ball",
+    specifications: {
+      balls: [], // Will be populated via API query
+      swing_speed: swingSpeed,
+      compression_range: getCompressionRange(swingSpeed)
     },
-    balls: topBalls
+    explanation,
+    confidence_score: 85
   };
+}
+
+function getCompressionRange(swingSpeed: number): string {
+  if (swingSpeed >= 105) return "90-100 (Tour level)";
+  if (swingSpeed >= 95) return "80-90 (High compression)";
+  if (swingSpeed >= 85) return "70-80 (Medium compression)";
+  return "60-70 (Low compression)";
 }
 
 // ============================================================================

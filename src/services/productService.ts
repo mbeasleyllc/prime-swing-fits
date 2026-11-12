@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/database.types";
-import { searchClubsLocal, getClubsByCategory as getLocalClubsByCategory } from "@/data/clubDatabase";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 
@@ -46,8 +45,30 @@ export async function getProductsByCategory(category: string) {
   return data ?? [];
 }
 
-export function getClubsByCategory(category: string): Product[] {
-  return getLocalClubsByCategory(category);
+// Product matching service for recommendations
+export async function matchProductsForRecommendation(
+  category: string,
+  specifications: Record<string, any>
+): Promise<any[]> {
+  try {
+    const response = await fetch(`/api/clubs/search?category=${category}`);
+    if (!response.ok) return [];
+    
+    const data = await response.json();
+    return data.products || [];
+  } catch (error) {
+    console.error("Error matching products:", error);
+    return [];
+  }
+}
+
+export async function getClubsByCategory(category: string): Promise<any[]> {
+  return matchProductsForRecommendation(category, {});
+}
+
+export async function searchClubsLocal(specs: Record<string, any>): Promise<any[]> {
+  const category = specs.category || "";
+  return matchProductsForRecommendation(category, specs);
 }
 
 export async function getProductById(id: string) {

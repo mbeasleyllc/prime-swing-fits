@@ -32,7 +32,6 @@ import {
   Circle
 } from "lucide-react";
 import { searchProducts } from "@/services/productService";
-import { CLUB_DATABASE } from "@/data/clubDatabase";
 import { GOLF_BALL_DATABASE, type GolfBall } from "@/data/golfBallDatabase";
 import type { Database } from "@/integrations/supabase/database.types";
 import { useToast } from "@/hooks/use-toast";

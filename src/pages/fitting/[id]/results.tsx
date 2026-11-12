@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { createClient } from "@/integrations/supabase/client";
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Navigation } from "@/components/Navigation";
@@ -13,8 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, Download, Printer, ArrowLeft, Play, Target, TrendingUp, Mail, Loader2, Plus } from "lucide-react";
-import { GOLF_BALL_DATABASE } from "@/data/golfBallDatabase";
-import { CLUB_DATABASE } from "@/data/clubDatabase";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
