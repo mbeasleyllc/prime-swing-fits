@@ -574,6 +574,50 @@ export type Database = {
           },
         ]
       }
+      fitting_recommendations_v2: {
+        Row: {
+          category: string
+          confidence_score: number | null
+          created_at: string | null
+          generated_at: string | null
+          id: string
+          recommendations: Json
+          session_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          confidence_score?: number | null
+          created_at?: string | null
+          generated_at?: string | null
+          id?: string
+          recommendations?: Json
+          session_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          confidence_score?: number | null
+          created_at?: string | null
+          generated_at?: string | null
+          id?: string
+          recommendations?: Json
+          session_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fitting_recommendations_v2_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "fitting_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fitting_rules: {
         Row: {
           created_at: string | null
@@ -614,6 +658,7 @@ export type Database = {
         Row: {
           athletic_background: string[] | null
           average_score: number | null
+          ball_striking_quality: string | null
           carries_driver: boolean | null
           carries_fairway_woods: string[] | null
           carries_hybrids: string[] | null
@@ -625,13 +670,22 @@ export type Database = {
           carry_5iron: number | null
           carry_5wood: number | null
           choke_down_frequency: string | null
+          clubs_age: string | null
+          clubs_fitted_count: number | null
           completed_at: string | null
           created_at: string | null
           current_7iron_carry: number | null
+          current_driver_flex: string | null
+          current_driver_length: number | null
+          current_driver_loft: number | null
+          current_driver_make: string | null
+          current_driver_model: string | null
           current_putter_length: number | null
           current_putter_model: string | null
           current_step: number | null
           distance_gap_target: number | null
+          driver_accuracy_satisfaction: string | null
+          driver_adjustability_importance: string | null
           driver_avg_carry: number | null
           driver_avg_total: number | null
           driver_ball_flight: string | null
@@ -639,23 +693,31 @@ export type Database = {
           driver_common_miss: string | null
           driver_current_flex: string | null
           driver_current_loft: number | null
+          driver_distance_satisfaction: string | null
           driver_face_pref: string | null
           driver_head_shape_pref: string | null
+          driver_head_size_pref: string | null
           driver_length: number | null
           driver_make: string | null
+          driver_miss_pattern: Json | null
           driver_miss_percentage: number | null
           driver_model: string | null
+          driver_performance_goals: Json | null
           driver_shaft_weight: number | null
           driver_sound_pref: string | null
           driver_swing_speed: string | null
+          driver_tempo: string | null
           driver_trajectory: string | null
+          experience_level: string | null
           fairway_accuracy: number | null
           flagged: boolean | null
           glove_size: string | null
           goals_ranking: Json | null
           hand_length: number | null
           handedness: string | null
+          handicap_goal: number | null
           handicap_index: number | null
+          has_clubs: boolean | null
           has_physical_limitations: boolean | null
           height_cm: number | null
           height_ft: number | null
@@ -703,7 +765,11 @@ export type Database = {
           putter_sole_flush: string | null
           putter_stroke_type: string | null
           pw_loft: number | null
+          replacement_scope: string | null
+          selected_categories: Json | null
           status: string | null
+          step_0_data: Json | null
+          subscription_tier: string | null
           swing_tempo: string | null
           swing_type: string | null
           transition_speed: string | null
@@ -711,6 +777,7 @@ export type Database = {
           typical_trajectory: string | null
           unit_preference: string | null
           user_id: string
+          uses_category_selection: boolean | null
           wedge_common_miss: string | null
           wedge_current_challenge: string | null
           wrist_to_floor: number | null
@@ -719,6 +786,7 @@ export type Database = {
         Insert: {
           athletic_background?: string[] | null
           average_score?: number | null
+          ball_striking_quality?: string | null
           carries_driver?: boolean | null
           carries_fairway_woods?: string[] | null
           carries_hybrids?: string[] | null
@@ -730,13 +798,22 @@ export type Database = {
           carry_5iron?: number | null
           carry_5wood?: number | null
           choke_down_frequency?: string | null
+          clubs_age?: string | null
+          clubs_fitted_count?: number | null
           completed_at?: string | null
           created_at?: string | null
           current_7iron_carry?: number | null
+          current_driver_flex?: string | null
+          current_driver_length?: number | null
+          current_driver_loft?: number | null
+          current_driver_make?: string | null
+          current_driver_model?: string | null
           current_putter_length?: number | null
           current_putter_model?: string | null
           current_step?: number | null
           distance_gap_target?: number | null
+          driver_accuracy_satisfaction?: string | null
+          driver_adjustability_importance?: string | null
           driver_avg_carry?: number | null
           driver_avg_total?: number | null
           driver_ball_flight?: string | null
@@ -744,23 +821,31 @@ export type Database = {
           driver_common_miss?: string | null
           driver_current_flex?: string | null
           driver_current_loft?: number | null
+          driver_distance_satisfaction?: string | null
           driver_face_pref?: string | null
           driver_head_shape_pref?: string | null
+          driver_head_size_pref?: string | null
           driver_length?: number | null
           driver_make?: string | null
+          driver_miss_pattern?: Json | null
           driver_miss_percentage?: number | null
           driver_model?: string | null
+          driver_performance_goals?: Json | null
           driver_shaft_weight?: number | null
           driver_sound_pref?: string | null
           driver_swing_speed?: string | null
+          driver_tempo?: string | null
           driver_trajectory?: string | null
+          experience_level?: string | null
           fairway_accuracy?: number | null
           flagged?: boolean | null
           glove_size?: string | null
           goals_ranking?: Json | null
           hand_length?: number | null
           handedness?: string | null
+          handicap_goal?: number | null
           handicap_index?: number | null
+          has_clubs?: boolean | null
           has_physical_limitations?: boolean | null
           height_cm?: number | null
           height_ft?: number | null
@@ -808,7 +893,11 @@ export type Database = {
           putter_sole_flush?: string | null
           putter_stroke_type?: string | null
           pw_loft?: number | null
+          replacement_scope?: string | null
+          selected_categories?: Json | null
           status?: string | null
+          step_0_data?: Json | null
+          subscription_tier?: string | null
           swing_tempo?: string | null
           swing_type?: string | null
           transition_speed?: string | null
@@ -816,6 +905,7 @@ export type Database = {
           typical_trajectory?: string | null
           unit_preference?: string | null
           user_id: string
+          uses_category_selection?: boolean | null
           wedge_common_miss?: string | null
           wedge_current_challenge?: string | null
           wrist_to_floor?: number | null
@@ -824,6 +914,7 @@ export type Database = {
         Update: {
           athletic_background?: string[] | null
           average_score?: number | null
+          ball_striking_quality?: string | null
           carries_driver?: boolean | null
           carries_fairway_woods?: string[] | null
           carries_hybrids?: string[] | null
@@ -835,13 +926,22 @@ export type Database = {
           carry_5iron?: number | null
           carry_5wood?: number | null
           choke_down_frequency?: string | null
+          clubs_age?: string | null
+          clubs_fitted_count?: number | null
           completed_at?: string | null
           created_at?: string | null
           current_7iron_carry?: number | null
+          current_driver_flex?: string | null
+          current_driver_length?: number | null
+          current_driver_loft?: number | null
+          current_driver_make?: string | null
+          current_driver_model?: string | null
           current_putter_length?: number | null
           current_putter_model?: string | null
           current_step?: number | null
           distance_gap_target?: number | null
+          driver_accuracy_satisfaction?: string | null
+          driver_adjustability_importance?: string | null
           driver_avg_carry?: number | null
           driver_avg_total?: number | null
           driver_ball_flight?: string | null
@@ -849,23 +949,31 @@ export type Database = {
           driver_common_miss?: string | null
           driver_current_flex?: string | null
           driver_current_loft?: number | null
+          driver_distance_satisfaction?: string | null
           driver_face_pref?: string | null
           driver_head_shape_pref?: string | null
+          driver_head_size_pref?: string | null
           driver_length?: number | null
           driver_make?: string | null
+          driver_miss_pattern?: Json | null
           driver_miss_percentage?: number | null
           driver_model?: string | null
+          driver_performance_goals?: Json | null
           driver_shaft_weight?: number | null
           driver_sound_pref?: string | null
           driver_swing_speed?: string | null
+          driver_tempo?: string | null
           driver_trajectory?: string | null
+          experience_level?: string | null
           fairway_accuracy?: number | null
           flagged?: boolean | null
           glove_size?: string | null
           goals_ranking?: Json | null
           hand_length?: number | null
           handedness?: string | null
+          handicap_goal?: number | null
           handicap_index?: number | null
+          has_clubs?: boolean | null
           has_physical_limitations?: boolean | null
           height_cm?: number | null
           height_ft?: number | null
@@ -913,7 +1021,11 @@ export type Database = {
           putter_sole_flush?: string | null
           putter_stroke_type?: string | null
           pw_loft?: number | null
+          replacement_scope?: string | null
+          selected_categories?: Json | null
           status?: string | null
+          step_0_data?: Json | null
+          subscription_tier?: string | null
           swing_tempo?: string | null
           swing_type?: string | null
           transition_speed?: string | null
@@ -921,6 +1033,7 @@ export type Database = {
           typical_trajectory?: string | null
           unit_preference?: string | null
           user_id?: string
+          uses_category_selection?: boolean | null
           wedge_common_miss?: string | null
           wedge_current_challenge?: string | null
           wrist_to_floor?: number | null
