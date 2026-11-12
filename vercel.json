@@ -1,6 +1,6 @@
 {
-  "buildCommand": "NODE_OPTIONS='--max-old-space-size=4096' next build",
-  "installCommand": "npm ci",
+  "buildCommand": "NODE_OPTIONS='--max-old-space-size=8192' next build",
+  "installCommand": "npm ci --prefer-offline --no-audit",
   "framework": "nextjs",
   "regions": ["iad1"],
   "functions": {
@@ -8,24 +8,5 @@
       "memory": 1024,
       "maxDuration": 10
     }
-  },
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        }
-      ]
-    }
-  ]
+  }
 }
