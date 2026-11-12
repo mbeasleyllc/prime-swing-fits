@@ -12,6 +12,10 @@ const supabase = createClient(
 // ============================================================================
 
 interface FittingSessionData {
+  id: string;
+  user_id: string;
+  selected_categories?: string[];
+  
   // Player Profile
   player_name?: string;
   player_age?: number;
@@ -25,30 +29,135 @@ interface FittingSessionData {
   physical_limitations_text?: string;
   
   // Golf Experience
+  experience_level?: string;
   handicap_index?: number;
+  handicap_goal?: number;
   average_score?: number;
   years_playing?: string;
+  playing_frequency?: string;
+  practice_frequency?: string;
+  ball_striking_quality?: string;
+  has_clubs?: boolean;
+  clubs_age?: string;
+  replacement_scope?: string;
   
-  // Current Bag
-  current_7iron_carry?: number;
-  
-  // Swing Characteristics
+  // Driver specific
+  current_driver_loft?: number;
+  current_driver_flex?: string;
+  current_driver_length?: number;
+  current_driver_make?: string;
+  current_driver_model?: string;
+  driver_distance_satisfaction?: string;
+  driver_accuracy_satisfaction?: string;
+  driver_ball_flight?: string;
+  driver_trajectory?: string;
+  driver_miss_pattern?: string[];
   driver_swing_speed?: string;
+  driver_tempo?: string;
+  driver_performance_goals?: string[];
+  driver_head_size_pref?: string;
+  driver_sound_pref?: string;
+  driver_adjustability_importance?: string;
+  
+  // Fairway Woods specific
+  current_fairway_woods?: string[];
+  fairway_woods_usage?: string[];
+  fairway_distance_satisfaction?: string;
+  fairway_accuracy_satisfaction?: string;
+  fairway_3wood_distance?: number;
+  fairway_5wood_distance?: number;
+  fairway_yardage_gap_issue?: boolean;
+  fairway_shot_shape?: string;
+  fairway_trajectory?: string;
+  fairway_airborne_difficulty?: string;
+  fairway_head_size_pref?: string;
+  fairway_shaft_feel_pref?: string;
+  fairway_goals?: string[];
+  
+  // Hybrids specific
+  current_hybrids?: string[];
+  replacing_long_irons?: boolean;
+  hybrid_distance_gaps?: string;
+  hybrid_primary_usage?: string[];
+  hybrid_distance_satisfaction?: string;
+  hybrid_accuracy_satisfaction?: string;
+  hybrid_ball_flight?: string;
+  hybrid_trajectory?: string;
+  hybrid_vs_fairway_pref?: string;
+  hybrid_launch_difficulty?: string;
+  hybrid_head_style_pref?: string;
+  hybrid_goals?: string[];
+  
+  // Irons specific
+  current_irons?: string;
+  current_iron_specs?: {
+    make?: string;
+    model?: string;
+    shaft_type?: string;
+    shaft_flex?: string;
+  };
+  irons_custom_fitted?: boolean;
+  irons_ball_flight?: string;
+  irons_miss_pattern?: string;
+  irons_shot_shape?: string;
+  irons_swing_characteristics?: string[];
+  irons_7iron_distance?: number;
+  irons_goals?: string[];
+  
+  // Wedges specific
+  current_wedges?: Array<{ loft: number; type: string }>;
+  wedges_loft_gaps_consistent?: string;
+  wedges_spin_performance?: string;
+  wedges_greenside_feel?: string;
+  wedges_bunker_performance?: string;
+  wedges_shot_types_used?: string[];
+  wedges_distance_control?: string;
+  wedges_grind_pref?: string;
+  wedges_shot_versatility_importance?: string;
+  wedges_goals?: string[];
+  
+  // Putter specific
+  current_putter_length?: number;
+  current_putter_weight?: number;
+  current_putter_make?: string;
+  current_putter_model?: string;
+  putter_eye_position?: string;
+  putter_posture?: string;
+  putter_stroke_pattern?: string;
+  putter_head_style_pref?: string;
+  putter_alignment_aids_pref?: string;
+  putter_grip_size_pref?: string;
+  putter_stroke_type?: string;
+  putter_common_miss?: string;
+  putter_forgiveness_priority?: string;
+  putter_goals?: string[];
+  
+  // Golf Ball specific
+  current_ball?: string;
+  ball_satisfaction?: string;
+  ball_driver_performance?: string;
+  ball_iron_performance?: string;
+  ball_short_game_feel?: string;
+  ball_short_game_spin?: string;
+  ball_putting_feel?: string;
+  ball_durability_importance?: string;
+  ball_course_conditions?: string[];
+  ball_budget?: string;
+  ball_priorities?: string[];
+  
+  // Legacy fields (fallbacks)
+  current_7iron_carry?: number;
   swing_tempo?: string;
   transition_speed?: string;
   swing_type?: string;
   typical_ball_flight?: string;
   most_common_miss?: string;
-  
-  // Long Game
   driver_avg_carry?: number;
   carry_3wood?: number;
   carry_5wood?: number;
   carry_4iron?: number;
   carry_5iron?: number;
   long_iron_miss_type?: string;
-  
-  // Iron & Wedge
   iron_7_carry?: number;
   choke_down_frequency?: string;
   iron_current_length?: string;
@@ -56,15 +165,6 @@ interface FittingSessionData {
   pw_loft?: number;
   wedge_current_challenge?: string[];
   
-  // Putter
-  putter_eye_position?: string;
-  putter_stroke_type?: string;
-  putter_common_miss?: string;
-  putter_forgiveness_priority?: string;
-  putter_current_length?: number;
-  putter_grip_size_pref?: string;
-  
-  // Goals
   goals_ranking?: {
     distance?: number;
     accuracy?: number;
@@ -76,41 +176,39 @@ interface FittingSessionData {
     short_game?: number;
     putting?: number;
   };
-  
-  user_id?: string;
 }
 
-interface ClubRecommendation {
-  length: string;
-  lieAngle: string;
-  shaftFlex: string;
-  shaftWeight: string;
-  gripSize: string;
-  headStyle: string;
+interface CategoryRecommendation {
+  category: string;
+  length?: string;
+  lieAngle?: string;
+  shaftFlex?: string;
+  shaftWeight?: string;
+  gripSize?: string;
+  headStyle?: string;
+  lofts?: string;
+  specifications?: Record<string, any>;
   explanation: string;
+  confidence: number;
+  topProducts?: Array<{
+    brand: string;
+    model: string;
+    matchReason: string;
+  }>;
 }
 
-interface FullBagRecommendations {
-  driver: ClubRecommendation;
-  fairwayWood: ClubRecommendation;
-  hybrid: ClubRecommendation;
-  irons: ClubRecommendation;
-  wedges: ClubRecommendation;
-  putter: ClubRecommendation;
-  golfBalls: Array<{
-    name: string;
-    compression: number;
-    spinRate: string;
-    optimalSpeed: string;
-    matchScore: number;
-  }>;
-  playerCategory: string;
+interface GolfBallRecommendation {
+  name: string;
+  compression: number;
+  spinRate: string;
+  optimalSpeed: string;
+  matchScore: number;
 }
 
 type PlayerCategory = "game_improvement" | "distance_player" | "players_iron" | "tour_oriented";
 
 // ============================================================================
-// CLUB LENGTH CALCULATION
+// UNIVERSAL CALCULATIONS (used across categories)
 // ============================================================================
 
 function calculateClubLength(data: FittingSessionData): { length: string; lengthInches: number; explanation: string } {
@@ -120,7 +218,6 @@ function calculateClubLength(data: FittingSessionData): { length: string; length
   let baseAdjustment = 0;
   let lengthCategory = "Standard";
   
-  // Primary determination: height + wrist-to-floor
   if (heightInches < 65 || wtf < 32) {
     baseAdjustment = -0.50;
     lengthCategory = "-0.50\"";
@@ -138,292 +235,279 @@ function calculateClubLength(data: FittingSessionData): { length: string; length
     lengthCategory = "+1.00\"";
   }
   
-  // Adjustments
-  const adjustments: string[] = [];
-  
   if (data.choke_down_frequency === "often" || data.choke_down_frequency === "always") {
     baseAdjustment -= 0.25;
-    adjustments.push("shortened for frequent choke-down habit");
   }
   
-  // Note: arm length would require additional measurements not in current schema
+  const explanation = `Based on ${heightInches}" height and ${wtf}" wrist-to-floor measurement.`;
   
-  const explanation = `Based on your ${heightInches}" height and ${wtf}" wrist-to-floor measurement${adjustments.length > 0 ? ", " + adjustments.join(", ") : ""}. This optimizes your setup posture and swing plane.`;
-  
-  return {
-    length: lengthCategory,
-    lengthInches: baseAdjustment,
-    explanation
-  };
+  return { length: lengthCategory, lengthInches: baseAdjustment, explanation };
 }
 
-// ============================================================================
-// LIE ANGLE CALCULATION
-// ============================================================================
-
-function calculateLieAngle(data: FittingSessionData): { lieAngle: string; explanation: string } {
+function calculateLieAngle(data: FittingSessionData, missPattern?: string): { lieAngle: string; explanation: string } {
   const wtf = data.wrist_to_floor || 0;
-  
   let baseAdjustment = 0;
-  let lieCategory = "Standard";
   
-  // Base from wrist-to-floor
-  if (wtf < 33) {
-    baseAdjustment = -2;
-    lieCategory = "2° Flat";
-  } else if (wtf >= 33 && wtf < 35) {
-    baseAdjustment = -1;
-    lieCategory = "1° Flat";
-  } else if (wtf >= 35 && wtf <= 37) {
-    baseAdjustment = 0;
-    lieCategory = "Standard";
-  } else if (wtf > 37 && wtf <= 39) {
-    baseAdjustment = 1;
-    lieCategory = "1° Upright";
-  } else if (wtf > 39) {
-    baseAdjustment = 2;
-    lieCategory = "2° Upright";
-  }
+  if (wtf < 33) baseAdjustment = -2;
+  else if (wtf >= 33 && wtf < 35) baseAdjustment = -1;
+  else if (wtf >= 35 && wtf <= 37) baseAdjustment = 0;
+  else if (wtf > 37 && wtf <= 39) baseAdjustment = 1;
+  else if (wtf > 39) baseAdjustment = 2;
   
-  // Miss pattern fine-tuning
-  const miss = data.iron_common_miss || data.most_common_miss;
-  if (miss === "push" || miss === "slice") {
-    baseAdjustment += 1;
-  } else if (miss === "pull" || miss === "hook") {
-    baseAdjustment -= 1;
-  }
+  const miss = missPattern || data.most_common_miss;
+  if (miss === "push" || miss === "slice") baseAdjustment += 1;
+  else if (miss === "pull" || miss === "hook") baseAdjustment -= 1;
   
-  // Cap at ±3°
   baseAdjustment = Math.max(-3, Math.min(3, baseAdjustment));
   
-  // Update category based on final adjustment
-  if (baseAdjustment === -3) lieCategory = "3° Flat";
-  else if (baseAdjustment === -2) lieCategory = "2° Flat";
-  else if (baseAdjustment === -1) lieCategory = "1° Flat";
-  else if (baseAdjustment === 0) lieCategory = "Standard";
-  else if (baseAdjustment === 1) lieCategory = "1° Upright";
-  else if (baseAdjustment === 2) lieCategory = "2° Upright";
-  else if (baseAdjustment === 3) lieCategory = "3° Upright";
+  const lieNames = ["3° Flat", "2° Flat", "1° Flat", "Standard", "1° Upright", "2° Upright", "3° Upright"];
+  const lieCategory = lieNames[baseAdjustment + 3];
   
-  const explanation = `${lieCategory} lie angle matches your ${wtf}" wrist-to-floor and promotes square impact${miss ? ` (adjusted for ${miss} tendency)` : ""}.`;
-  
-  return { lieAngle: lieCategory, explanation };
+  return { lieAngle: lieCategory, explanation: `${lieCategory} for ${wtf}" wrist-to-floor.` };
 }
-
-// ============================================================================
-// SHAFT FLEX CALCULATION
-// ============================================================================
 
 function calculateShaftFlex(data: FittingSessionData): { shaftFlex: string; explanation: string } {
   const swingSpeed = data.driver_swing_speed || "";
-  const tempo = data.swing_tempo || "";
+  const tempo = data.swing_tempo || data.driver_tempo || "";
   
-  let baseFlex = "R";
-  
-  // Determine base flex from swing speed - use single letter codes
-  if (swingSpeed.includes("under_70") || swingSpeed.includes("70-80")) {
-    baseFlex = "A"; // Senior/A-flex
-  } else if (swingSpeed.includes("80-90")) {
-    baseFlex = "R"; // Regular
-  } else if (swingSpeed.includes("90-100")) {
-    baseFlex = "R"; // Regular (will be modified by tempo)
-  } else if (swingSpeed.includes("100-110")) {
-    baseFlex = "S"; // Stiff
-  } else if (swingSpeed.includes("110_plus")) {
-    baseFlex = "X"; // X-Stiff
-  }
-  
-  // Tempo modifier
   const flexOrder = ["L", "A", "R", "S", "X"];
   const flexNames = ["Ladies", "Senior", "Regular", "Stiff", "X-Stiff"];
-  let flexIndex = flexOrder.indexOf(baseFlex);
+  let flexIndex = 2; // Default to Regular
   
-  if (tempo === "smooth") {
-    flexIndex = Math.max(0, flexIndex - 1); // Soften one step
-  } else if (tempo === "aggressive") {
-    flexIndex = Math.min(flexOrder.length - 1, flexIndex + 1); // Stiffen one step
+  if (swingSpeed.includes("under_70") || swingSpeed.includes("70-80") || swingSpeed.includes("under_80")) {
+    flexIndex = 1;
+  } else if (swingSpeed.includes("80-90")) {
+    flexIndex = 2;
+  } else if (swingSpeed.includes("90-100")) {
+    flexIndex = 2;
+  } else if (swingSpeed.includes("100-110")) {
+    flexIndex = 3;
+  } else if (swingSpeed.includes("110_plus") || swingSpeed.includes("110-plus")) {
+    flexIndex = 4;
   }
   
-  const finalFlex = flexOrder[flexIndex];
-  const flexName = flexNames[flexIndex];
+  if (tempo === "smooth") flexIndex = Math.max(0, flexIndex - 1);
+  else if (tempo === "aggressive") flexIndex = Math.min(flexOrder.length - 1, flexIndex + 1);
   
-  const explanation = `${flexName} flex matches your ${swingSpeed.replace(/_/g, " ")} swing speed${tempo !== "moderate" ? ` with ${tempo} tempo` : ""}. This optimizes energy transfer and control.`;
-  
-  return { shaftFlex: finalFlex, explanation };
+  return { 
+    shaftFlex: flexOrder[flexIndex], 
+    explanation: `${flexNames[flexIndex]} for swing speed ${swingSpeed.replace(/_/g, "-")}` 
+  };
 }
 
-// ============================================================================
-// SHAFT WEIGHT CALCULATION
-// ============================================================================
-
-function calculateShaftWeight(data: FittingSessionData, clubType: "driver" | "irons"): { shaftWeight: string; explanation: string } {
-  const swingSpeed = data.driver_swing_speed || "";
-  const ironCarry = data.iron_7_carry || data.current_7iron_carry || 0;
-  
-  let weightRange = "60-70g";
-  let material = "graphite";
-  
-  if (clubType === "driver") {
-    // By swing speed path for driver
-    if (swingSpeed.includes("under_70") || swingSpeed.includes("70-80")) {
-      weightRange = "40-50g";
-    } else if (swingSpeed.includes("80-90")) {
-      weightRange = "50-60g";
-    } else if (swingSpeed.includes("90-100")) {
-      weightRange = "60-70g";
-    } else if (swingSpeed.includes("100-110") || swingSpeed.includes("110_plus")) {
-      weightRange = "70-80g";
-    }
-  } else {
-    // By 7-iron carry distance for irons
-    if (ironCarry < 130) {
-      weightRange = "60-80g";
-      material = "graphite";
-    } else if (ironCarry >= 130 && ironCarry < 150) {
-      weightRange = "75-95g";
-      material = "graphite";
-    } else if (ironCarry >= 150 && ironCarry < 170) {
-      weightRange = "95-110g";
-      material = "steel";
-    } else if (ironCarry >= 170 && ironCarry < 190) {
-      weightRange = "110-120g";
-      material = "steel";
-    } else if (ironCarry >= 190) {
-      weightRange = "120-130g";
-      material = "steel";
-    }
-  }
-  
-  const explanation = clubType === "driver" 
-    ? `${weightRange} ${material} shaft optimizes your swing speed and tempo for maximum distance and control.`
-    : `${weightRange} ${material} shaft matches your ${ironCarry}yd 7-iron carry distance, providing optimal feel and consistency.`;
-  
-  return { shaftWeight: `${weightRange} ${material}`, explanation };
-}
-
-// ============================================================================
-// GRIP SIZE CALCULATION
-// ============================================================================
-
-function calculateGripSize(data: FittingSessionData): { gripSize: string; explanation: string } {
+function calculateGripSize(data: FittingSessionData): string {
   const gloveSize = data.glove_size || "M";
-  
-  const gripSizeMap: Record<string, string> = {
-    "S": "undersize",
-    "M": "standard",
-    "ML": "standard",
-    "L": "midsize",
-    "XL": "oversize"
+  const gripMap: Record<string, string> = {
+    "S": "Undersize",
+    "M": "Standard",
+    "ML": "Standard",
+    "L": "Midsize",
+    "XL": "Oversize"
   };
-  
-  const gripSize = gripSizeMap[gloveSize] || "standard";
-  
-  return {
-    gripSize,
-    explanation: `${gripSize.charAt(0).toUpperCase() + gripSize.slice(1)} grip matches your ${gloveSize} glove size for optimal comfort and control.`
-  };
+  return gripMap[gloveSize] || "Standard";
 }
 
-// ============================================================================
-// DRIVER HEAD SELECTION
-// ============================================================================
-
-function selectDriverHead(data: FittingSessionData, playerCategory: PlayerCategory): { headStyle: string; explanation: string } {
-  const miss = data.most_common_miss || "";
-  const ballFlight = data.typical_ball_flight || "";
+function classifyPlayer(data: FittingSessionData): PlayerCategory {
+  const handicap = data.handicap_index;
+  const avgScore = data.average_score;
   const goals = data.goals_ranking || {};
   
-  let headStyle = "Neutral, Mid-MOI";
-  const features: string[] = [];
+  let effectiveHandicap = handicap;
+  if (!effectiveHandicap && avgScore) effectiveHandicap = avgScore - 72;
   
-  // Miss pattern priority
-  if (miss === "right" || ballFlight === "slice") {
-    headStyle = "Draw Bias, Maximum Forgiveness";
-    features.push("draw-bias weighting");
-    features.push("high MOI for forgiveness");
-    features.push("higher loft (10.5-12°) for launch");
-  } else if (miss === "left" || ballFlight === "hook") {
-    headStyle = "Neutral or Fade Bias";
-    features.push("neutral/fade weighting");
-    features.push("lower loft (9-10°)");
-  } else if (ballFlight === "straight" && goals.accuracy && goals.accuracy >= 4) {
-    headStyle = "Maximum MOI, High Forgiveness";
-    features.push("maximum MOI for accuracy");
+  if (effectiveHandicap && effectiveHandicap >= 15) return "game_improvement";
+  if (effectiveHandicap && effectiveHandicap >= 8) {
+    return goals.distance && goals.distance >= 4 ? "distance_player" : "game_improvement";
   }
-  
-  // Player category bias
-  if (playerCategory === "game_improvement" && !features.length) {
-    headStyle = "High Launch, Maximum Forgiveness";
-    features.push("large profile");
-    features.push("high MOI");
-    features.push("adjustable weighting");
-  } else if (playerCategory === "tour_oriented" && !features.length) {
-    headStyle = "Low Spin, Workable";
-    features.push("compact profile");
-    features.push("low CG");
-    features.push("workability");
+  if (effectiveHandicap && effectiveHandicap >= 0) {
+    return goals.workability && goals.workability >= 4 ? "tour_oriented" : "players_iron";
   }
+  if (effectiveHandicap && effectiveHandicap < 0) return "tour_oriented";
   
-  const explanation = `${headStyle} head recommended${features.length ? " with " + features.join(", ") : ""} to optimize your ball flight and shot pattern.`;
+  if (goals.forgiveness && goals.forgiveness >= 4) return "game_improvement";
+  if (goals.workability && goals.workability >= 4) return "tour_oriented";
   
-  return { headStyle, explanation };
+  return "game_improvement";
 }
 
 // ============================================================================
-// FAIRWAY WOOD / HYBRID GAPPING
+// CATEGORY-SPECIFIC RECOMMENDATION FUNCTIONS
 // ============================================================================
 
-function calculateWoodHybridGapping(data: FittingSessionData): { headStyle: string; explanation: string } {
-  const driverCarry = data.driver_avg_carry || 0;
-  const fiveIronCarry = data.carry_5iron || data.carry_4iron || 0;
+function generateDriverRecommendation(data: FittingSessionData, playerCategory: PlayerCategory): CategoryRecommendation {
+  const lengthCalc = calculateClubLength(data);
+  const lieCalc = calculateLieAngle(data, data.driver_ball_flight);
+  const flexCalc = calculateShaftFlex(data);
+  const gripSize = calculateGripSize(data);
   
-  const distanceGap = driverCarry - fiveIronCarry;
+  let headStyle = "Neutral Mid-MOI";
+  const ballFlight = data.driver_ball_flight || "";
+  const distanceSat = data.driver_distance_satisfaction || "";
+  const accuracySat = data.driver_accuracy_satisfaction || "";
   
-  let recommendation = "";
-  let clubs: string[] = [];
-  
-  if (distanceGap < 50) {
-    recommendation = "No hybrid needed";
-    clubs = ["3-wood (15°) optional"];
-  } else if (distanceGap >= 50 && distanceGap < 80) {
-    recommendation = "Add 1 hybrid";
-    clubs = ["3-wood (15°)", "4-hybrid (22-24°) or 5-hybrid (25-27°)"];
-  } else if (distanceGap >= 80 && distanceGap < 120) {
-    recommendation = "Add 2 hybrids";
-    clubs = ["3-wood (15°)", "4-hybrid (22-24°)", "5-hybrid (25-27°)"];
-  } else {
-    recommendation = "Add fairway wood + hybrids";
-    clubs = ["3-wood (15°)", "5-wood (18-19°)", "4-hybrid (22-24°)", "5-hybrid (25-27°)"];
+  if (ballFlight === "slice") {
+    headStyle = "Draw Bias, High MOI, 10.5-12° loft";
+  } else if (ballFlight === "hook") {
+    headStyle = "Neutral/Fade Bias, 9-10° loft";
+  } else if (playerCategory === "game_improvement") {
+    headStyle = "High Launch, Maximum Forgiveness, 10.5-11° loft";
+  } else if (playerCategory === "tour_oriented") {
+    headStyle = "Low Spin, Workable, 9-10° loft";
   }
   
-  const explanation = `Your ${distanceGap}yd gap between driver and long irons suggests: ${clubs.join(", ")}. This creates optimal distance spacing throughout your bag.`;
+  const confidence = (distanceSat === "satisfied" || distanceSat === "very_satisfied") && 
+                     (accuracySat === "satisfied" || accuracySat === "very_satisfied") ? 90 : 85;
   
   return {
-    headStyle: recommendation,
-    explanation
+    category: "driver",
+    length: lengthCalc.length,
+    lieAngle: lieCalc.lieAngle,
+    shaftFlex: flexCalc.shaftFlex,
+    shaftWeight: data.driver_swing_speed?.includes("100") || data.driver_swing_speed?.includes("110") ? "70-80g graphite" : "60-70g graphite",
+    gripSize,
+    headStyle,
+    explanation: `${headStyle} driver optimized for your ${ballFlight || "straight"} ball flight and ${data.driver_swing_speed || "moderate"} swing speed. ${lengthCalc.explanation} ${flexCalc.explanation}.`,
+    confidence
   };
 }
 
-// ============================================================================
-// WEDGE GAPPING
-// ============================================================================
+function generateFairwayWoodsRecommendation(data: FittingSessionData, playerCategory: PlayerCategory): CategoryRecommendation {
+  const lengthCalc = calculateClubLength(data);
+  const flexCalc = calculateShaftFlex(data);
+  const gripSize = calculateGripSize(data);
+  
+  const usage = data.fairway_woods_usage || [];
+  const airborne = data.fairway_airborne_difficulty || "";
+  const headSizePref = data.fairway_head_size_pref || "";
+  
+  let recommendation = "3-Wood (15°)";
+  const woods: string[] = ["3-Wood (15°)"];
+  
+  if (usage.includes("tee_shots") && usage.includes("fairway_approach")) {
+    woods.push("5-Wood (18-19°)");
+    recommendation = "3W + 5W combo";
+  }
+  
+  let headStyle = "Standard Profile";
+  if (airborne === "very_difficult" || airborne === "difficult") {
+    headStyle = "High Launch, Larger Profile";
+  } else if (headSizePref === "oversized") {
+    headStyle = "Oversized Forgiving Profile";
+  } else if (playerCategory === "tour_oriented") {
+    headStyle = "Compact, Low Spin Profile";
+  }
+  
+  return {
+    category: "fairway_woods",
+    length: lengthCalc.length,
+    shaftFlex: flexCalc.shaftFlex,
+    shaftWeight: "60-70g graphite",
+    gripSize,
+    headStyle,
+    lofts: woods.join(", "),
+    explanation: `${recommendation} with ${headStyle}. Optimized for ${usage.join(", ") || "versatile play"}. ${flexCalc.explanation}.`,
+    confidence: 85
+  };
+}
 
-function calculateWedgeGapping(data: FittingSessionData): { headStyle: string; explanation: string } {
+function generateHybridsRecommendation(data: FittingSessionData, playerCategory: PlayerCategory): CategoryRecommendation {
+  const lengthCalc = calculateClubLength(data);
+  const flexCalc = calculateShaftFlex(data);
+  const gripSize = calculateGripSize(data);
+  
+  const replacingIrons = data.replacing_long_irons || false;
+  const usage = data.hybrid_primary_usage || [];
+  const launchDiff = data.hybrid_launch_difficulty || "";
+  const headStyle = data.hybrid_head_style_pref || "";
+  
+  let recommendation = "4-Hybrid (22-24°)";
+  const hybrids: string[] = [];
+  
+  if (replacingIrons) {
+    hybrids.push("4-Hybrid (22-24°)");
+    hybrids.push("5-Hybrid (25-27°)");
+    recommendation = "Replace 4i + 5i with hybrids";
+  } else {
+    hybrids.push("4-Hybrid or 5-Hybrid");
+    recommendation = "Single hybrid for gap filling";
+  }
+  
+  let headDescription = "Standard Hybrid Profile";
+  if (launchDiff === "very_difficult" || launchDiff === "difficult") {
+    headDescription = "High Launch, Game Improvement Profile";
+  } else if (headStyle === "traditional") {
+    headDescription = "Compact, Player's Profile";
+  } else if (headStyle === "game_improvement") {
+    headDescription = "Larger, Forgiving Profile";
+  }
+  
+  return {
+    category: "hybrids",
+    length: lengthCalc.length,
+    shaftFlex: flexCalc.shaftFlex,
+    shaftWeight: "75-85g graphite/steel transition",
+    gripSize,
+    headStyle: headDescription,
+    lofts: hybrids.join(", "),
+    explanation: `${recommendation}. ${headDescription} optimized for ${usage.join(", ") || "versatile play"}. Bridges gap between woods and irons.`,
+    confidence: 85
+  };
+}
+
+function generateIronsRecommendation(data: FittingSessionData, playerCategory: PlayerCategory): CategoryRecommendation {
+  const lengthCalc = calculateClubLength(data);
+  const lieCalc = calculateLieAngle(data, data.irons_miss_pattern);
+  const flexCalc = calculateShaftFlex(data);
+  const gripSize = calculateGripSize(data);
+  
+  const ironDistance = data.irons_7iron_distance || data.iron_7_carry || data.current_7iron_carry || 0;
+  const ballFlight = data.irons_ball_flight || "";
+  const swingChars = data.irons_swing_characteristics || [];
+  
+  let shaftWeight = "95-110g steel";
+  if (ironDistance < 130) shaftWeight = "60-80g graphite";
+  else if (ironDistance < 150) shaftWeight = "75-95g graphite";
+  else if (ironDistance >= 170) shaftWeight = "110-120g steel";
+  
+  let headStyle = "Game Improvement (Maximum Forgiveness)";
+  if (playerCategory === "tour_oriented") {
+    headStyle = "Player's Blade (Compact, Forged)";
+  } else if (playerCategory === "players_iron") {
+    headStyle = "Player's Distance (Mid-Size, Forged Feel)";
+  } else if (playerCategory === "distance_player") {
+    headStyle = "Game Improvement Distance (Strong Lofts)";
+  }
+  
+  return {
+    category: "irons",
+    length: lengthCalc.length,
+    lieAngle: lieCalc.lieAngle,
+    shaftFlex: flexCalc.shaftFlex,
+    shaftWeight,
+    gripSize,
+    headStyle,
+    explanation: `${headStyle} matched to ${ironDistance}yd 7-iron distance. ${lieCalc.explanation} ${swingChars.join(", ") || "Standard swing profile"}. ${shaftWeight} optimizes feel and control.`,
+    confidence: 88
+  };
+}
+
+function generateWedgesRecommendation(data: FittingSessionData, playerCategory: PlayerCategory): CategoryRecommendation {
+  const lengthCalc = calculateClubLength(data);
+  const gripSize = calculateGripSize(data);
+  
+  const currentWedges = data.current_wedges || [];
   const pwLoft = data.pw_loft || 44;
   const swingType = data.swing_type || "neutral";
+  const spinPerf = data.wedges_spin_performance || "";
+  const bunkerPerf = data.wedges_bunker_performance || "";
   
-  // Calculate wedge lofts with 4-6° gaps
   const gwLoft = pwLoft + 4;
   const swLoft = gwLoft + 6;
   const lwLoft = swLoft + 4;
   
-  // Bounce selection
   let bounce = "Mid bounce (10-12°)";
-  if (swingType === "digger") {
-    bounce = "Higher bounce (12-14°)";
-  } else if (swingType === "sweeper") {
-    bounce = "Lower bounce (8-10°)";
-  }
+  if (swingType === "digger") bounce = "Higher bounce (12-14°)";
+  else if (swingType === "sweeper") bounce = "Lower bounce (8-10°)";
   
   const wedges = [
     `Gap Wedge: ${gwLoft}°`,
@@ -431,134 +515,66 @@ function calculateWedgeGapping(data: FittingSessionData): { headStyle: string; e
     `Lob Wedge: ${lwLoft}°`
   ];
   
-  const explanation = `Based on your ${pwLoft}° pitching wedge and ${swingType} swing type: ${wedges.join(", ")}. This provides optimal distance control and turf interaction.`;
-  
   return {
-    headStyle: wedges.join(" | "),
-    explanation
+    category: "wedges",
+    length: lengthCalc.length,
+    gripSize,
+    lofts: wedges.join(" | "),
+    headStyle: `${bounce} for ${swingType} swing`,
+    explanation: `Wedge setup: ${wedges.join(", ")}. ${bounce} suits your ${swingType} swing interaction with turf. Optimal 4-6° loft gaps for distance control.`,
+    confidence: 85
   };
 }
 
-// ============================================================================
-// PUTTER FITTING
-// ============================================================================
-
-function calculatePutterSpecs(data: FittingSessionData, lengthCalc: { lengthInches: number }): { length: string; lieAngle: string; headStyle: string; explanation: string } {
-  const strokeType = data.putter_stroke_type || "";
+function generatePutterRecommendation(data: FittingSessionData): CategoryRecommendation {
+  const strokeType = data.putter_stroke_pattern || data.putter_stroke_type || "";
   const miss = data.putter_common_miss || "";
-  const eyePosition = data.putter_eye_position || "";
-  const forgiveness = data.putter_forgiveness_priority || "";
+  const eyePos = data.putter_eye_position || "";
+  const headStylePref = data.putter_head_style_pref || "";
   
-  // Toe hang from stroke type
   let toeHang = "Mid Toe Hang";
-  if (strokeType === "straight") {
-    toeHang = "Face Balanced";
-  } else if (strokeType === "slight_arc") {
-    toeHang = "Mid Toe Hang";
-  } else if (strokeType === "moderate_arc") {
-    toeHang = "Toe Hang";
-  } else if (strokeType === "strong_arc") {
-    toeHang = "Heavy Toe Hang";
-  }
+  if (strokeType === "straight_back_through") toeHang = "Face Balanced";
+  else if (strokeType === "slight_arc") toeHang = "Mid Toe Hang";
+  else if (strokeType === "arc") toeHang = "Toe Hang";
   
-  // Adjust for miss pattern
-  if (miss === "right") {
-    toeHang = "Increased Toe Hang (prevents face open)";
-  } else if (miss === "left") {
-    toeHang = "Face Balanced (prevents face closed)";
-  }
+  if (miss === "right") toeHang = "Increased Toe Hang";
+  else if (miss === "left") toeHang = "Face Balanced";
   
-  // Head style from forgiveness + miss
   let headStyle = "Mid-Mallet";
-  if (forgiveness === "high" || miss === "inconsistent_speed") {
-    headStyle = "High-MOI Mallet";
-  } else if (forgiveness === "low") {
-    headStyle = "Blade";
-  }
+  if (headStylePref === "blade") headStyle = "Blade";
+  else if (headStylePref === "mallet") headStyle = "High-MOI Mallet";
+  else if (miss === "inconsistent") headStyle = "High-MOI Mallet";
   
-  // Length from eye position
-  const basePutterLength = 33 + (lengthCalc.lengthInches * 0.5); // Scale iron adjustment to putter range
-  let putterLength = basePutterLength;
-  
-  if (eyePosition === "outside") {
-    putterLength += 1;
-  } else if (eyePosition === "inside") {
-    putterLength -= 0.5;
-  }
-  
-  const lengthStr = putterLength === 33 ? "Standard (33\")" : putterLength > 33 ? `+${(putterLength - 33).toFixed(1)}\" (${putterLength.toFixed(1)}\")` : `${(putterLength - 33).toFixed(1)}\" (${putterLength.toFixed(1)}\")`;
-  
-  // Lie angle (same calculation as irons, but typically putter-specific)
   const wtf = data.wrist_to_floor || 35;
-  let lieAngle = "Standard (70°)";
-  if (wtf < 33) lieAngle = "Flat (68-69°)";
-  else if (wtf > 37) lieAngle = "Upright (71-72°)";
+  let length = "Standard (33-34\")";
+  if (wtf < 33) length = "32-33\"";
+  else if (wtf > 37) length = "34-35\"";
   
-  const explanation = `${headStyle} with ${toeHang} matches your ${strokeType.replace(/_/g, " ")} stroke pattern. ${lengthStr} length suits your ${eyePosition || "standard"} eye position. This setup promotes consistent roll and distance control.`;
+  const gripSize = data.putter_grip_size_pref === "midsize" ? "Midsize" : 
+                   data.putter_grip_size_pref === "oversize" ? "Oversize" : "Standard";
   
   return {
-    length: lengthStr,
-    lieAngle,
+    category: "putter",
+    length,
     headStyle: `${headStyle}, ${toeHang}`,
-    explanation
+    gripSize,
+    explanation: `${headStyle} with ${toeHang} matches ${strokeType.replace(/_/g, " ")} stroke. ${length} suits your setup. ${gripSize} grip for optimal control.`,
+    confidence: 87
   };
 }
 
-// ============================================================================
-// PLAYER CATEGORY CLASSIFICATION
-// ============================================================================
-
-function classifyPlayer(data: FittingSessionData): PlayerCategory {
-  const goals = data.goals_ranking || {};
-  const handicap = data.handicap_index;
-  const avgScore = data.average_score;
-  
-  // Derive effective handicap
-  let effectiveHandicap = handicap;
-  if (!effectiveHandicap && avgScore) {
-    effectiveHandicap = avgScore - 72; // Rough approximation
-  }
-  
-  // Score goals
-  const distanceScore = goals.distance || 3;
-  const forgivenessScore = goals.forgiveness || 3;
-  const feelScore = goals.feel || 3;
-  const workabilityScore = goals.workability || 3;
-  
-  // Classification logic
-  if (effectiveHandicap && effectiveHandicap >= 15) {
-    return "game_improvement";
-  } else if (effectiveHandicap && effectiveHandicap >= 8 && effectiveHandicap < 15) {
-    if (distanceScore >= 4) return "distance_player";
-    return "game_improvement";
-  } else if (effectiveHandicap && effectiveHandicap >= 0 && effectiveHandicap < 8) {
-    if (workabilityScore >= 4 && feelScore >= 4) return "tour_oriented";
-    return "players_iron";
-  } else if (effectiveHandicap && effectiveHandicap < 0) {
-    return "tour_oriented";
-  }
-  
-  // Fallback based on goals alone
-  if (forgivenessScore >= 4) return "game_improvement";
-  if (workabilityScore >= 4 && feelScore >= 4) return "tour_oriented";
-  if (distanceScore >= 4) return "distance_player";
-  
-  return "game_improvement";
-}
-
-// ============================================================================
-// GOLF BALL MATCHING (Keep existing logic)
-// ============================================================================
-
-function matchGolfBalls(data: FittingSessionData, playerCategory: PlayerCategory): Array<{ name: string; compression: number; spinRate: string; optimalSpeed: string; matchScore: number }> {
+function generateGolfBallRecommendation(data: FittingSessionData, playerCategory: PlayerCategory): { 
+  category: CategoryRecommendation; 
+  balls: GolfBallRecommendation[] 
+} {
   const swingSpeed = data.driver_swing_speed || "90-100";
   const goals = data.goals_ranking || {};
+  const ballPriorities = data.ball_priorities || [];
   
-  // Convert swing speed range to mph value and category
   let speedMph = 95;
   let speedCategory: "low" | "medium" | "high" = "medium";
   
-  if (swingSpeed.includes("under_70") || swingSpeed.includes("70-80")) {
+  if (swingSpeed.includes("under_70") || swingSpeed.includes("70-80") || swingSpeed.includes("under_80")) {
     speedMph = 75;
     speedCategory = "low";
   } else if (swingSpeed.includes("80-90")) {
@@ -570,60 +586,41 @@ function matchGolfBalls(data: FittingSessionData, playerCategory: PlayerCategory
   } else if (swingSpeed.includes("100-110")) {
     speedMph = 105;
     speedCategory = "high";
-  } else if (swingSpeed.includes("110_plus")) {
+  } else if (swingSpeed.includes("110")) {
     speedMph = 115;
     speedCategory = "high";
   }
   
-  // Score each ball
   const scoredBalls = GOLF_BALL_DATABASE.map(ball => {
     let score = 100;
     
-    // Swing speed category matching (most important)
-    if (ball.swing_speed_range.includes(speedCategory)) {
-      score += 20;
-    } else if (
+    if (ball.swing_speed_range.includes(speedCategory)) score += 20;
+    else if (
       (speedCategory === "low" && ball.swing_speed_range.includes("medium")) ||
-      (speedCategory === "high" && ball.swing_speed_range.includes("medium")) ||
-      (speedCategory === "medium" && (ball.swing_speed_range.includes("low") || ball.swing_speed_range.includes("high")))
+      (speedCategory === "high" && ball.swing_speed_range.includes("medium"))
     ) {
-      score += 5; // Adjacent category still viable
+      score += 5;
     } else {
-      score -= 30; // Wrong speed category
+      score -= 30;
     }
     
-    // Compression matching
     if (speedMph < 85 && ball.compression > 90) score -= 20;
     if (speedMph > 105 && ball.compression < 80) score -= 20;
-    if (speedMph >= 85 && speedMph <= 105 && ball.compression >= 70 && ball.compression <= 95) score += 10;
     
-    // Goal alignment using best_for array
     if (goals.distance && goals.distance >= 4) {
       if (ball.best_for.some(bf => bf.toLowerCase().includes("distance"))) score += 10;
-      if (ball.distance >= 9) score += 5;
     }
     if (goals.feel && goals.feel >= 4) {
       if (ball.best_for.some(bf => bf.toLowerCase().includes("soft") || bf.toLowerCase().includes("feel"))) score += 10;
-      if (ball.feel >= 9) score += 5;
     }
     if (goals.workability && goals.workability >= 4) {
       if (ball.spin_rate === "High") score += 10;
-      if (ball.spin >= 9) score += 5;
-    }
-    if (goals.accuracy && goals.accuracy >= 4) {
-      if (ball.control >= 9) score += 5;
     }
     
-    // Player category alignment using recommended_for
     if (playerCategory === "game_improvement") {
-      if (ball.recommended_for.some(rec => rec.toLowerCase().includes("high handicap") || rec.toLowerCase().includes("forgiveness"))) {
-        score += 10;
-      }
-    }
-    if (playerCategory === "tour_oriented") {
-      if (ball.recommended_for.some(rec => rec.toLowerCase().includes("tour") || rec.toLowerCase().includes("0-") || rec.toLowerCase().includes("advanced"))) {
-        score += 10;
-      }
+      if (ball.recommended_for.some(rec => rec.toLowerCase().includes("high handicap"))) score += 10;
+    } else if (playerCategory === "tour_oriented") {
+      if (ball.recommended_for.some(rec => rec.toLowerCase().includes("tour"))) score += 10;
     }
     
     return {
@@ -635,10 +632,23 @@ function matchGolfBalls(data: FittingSessionData, playerCategory: PlayerCategory
     };
   });
   
-  // Return top 5
-  return scoredBalls
-    .sort((a, b) => b.matchScore - a.matchScore)
-    .slice(0, 5);
+  const topBalls = scoredBalls.sort((a, b) => b.matchScore - a.matchScore).slice(0, 5);
+  const topBall = topBalls[0];
+  
+  return {
+    category: {
+      category: "golf_ball",
+      specifications: {
+        compression: topBall.compression,
+        spinRate: topBall.spinRate,
+        optimalSpeed: topBall.optimalSpeed
+      },
+      headStyle: topBall.name,
+      explanation: `${topBall.name} (${topBall.compression} compression, ${topBall.spinRate} spin) optimized for ${speedMph}mph swing speed. ${ballPriorities.join(", ") || "Balanced performance"}.`,
+      confidence: 83
+    },
+    balls: topBalls
+  };
 }
 
 // ============================================================================
@@ -657,7 +667,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Fetch fitting session data
     const { data: sessionData, error: sessionError } = await supabase
       .from("fitting_sessions")
       .select("*")
@@ -669,149 +678,99 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const data = sessionData as FittingSessionData;
-
-    // Classify player
-    const playerCategory = classifyPlayer(data);
+    const selectedCategories = data.selected_categories || [];
     
-    // Calculate specs
-    const lengthCalc = calculateClubLength(data);
-    const lieCalc = calculateLieAngle(data);
-    const flexCalc = calculateShaftFlex(data);
-    const driverWeightCalc = calculateShaftWeight(data, "driver");
-    const ironWeightCalc = calculateShaftWeight(data, "irons");
-    const gripCalc = calculateGripSize(data);
-    const driverHeadCalc = selectDriverHead(data, playerCategory);
-    const woodHybridCalc = calculateWoodHybridGapping(data);
-    const wedgeCalc = calculateWedgeGapping(data);
-    const putterCalc = calculatePutterSpecs(data, lengthCalc);
-    const golfBalls = matchGolfBalls(data, playerCategory);
+    if (selectedCategories.length === 0) {
+      return res.status(400).json({ error: "No categories selected for fitting" });
+    }
 
-    // Build full bag recommendations
-    const recommendations: FullBagRecommendations = {
-      driver: {
-        length: lengthCalc.length,
-        lieAngle: lieCalc.lieAngle,
-        shaftFlex: flexCalc.shaftFlex,
-        shaftWeight: driverWeightCalc.shaftWeight,
-        gripSize: gripCalc.gripSize,
-        headStyle: driverHeadCalc.headStyle,
-        explanation: `${lengthCalc.explanation} ${driverHeadCalc.explanation} ${flexCalc.explanation} ${driverWeightCalc.explanation}`
-      },
-      fairwayWood: {
-        length: `${lengthCalc.length} (proportional)`,
-        lieAngle: lieCalc.lieAngle,
-        shaftFlex: flexCalc.shaftFlex,
-        shaftWeight: driverWeightCalc.shaftWeight,
-        gripSize: gripCalc.gripSize,
-        headStyle: woodHybridCalc.headStyle,
-        explanation: woodHybridCalc.explanation
-      },
-      hybrid: {
-        length: `${lengthCalc.length} (proportional)`,
-        lieAngle: lieCalc.lieAngle,
-        shaftFlex: flexCalc.shaftFlex,
-        shaftWeight: `Transition weight (${driverWeightCalc.shaftWeight.split(" ")[0]} to ${ironWeightCalc.shaftWeight.split(" ")[0]})`,
-        gripSize: gripCalc.gripSize,
-        headStyle: woodHybridCalc.headStyle,
-        explanation: `Hybrids bridge the gap between woods and irons with optimized launch and forgiveness. ${woodHybridCalc.explanation}`
-      },
-      irons: {
-        length: lengthCalc.length,
-        lieAngle: lieCalc.lieAngle,
-        shaftFlex: flexCalc.shaftFlex,
-        shaftWeight: ironWeightCalc.shaftWeight,
-        gripSize: gripCalc.gripSize,
-        headStyle: playerCategory === "tour_oriented" ? "Player's Iron (compact, forged)" : playerCategory === "players_iron" ? "Player's Distance Iron" : playerCategory === "distance_player" ? "Game Improvement with Distance" : "Game Improvement (maximum forgiveness)",
-        explanation: `${ironWeightCalc.explanation} ${lieCalc.explanation} Optimized for ${playerCategory.replace(/_/g, " ")} category.`
-      },
-      wedges: {
-        length: lengthCalc.length,
-        lieAngle: lieCalc.lieAngle,
-        shaftFlex: flexCalc.shaftFlex,
-        shaftWeight: ironWeightCalc.shaftWeight,
-        gripSize: gripCalc.gripSize,
-        headStyle: wedgeCalc.headStyle,
-        explanation: wedgeCalc.explanation
-      },
-      putter: {
-        length: putterCalc.length,
-        lieAngle: putterCalc.lieAngle,
-        shaftFlex: "N/A",
-        shaftWeight: "N/A",
-        gripSize: data.putter_grip_size_pref === "midsize" ? "Midsize" : data.putter_grip_size_pref === "oversize" ? "Oversize" : "Standard",
-        headStyle: putterCalc.headStyle,
-        explanation: putterCalc.explanation
-      },
-      golfBalls,
-      playerCategory: playerCategory.replace(/_/g, " ")
-    };
+    const playerCategory = classifyPlayer(data);
+    const recommendations: CategoryRecommendation[] = [];
+    let golfBalls: GolfBallRecommendation[] = [];
 
-    // Save recommendations to database - use the actual table columns
-    const { error: insertError } = await supabase
-      .from("fitting_recommendations")
-      .insert({
+    // Generate recommendations ONLY for selected categories
+    if (selectedCategories.includes("driver")) {
+      recommendations.push(generateDriverRecommendation(data, playerCategory));
+    }
+    
+    if (selectedCategories.includes("fairway_woods")) {
+      recommendations.push(generateFairwayWoodsRecommendation(data, playerCategory));
+    }
+    
+    if (selectedCategories.includes("hybrids")) {
+      recommendations.push(generateHybridsRecommendation(data, playerCategory));
+    }
+    
+    if (selectedCategories.includes("irons")) {
+      recommendations.push(generateIronsRecommendation(data, playerCategory));
+    }
+    
+    if (selectedCategories.includes("wedges")) {
+      recommendations.push(generateWedgesRecommendation(data, playerCategory));
+    }
+    
+    if (selectedCategories.includes("putter")) {
+      recommendations.push(generatePutterRecommendation(data));
+    }
+    
+    if (selectedCategories.includes("golf_ball")) {
+      const ballRec = generateGolfBallRecommendation(data, playerCategory);
+      recommendations.push(ballRec.category);
+      golfBalls = ballRec.balls;
+    }
+
+    // Save to fitting_recommendations_v2 table (category-specific)
+    const insertPromises = recommendations.map(rec => 
+      supabase.from("fitting_recommendations_v2").insert({
         session_id: sessionId,
         user_id: data.user_id,
-        club_type_rec: recommendations.irons?.headStyle || null,
-        shaft_flex_rec: recommendations.driver?.shaftFlex || null,
-        shaft_weight: recommendations.driver?.shaftWeight || null,
-        grip_size_rec: recommendations.driver?.gripSize || null,
-        club_length_adj: recommendations.driver?.length || null,
-        lie_angle_adj: recommendations.driver?.lieAngle || null,
-        driver_spec: JSON.stringify(recommendations.driver || {}),
-        irons_spec: JSON.stringify(recommendations.irons || {}),
-        wedges_spec: JSON.stringify(recommendations.wedges || {}),
-        putter_spec: JSON.stringify(recommendations.putter || {}),
-        fairway_woods: JSON.stringify(recommendations.fairwayWood || {}),
-        hybrids: JSON.stringify(recommendations.hybrid || {}),
-        golf_balls_spec: JSON.stringify(recommendations.golfBalls || []),
-        golf_ball_rec: recommendations.golfBalls?.[0]?.name || null,
-        ball_compression: recommendations.golfBalls?.[0]?.compression || null,
-        ball_spin_rating: recommendations.golfBalls?.[0]?.spinRate || null,
-        ball_optimal_swing_speed: recommendations.golfBalls?.[0]?.optimalSpeed || null,
-        driver_confidence: 85,
-        irons_confidence: 85,
-        wedge_confidence: 85,
-        putter_confidence: 85,
-        generated_at: new Date().toISOString()
-      });
+        category: rec.category,
+        club_length: rec.length || null,
+        lie_angle: rec.lieAngle || null,
+        shaft_flex: rec.shaftFlex || null,
+        shaft_weight: rec.shaftWeight || null,
+        grip_size: rec.gripSize || null,
+        head_style: rec.headStyle || null,
+        lofts: rec.lofts || null,
+        specifications: rec.specifications || null,
+        explanation: rec.explanation,
+        confidence_score: rec.confidence,
+        top_products: rec.topProducts || null
+      })
+    );
 
-    if (insertError) {
-      console.error("Failed to save recommendations:", insertError);
-      console.error("Recommendations object:", JSON.stringify(recommendations, null, 2));
-      console.error("Session ID:", sessionId);
+    const results = await Promise.all(insertPromises);
+    const errors = results.filter(r => r.error);
+    
+    if (errors.length > 0) {
+      console.error("Failed to save some recommendations:", errors);
       return res.status(500).json({ 
         success: false,
-        error: `Failed to save recommendations: ${insertError.message}`,
-        details: insertError
+        error: "Failed to save recommendations",
+        details: errors
       });
     }
 
-    // Update session status to completed
-    const { error: statusError } = await supabase
+    // Update session status
+    await supabase
       .from("fitting_sessions")
-      .update({
-        status: "completed"
-      })
+      .update({ status: "completed" })
       .eq("id", sessionId);
-
-    if (statusError) {
-      console.error("Failed to update session status:", statusError);
-    }
 
     return res.status(200).json({ 
       success: true,
       recommendations,
+      golfBalls,
+      playerCategory: playerCategory.replace(/_/g, " "),
       sessionId 
     });
     
   } catch (error) {
     console.error("Recommendation generation error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return res.status(500).json({ 
       success: false,
-      error: `Failed to generate recommendations: ${errorMessage}`,
-      details: error
+      error: "Failed to generate recommendations",
+      details: error instanceof Error ? error.message : "Unknown error"
     });
   }
 }
