@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // Force dynamic rendering (skip static generation at build time)
