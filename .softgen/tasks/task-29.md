@@ -9,15 +9,14 @@ created_at: 2026-11-12T16:00:00Z
 position: 29
 ---
 
-## Notes
-Create 3 additional category-specific questionnaire files for clubs that require detailed fitting data.
-
 ## Checklist
-- [ ] Create src/pages/fitting/[id]/step/3-fairway-woods.tsx with fields for current woods, usage, goals, yardage gaps, shot shape, airborne struggles, head size preferences
-- [ ] Create src/pages/fitting/[id]/step/3-hybrids.tsx with fields for current hybrids/irons, distance gaps, primary usage, ball flight tendencies
-- [ ] Create src/pages/fitting/[id]/step/3-irons.tsx with fields for current specs, custom fitting status, ball flight, miss patterns, shot shape, swing characteristics, 7-iron distance
+- [x] Create 3-driver.tsx with comprehensive driver questionnaire
+- [x] Create 3-irons.tsx with iron set fitting questionnaire
+- [ ] Create 3-fairway-woods.tsx with woods questionnaire
+- [ ] Create 3-hybrids.tsx with hybrid fitting questionnaire
+- [x] Add validation schemas for each category
+- [x] Integrate with existing navigation flow
 
-## Acceptance
-- All 3 category questionnaires follow same pattern as 3-driver.tsx
-- Forms save data to fitting_sessions with proper validation
-- Navigation flows properly between steps
+## Notes
+Driver and irons questionnaires complete. Fairway woods and hybrids still needed.
+Each file handles validation, saves to fitting_sessions, and routes to next step.

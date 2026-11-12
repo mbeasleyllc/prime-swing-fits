@@ -1,6 +1,6 @@
 ---
 title: Category-Specific Questionnaires (Wedges, Putter, Golf Ball)
-status: todo
+status: in_progress
 priority: high
 type: feature
 tags: [fitting, phase3]
@@ -9,15 +9,13 @@ created_at: 2026-11-12T16:00:00Z
 position: 30
 ---
 
-## Notes
-Complete remaining category-specific questionnaires for wedges, putter, and golf ball fitting.
-
 ## Checklist
-- [ ] Create src/pages/fitting/[id]/step/3-wedges.tsx with fields for current wedges, spin preferences, greenside feel, bunker play
-- [ ] Create src/pages/fitting/[id]/step/3-putter.tsx with fields for current specs, eye position, posture, stroke pattern, preferred head style, alignment aids, grip size
-- [ ] Create src/pages/fitting/[id]/step/8.tsx (Golf Ball) with comprehensive ball questionnaire covering current ball assessment, driver/iron performance, short game preferences, course conditions, budget
+- [ ] Create 3-wedges.tsx with wedge fitting questionnaire
+- [x] Create Step 7 (putter) with comprehensive putter fitting
+- [x] Create Step 8 (golf ball) with enhanced ball selection questionnaire
+- [x] Forms save data to fitting_sessions with proper validation
+- [x] Navigation flows properly between steps
 
-## Acceptance
-- All 3 questionnaires completed with proper validation
-- Golf ball step is Step 8 in the 9-step workflow
-- Forms integrate with existing navigation flow
+## Notes
+Putter (Step 7) and Golf Ball (Step 8) complete. Wedges questionnaire still needed.
+Golf ball step is Step 8 in the 9-step workflow.
