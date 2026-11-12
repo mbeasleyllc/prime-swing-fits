@@ -141,16 +141,16 @@ export default function FittingResults() {
             } else {
               recsByCategory[rec.category] = {
                 category: rec.category,
-                club_length: rec.club_length,
-                lie_angle: rec.lie_angle,
-                shaft_flex: rec.shaft_flex,
-                shaft_weight: rec.shaft_weight,
-                grip_size: rec.grip_size,
-                head_style: rec.head_style,
-                lofts: rec.lofts,
-                specifications: rec.specifications,
-                explanation: rec.explanation,
-                confidence_score: rec.confidence_score
+                club_length: (rec as any).club_length || undefined,
+                lie_angle: (rec as any).lie_angle || undefined,
+                shaft_flex: (rec as any).shaft_flex || undefined,
+                shaft_weight: (rec as any).shaft_weight || undefined,
+                grip_size: (rec as any).grip_size || undefined,
+                head_style: (rec as any).head_style || undefined,
+                lofts: (rec as any).lofts || undefined,
+                specifications: (rec as any).specifications || undefined,
+                explanation: (rec as any).explanation || undefined,
+                confidence_score: rec.confidence_score || undefined
               };
             }
           });
