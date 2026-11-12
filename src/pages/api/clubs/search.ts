@@ -14,22 +14,21 @@ export default async function handler(
 
     let query = supabase
       .from("products")
-      .select("*")
-      .eq("status", "active");
+      .select("*");
 
-    if (category) {
+    if (category && typeof category === "string") {
       query = query.eq("category", category);
     }
 
-    if (shaft_flex) {
+    if (shaft_flex && typeof shaft_flex === "string") {
       query = query.contains("specifications", { shaft_flex });
     }
 
-    if (head_style) {
+    if (head_style && typeof head_style === "string") {
       query = query.contains("specifications", { head_style });
     }
 
-    const { data, error } = await query;
+    const { data, error } = await query.limit(20);
 
     if (error) {
       console.error("Database error:", error);

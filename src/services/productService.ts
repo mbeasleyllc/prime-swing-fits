@@ -14,20 +14,20 @@ export async function fetchProducts() {
   return data ?? [];
 }
 
-export async function searchProducts(query: string): Promise<Product[]> {
+export async function searchProducts(searchQuery: string): Promise<Product[]> {
   const { data, error } = await supabase
     .from("products")
     .select("*")
-    .or(`brand.ilike.%${query}%,model_name.ilike.%${query}%`)
+    .or(`brand.ilike.%${searchQuery}%,model_name.ilike.%${searchQuery}%`)
     .order("brand", { ascending: true })
     .order("model_name", { ascending: true })
     .limit(20);
 
   if (error) throw error;
   
-  // Fallback to local database if Supabase returns no results
+  // Return empty array if no results
   if (!data || data.length === 0) {
-    return searchClubsLocal(query);
+    return [];
   }
   
   return data;

@@ -562,22 +562,20 @@ function generatePutterRecommendation(data: FittingSessionData): CategoryRecomme
   };
 }
 
-function generateGolfBallRecommendation(data: any, playerCategory: string): any {
-  const swingSpeed = data.driver_swing_speed || data.seven_iron_distance;
+function generateGolfBallRecommendation(data: any, playerCategory: string): CategoryRecommendation {
+  const swingSpeed = data.driver_swing_speed || data.seven_iron_distance || "";
   
-  // Query will happen in the results page or via separate API call
-  // For now, return empty array with proper structure
   const explanation = `Based on your swing characteristics, we'll recommend golf balls that match your speed and preferences.`;
   
   return {
     category: "golf_ball",
     specifications: {
-      balls: [], // Will be populated via API query
+      balls: [],
       swing_speed: swingSpeed,
-      compression_range: getCompressionRange(swingSpeed)
+      compression_range: getCompressionRange(typeof swingSpeed === "string" ? parseInt(swingSpeed.split("-")[0] || "90") : 90)
     },
     explanation,
-    confidence_score: 85
+    confidence: 85
   };
 }
 
@@ -614,8 +612,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: "Fitting session not found" });
     }
 
-    const data = sessionData as FittingSessionData;
-    const selectedCategories = data.selected_categories || [];
+    const data = sessionData as any; // Use any to avoid type mismatch with database types
+    const selectedCategories = (data.selected_categories || []) as string[];
     
     if (selectedCategories.length === 0) {
       return res.status(400).json({ error: "No categories selected for fitting" });
@@ -623,7 +621,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const playerCategory = classifyPlayer(data);
     const recommendations: CategoryRecommendation[] = [];
-    let golfBalls: GolfBallRecommendation[] = [];
+    const golfBalls: GolfBallRecommendation[] = [];
 
     // Generate recommendations ONLY for selected categories
     if (selectedCategories.includes("driver")) {
@@ -652,8 +650,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     if (selectedCategories.includes("golf_ball")) {
       const ballRec = generateGolfBallRecommendation(data, playerCategory);
-      recommendations.push(ballRec.category);
-      golfBalls = ballRec.balls;
+      recommendations.push(ballRec);
     }
 
     // Save to fitting_recommendations_v2 table (category-specific)
@@ -662,17 +659,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         session_id: sessionId,
         user_id: data.user_id,
         category: rec.category,
-        club_length: rec.length || null,
-        lie_angle: rec.lieAngle || null,
-        shaft_flex: rec.shaftFlex || null,
-        shaft_weight: rec.shaftWeight || null,
-        grip_size: rec.gripSize || null,
-        head_style: rec.headStyle || null,
-        lofts: rec.lofts || null,
-        specifications: rec.specifications || null,
-        explanation: rec.explanation,
-        confidence_score: rec.confidence,
-        top_products: rec.topProducts || null
+        recommendations: {
+          club_length: rec.length || null,
+          lie_angle: rec.lieAngle || null,
+          shaft_flex: rec.shaftFlex || null,
+          shaft_weight: rec.shaftWeight || null,
+          grip_size: rec.gripSize || null,
+          head_style: rec.headStyle || null,
+          lofts: rec.lofts || null,
+          specifications: rec.specifications || null,
+          explanation: rec.explanation,
+          top_products: rec.topProducts || null
+        },
+        confidence_score: rec.confidence
       })
     );
 

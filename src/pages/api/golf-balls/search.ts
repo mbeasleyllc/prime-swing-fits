@@ -15,18 +15,17 @@ export default async function handler(
     let query = supabase
       .from("products")
       .select("*")
-      .eq("category", "golf_ball")
-      .eq("status", "active");
+      .eq("category", "golf_ball");
 
-    if (swing_speed) {
+    if (swing_speed && typeof swing_speed === "string") {
       query = query.contains("specifications", { optimal_speed: swing_speed });
     }
 
-    if (compression) {
+    if (compression && typeof compression === "string") {
       query = query.contains("specifications", { compression });
     }
 
-    const { data, error } = await query;
+    const { data, error } = await query.limit(20);
 
     if (error) {
       console.error("Database error:", error);

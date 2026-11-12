@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { createClient } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import Link from "next/link";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
