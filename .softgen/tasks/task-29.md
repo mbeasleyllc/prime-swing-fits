@@ -12,11 +12,14 @@ position: 29
 ## Checklist
 - [x] Create 3-driver.tsx with comprehensive driver questionnaire
 - [x] Create 3-irons.tsx with iron set fitting questionnaire
+- [x] Create 3-fairway-woods.tsx with woods questionnaire
+- [x] Create 3-hybrids.tsx with hybrid fitting questionnaire
 - [x] Add validation schemas for each category
 - [x] Integrate with existing navigation flow
 - [x] Implement dynamic routing integration
+- [x] Add all database fields via migration
 
 ## Notes
-✅ Driver and irons questionnaires complete with full validation and dynamic routing.
-Both integrate with fittingStepRouter for category-based workflow.
-Fairway woods and hybrids deferred to allow time for results/report updates.
+✅ Complete. All 4 category questionnaires built with comprehensive forms.
+Driver, irons, fairway woods, and hybrids all have dynamic routing and full validation.
+Database schema includes all required fields.

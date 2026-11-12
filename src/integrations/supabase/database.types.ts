@@ -695,9 +695,12 @@ export type Database = {
           current_driver_loft: number | null
           current_driver_make: string | null
           current_driver_model: string | null
+          current_fairway_woods: Json | null
+          current_hybrids: Json | null
           current_putter_length: number | null
           current_putter_model: string | null
           current_step: number | null
+          current_wedges: Json | null
           distance_gap_target: number | null
           driver_accuracy_satisfaction: string | null
           driver_adjustability_importance: string | null
@@ -725,15 +728,25 @@ export type Database = {
           driver_trajectory: string | null
           experience_level: string | null
           fairway_accuracy: number | null
+          fairway_woods_accuracy_satisfaction: string | null
+          fairway_woods_additional_notes: string | null
           fairway_woods_adjustability_importance: string | null
           fairway_woods_airborne_difficulty: string | null
           fairway_woods_current_make: string | null
           fairway_woods_current_models: Json | null
+          fairway_woods_distance_satisfaction: string | null
           fairway_woods_head_size_pref: string | null
+          fairway_woods_make: string | null
+          fairway_woods_model: string | null
+          fairway_woods_primary_goal: string | null
           fairway_woods_primary_use: string | null
+          fairway_woods_shaft_feel_pref: string | null
           fairway_woods_shot_shape: string | null
           fairway_woods_trajectory: string | null
+          fairway_woods_usage: Json | null
           fairway_woods_usage_frequency: string | null
+          fairway_woods_yardage_gap_3w: number | null
+          fairway_woods_yardage_gap_5w: number | null
           fairway_woods_yardage_gaps: string | null
           flagged: boolean | null
           glove_size: string | null
@@ -749,13 +762,26 @@ export type Database = {
           height_in: number | null
           hybrid_desired_flight: string | null
           hybrid_primary_use: string | null
+          hybrids_accuracy_satisfaction: string | null
+          hybrids_additional_notes: string | null
           hybrids_ball_flight: string | null
           hybrids_current_setup: string | null
           hybrids_distance_gap: string | null
+          hybrids_distance_gaps: Json | null
+          hybrids_distance_satisfaction: string | null
           hybrids_forgiveness_priority: string | null
+          hybrids_head_style_pref: string | null
+          hybrids_launch_difficulty: string | null
+          hybrids_make: string | null
+          hybrids_model: string | null
+          hybrids_primary_goal: string | null
+          hybrids_primary_usage: Json | null
           hybrids_primary_use: string | null
+          hybrids_replace_long_irons: boolean | null
           hybrids_replacing: string | null
+          hybrids_trajectory: string | null
           hybrids_trajectory_pref: string | null
+          hybrids_vs_fairway_woods: string | null
           id: string
           iron_7_carry: number | null
           iron_7_flight: string | null
@@ -829,12 +855,22 @@ export type Database = {
           uses_category_selection: boolean | null
           wedge_common_miss: string | null
           wedge_current_challenge: string | null
+          wedges_additional_notes: string | null
           wedges_bounce_pref: string | null
+          wedges_bunker_performance: string | null
           wedges_bunker_play_quality: string | null
           wedges_current_setup: Json | null
+          wedges_distance_control: string | null
+          wedges_greenside_feel: string | null
           wedges_greenside_feel_pref: string | null
           wedges_grind_pref: string | null
+          wedges_loft_gaps: string | null
+          wedges_make: string | null
+          wedges_model: string | null
+          wedges_primary_goal: string | null
+          wedges_shot_types: Json | null
           wedges_shot_versatility_importance: string | null
+          wedges_spin_performance: string | null
           wedges_spin_preference: string | null
           wrist_to_floor: number | null
           years_playing: string | null
@@ -879,9 +915,12 @@ export type Database = {
           current_driver_loft?: number | null
           current_driver_make?: string | null
           current_driver_model?: string | null
+          current_fairway_woods?: Json | null
+          current_hybrids?: Json | null
           current_putter_length?: number | null
           current_putter_model?: string | null
           current_step?: number | null
+          current_wedges?: Json | null
           distance_gap_target?: number | null
           driver_accuracy_satisfaction?: string | null
           driver_adjustability_importance?: string | null
@@ -909,15 +948,25 @@ export type Database = {
           driver_trajectory?: string | null
           experience_level?: string | null
           fairway_accuracy?: number | null
+          fairway_woods_accuracy_satisfaction?: string | null
+          fairway_woods_additional_notes?: string | null
           fairway_woods_adjustability_importance?: string | null
           fairway_woods_airborne_difficulty?: string | null
           fairway_woods_current_make?: string | null
           fairway_woods_current_models?: Json | null
+          fairway_woods_distance_satisfaction?: string | null
           fairway_woods_head_size_pref?: string | null
+          fairway_woods_make?: string | null
+          fairway_woods_model?: string | null
+          fairway_woods_primary_goal?: string | null
           fairway_woods_primary_use?: string | null
+          fairway_woods_shaft_feel_pref?: string | null
           fairway_woods_shot_shape?: string | null
           fairway_woods_trajectory?: string | null
+          fairway_woods_usage?: Json | null
           fairway_woods_usage_frequency?: string | null
+          fairway_woods_yardage_gap_3w?: number | null
+          fairway_woods_yardage_gap_5w?: number | null
           fairway_woods_yardage_gaps?: string | null
           flagged?: boolean | null
           glove_size?: string | null
@@ -933,13 +982,26 @@ export type Database = {
           height_in?: number | null
           hybrid_desired_flight?: string | null
           hybrid_primary_use?: string | null
+          hybrids_accuracy_satisfaction?: string | null
+          hybrids_additional_notes?: string | null
           hybrids_ball_flight?: string | null
           hybrids_current_setup?: string | null
           hybrids_distance_gap?: string | null
+          hybrids_distance_gaps?: Json | null
+          hybrids_distance_satisfaction?: string | null
           hybrids_forgiveness_priority?: string | null
+          hybrids_head_style_pref?: string | null
+          hybrids_launch_difficulty?: string | null
+          hybrids_make?: string | null
+          hybrids_model?: string | null
+          hybrids_primary_goal?: string | null
+          hybrids_primary_usage?: Json | null
           hybrids_primary_use?: string | null
+          hybrids_replace_long_irons?: boolean | null
           hybrids_replacing?: string | null
+          hybrids_trajectory?: string | null
           hybrids_trajectory_pref?: string | null
+          hybrids_vs_fairway_woods?: string | null
           id?: string
           iron_7_carry?: number | null
           iron_7_flight?: string | null
@@ -1013,12 +1075,22 @@ export type Database = {
           uses_category_selection?: boolean | null
           wedge_common_miss?: string | null
           wedge_current_challenge?: string | null
+          wedges_additional_notes?: string | null
           wedges_bounce_pref?: string | null
+          wedges_bunker_performance?: string | null
           wedges_bunker_play_quality?: string | null
           wedges_current_setup?: Json | null
+          wedges_distance_control?: string | null
+          wedges_greenside_feel?: string | null
           wedges_greenside_feel_pref?: string | null
           wedges_grind_pref?: string | null
+          wedges_loft_gaps?: string | null
+          wedges_make?: string | null
+          wedges_model?: string | null
+          wedges_primary_goal?: string | null
+          wedges_shot_types?: Json | null
           wedges_shot_versatility_importance?: string | null
+          wedges_spin_performance?: string | null
           wedges_spin_preference?: string | null
           wrist_to_floor?: number | null
           years_playing?: string | null
@@ -1063,9 +1135,12 @@ export type Database = {
           current_driver_loft?: number | null
           current_driver_make?: string | null
           current_driver_model?: string | null
+          current_fairway_woods?: Json | null
+          current_hybrids?: Json | null
           current_putter_length?: number | null
           current_putter_model?: string | null
           current_step?: number | null
+          current_wedges?: Json | null
           distance_gap_target?: number | null
           driver_accuracy_satisfaction?: string | null
           driver_adjustability_importance?: string | null
@@ -1093,15 +1168,25 @@ export type Database = {
           driver_trajectory?: string | null
           experience_level?: string | null
           fairway_accuracy?: number | null
+          fairway_woods_accuracy_satisfaction?: string | null
+          fairway_woods_additional_notes?: string | null
           fairway_woods_adjustability_importance?: string | null
           fairway_woods_airborne_difficulty?: string | null
           fairway_woods_current_make?: string | null
           fairway_woods_current_models?: Json | null
+          fairway_woods_distance_satisfaction?: string | null
           fairway_woods_head_size_pref?: string | null
+          fairway_woods_make?: string | null
+          fairway_woods_model?: string | null
+          fairway_woods_primary_goal?: string | null
           fairway_woods_primary_use?: string | null
+          fairway_woods_shaft_feel_pref?: string | null
           fairway_woods_shot_shape?: string | null
           fairway_woods_trajectory?: string | null
+          fairway_woods_usage?: Json | null
           fairway_woods_usage_frequency?: string | null
+          fairway_woods_yardage_gap_3w?: number | null
+          fairway_woods_yardage_gap_5w?: number | null
           fairway_woods_yardage_gaps?: string | null
           flagged?: boolean | null
           glove_size?: string | null
@@ -1117,13 +1202,26 @@ export type Database = {
           height_in?: number | null
           hybrid_desired_flight?: string | null
           hybrid_primary_use?: string | null
+          hybrids_accuracy_satisfaction?: string | null
+          hybrids_additional_notes?: string | null
           hybrids_ball_flight?: string | null
           hybrids_current_setup?: string | null
           hybrids_distance_gap?: string | null
+          hybrids_distance_gaps?: Json | null
+          hybrids_distance_satisfaction?: string | null
           hybrids_forgiveness_priority?: string | null
+          hybrids_head_style_pref?: string | null
+          hybrids_launch_difficulty?: string | null
+          hybrids_make?: string | null
+          hybrids_model?: string | null
+          hybrids_primary_goal?: string | null
+          hybrids_primary_usage?: Json | null
           hybrids_primary_use?: string | null
+          hybrids_replace_long_irons?: boolean | null
           hybrids_replacing?: string | null
+          hybrids_trajectory?: string | null
           hybrids_trajectory_pref?: string | null
+          hybrids_vs_fairway_woods?: string | null
           id?: string
           iron_7_carry?: number | null
           iron_7_flight?: string | null
@@ -1197,12 +1295,22 @@ export type Database = {
           uses_category_selection?: boolean | null
           wedge_common_miss?: string | null
           wedge_current_challenge?: string | null
+          wedges_additional_notes?: string | null
           wedges_bounce_pref?: string | null
+          wedges_bunker_performance?: string | null
           wedges_bunker_play_quality?: string | null
           wedges_current_setup?: Json | null
+          wedges_distance_control?: string | null
+          wedges_greenside_feel?: string | null
           wedges_greenside_feel_pref?: string | null
           wedges_grind_pref?: string | null
+          wedges_loft_gaps?: string | null
+          wedges_make?: string | null
+          wedges_model?: string | null
+          wedges_primary_goal?: string | null
+          wedges_shot_types?: Json | null
           wedges_shot_versatility_importance?: string | null
+          wedges_spin_performance?: string | null
           wedges_spin_preference?: string | null
           wrist_to_floor?: number | null
           years_playing?: string | null
