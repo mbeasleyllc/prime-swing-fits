@@ -12,12 +12,12 @@ position: 31
 ## Checklist
 - [x] Create routing utility function that maps categories to step numbers
 - [x] Update Step 1, 2 next buttons to route to first selected category
-- [x] Update category step files to route to next selected category (not hardcoded step 4)
+- [x] Update category step files to route to next selected category
 - [x] Handle "back" navigation across dynamic steps
 - [x] Update ProgressBar to show accurate step count based on selected categories
 - [x] Test routing with various category combinations
 
 ## Notes
-✅ Routing infrastructure complete. Steps 1, 2, 3-driver now use fittingStepRouter utility.
-Selected categories loaded from session and passed to routing functions.
-ProgressBar uses getTotalSteps and getCurrentStepNumber for accurate display.
+✅ Complete. fittingStepRouter.ts provides buildStepSequence, getNextStepPath, getPreviousStepPath, getTotalSteps, getCurrentStepNumber.
+Steps 1, 2, 3-driver, 3-irons, 7, 8 all use dynamic routing.
+ProgressBar displays accurate counts based on selected categories.
