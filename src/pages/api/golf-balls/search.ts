@@ -14,7 +14,7 @@ export default async function handler(
     
     const supabase = createClient();
     
-    let query = supabase
+    const query = supabase
       .from("products")
       .select("*")
       .eq("category", "golf_balls")

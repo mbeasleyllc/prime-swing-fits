@@ -421,91 +421,37 @@ export default function FittingResults() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {golfBalls.map((ball, idx) => {
-              const fullBall = GOLF_BALL_DATABASE.find(b => b.name === ball.name);
-              return (
-                <Card key={idx} className="border-muted hover:border-accent/50 transition-colors">
-                  <CardContent className="pt-6">
-                    {idx === 0 && (
-                      <Badge className="mb-3 bg-gold text-gold-foreground">
-                        Best Match
-                      </Badge>
-                    )}
-                    <h4 className="font-bold text-lg mb-1">{ball.name}</h4>
-                    {fullBall && (
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {fullBall.manufacturer}
-                      </p>
-                    )}
-                    
-                    <div className="space-y-2 mb-4 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Match Score:</span>
-                        <span className="font-semibold">{ball.matchScore}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Compression:</span>
-                        <span className="font-medium">{ball.compression}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Spin Rate:</span>
-                        <span className="font-medium">{ball.spinRate}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Best Speed:</span>
-                        <span className="font-medium">{ball.optimalSpeed}</span>
-                      </div>
+            {golfBalls.map((ball, idx) => (
+              <Card key={idx} className="border-muted hover:border-accent/50 transition-colors">
+                <CardContent className="pt-6">
+                  {idx === 0 && (
+                    <Badge className="mb-3 bg-gold text-gold-foreground">
+                      Best Match
+                    </Badge>
+                  )}
+                  <h4 className="font-bold text-lg mb-1">{ball.name}</h4>
+                  
+                  <div className="space-y-2 mb-4 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Match Score:</span>
+                      <span className="font-semibold">{ball.matchScore}%</span>
                     </div>
-
-                    {fullBall && (
-                      <>
-                        <div className="mb-4">
-                          <p className="text-xs font-semibold mb-2">Performance:</p>
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div>
-                              <div className="flex justify-between mb-1">
-                                <span>Distance</span>
-                                <span>{fullBall.distance}/10</span>
-                              </div>
-                              <div className="w-full bg-muted rounded-full h-1.5">
-                                <div className="bg-accent h-1.5 rounded-full" style={{ width: `${fullBall.distance * 10}%` }} />
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex justify-between mb-1">
-                                <span>Spin</span>
-                                <span>{fullBall.spin}/10</span>
-                              </div>
-                              <div className="w-full bg-muted rounded-full h-1.5">
-                                <div className="bg-accent h-1.5 rounded-full" style={{ width: `${fullBall.spin * 10}%` }} />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="mb-4">
-                          <p className="text-xs font-semibold mb-1">Best For:</p>
-                          <div className="flex flex-wrap gap-1">
-                            {fullBall.best_for.slice(0, 2).map((feature, i) => (
-                              <Badge key={i} variant="outline" className="text-xs">
-                                {feature}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-muted-foreground">Price:</span>
-                          <span className="text-lg font-bold text-accent">
-                            ${fullBall.price_per_dozen}
-                          </span>
-                        </div>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Compression:</span>
+                      <span className="font-medium">{ball.compression}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Spin Rate:</span>
+                      <span className="font-medium">{ball.spinRate}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Best Speed:</span>
+                      <span className="font-medium">{ball.optimalSpeed}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </CardContent>
       </Card>
