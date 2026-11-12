@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { golfExperienceSchema, type GolfExperience } from "@/lib/wizardValidation";
+import { getNextStepPath, getPreviousStepPath, getTotalSteps, getCurrentStepNumber } from "@/lib/fittingStepRouter";
 import { Loader2, ArrowLeft } from "lucide-react";
 
 export default function Step2() {
@@ -26,6 +27,7 @@ export default function Step2() {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const form = useForm<GolfExperience>({
     resolver: zodResolver(golfExperienceSchema),
@@ -58,6 +60,10 @@ export default function Step2() {
         .single();
 
       if (data) {
+        if (data.selected_categories && Array.isArray(data.selected_categories)) {
+          setSelectedCategories(data.selected_categories as string[]);
+        }
+        
         form.reset({
           experience_level: (data.experience_level as any) || "intermediate",
           handicap_index: data.handicap_index || undefined,
@@ -81,7 +87,8 @@ export default function Step2() {
 
   const handleBack = () => {
     const sessionId = Array.isArray(id) ? id[0] : id;
-    router.push(`/fitting/${sessionId}/step/1`);
+    const prevPath = getPreviousStepPath("2", selectedCategories);
+    router.push(`/fitting/${sessionId}/step/${prevPath || "1"}`);
   };
 
   const onSubmit = async (values: GolfExperience) => {
@@ -120,11 +127,15 @@ export default function Step2() {
 
     toast({
       title: "Progress saved ✓",
-      description: "Moving to category questionnaires...",
+      description: "Moving to next section...",
     });
 
-    router.push(`/fitting/${sessionId}/step/3`);
+    const nextPath = getNextStepPath("2", selectedCategories);
+    router.push(`/fitting/${sessionId}/step/${nextPath || "3"}`);
   };
+
+  const totalSteps = getTotalSteps(selectedCategories);
+  const currentStep = getCurrentStepNumber("2", selectedCategories);
 
   if (isLoading) {
     return (
@@ -141,7 +152,7 @@ export default function Step2() {
       <div className="min-h-screen flex flex-col bg-background">
         <Navigation />
         <div className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full">
-          <ProgressBar currentStep={2} totalSteps={8} />
+          <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
 
           <Card>
             <CardHeader>

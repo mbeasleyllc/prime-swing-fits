@@ -14,6 +14,7 @@ import { ProgressBar } from "@/components/wizard/ProgressBar";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { getNextStepPath, getPreviousStepPath, getTotalSteps, getCurrentStepNumber } from "@/lib/fittingStepRouter";
 
 const driverSchema = z.object({
   current_driver_loft: z.number().min(7).max(15).optional(),
@@ -65,6 +66,7 @@ export default function Step3Driver() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const form = useForm<DriverData>({
     resolver: zodResolver(driverSchema),
@@ -97,6 +99,10 @@ export default function Step3Driver() {
         .single();
 
       if (data) {
+        if (data.selected_categories && Array.isArray(data.selected_categories)) {
+          setSelectedCategories(data.selected_categories as string[]);
+        }
+        
         form.reset({
           current_driver_loft: data.current_driver_loft || undefined,
           current_driver_flex: (data.current_driver_flex as "ladies" | "senior" | "regular" | "stiff" | "x-stiff") || undefined,
@@ -152,11 +158,14 @@ export default function Step3Driver() {
       description: "Moving to next section...",
     });
 
-    router.push(`/fitting/${sessionId}/step/4`);
+    const nextPath = getNextStepPath("3-driver", selectedCategories);
+    router.push(`/fitting/${sessionId}/step/${nextPath || "3"}`);
   };
 
   const handleBack = () => {
-    router.push(`/fitting/${id}/step/2`);
+    const sessionId = Array.isArray(id) ? id[0] : id;
+    const prevPath = getPreviousStepPath("3-driver", selectedCategories);
+    router.push(`/fitting/${sessionId}/step/${prevPath || "2"}`);
   };
 
   if (isLoading) {
@@ -167,10 +176,13 @@ export default function Step3Driver() {
     );
   }
 
+  const totalSteps = getTotalSteps(selectedCategories);
+  const currentStep = getCurrentStepNumber("3-driver", selectedCategories);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8 max-w-3xl">
-        <ProgressBar currentStep={3} totalSteps={9} />
+        <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
 
         <div className="mt-8">
           <Card className="p-6">

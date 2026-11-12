@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { playerProfileSchema, type PlayerProfile } from "@/lib/wizardValidation";
 import { feetInchesToCm, cmToFeetInches } from "@/lib/unitConversion";
+import { getNextStepPath, getTotalSteps, getCurrentStepNumber } from "@/lib/fittingStepRouter";
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function Step1() {
@@ -33,6 +34,7 @@ export default function Step1() {
   const [isSaving, setIsSaving] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [unitPreference, setUnitPreference] = useState<"imperial" | "metric">("imperial");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const form = useForm<PlayerProfile>({
     resolver: zodResolver(playerProfileSchema),
@@ -69,6 +71,10 @@ export default function Step1() {
       if (data) {
         const unit = (data.unit_preference as "imperial" | "metric") || "imperial";
         setUnitPreference(unit);
+        
+        if (data.selected_categories && Array.isArray(data.selected_categories)) {
+          setSelectedCategories(data.selected_categories as string[]);
+        }
         
         form.reset({
           player_name: data.player_name || "",
@@ -155,8 +161,12 @@ export default function Step1() {
       description: "Moving to golf experience...",
     });
 
-    router.push(`/fitting/${sessionId}/step/2`);
+    const nextPath = getNextStepPath("1", selectedCategories);
+    router.push(`/fitting/${sessionId}/step/${nextPath || "2"}`);
   };
+
+  const totalSteps = getTotalSteps(selectedCategories);
+  const currentStep = getCurrentStepNumber("1", selectedCategories);
 
   if (isLoading) {
     return (
@@ -173,7 +183,7 @@ export default function Step1() {
       <div className="min-h-screen flex flex-col bg-background">
         <Navigation />
         <div className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full">
-          <ProgressBar currentStep={1} totalSteps={8} />
+          <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
 
           <Card>
             <CardHeader>
