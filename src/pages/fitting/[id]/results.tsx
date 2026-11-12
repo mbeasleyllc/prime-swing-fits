@@ -132,24 +132,26 @@ export default function FittingResults() {
           const ballRecs: GolfBallRecommendation[] = [];
 
           recommendationsData.forEach(rec => {
-            if (rec.category === "golf_ball" && rec.specifications) {
-              // Extract golf balls from specifications
-              const specs = rec.specifications as any;
-              if (Array.isArray(specs.balls)) {
-                ballRecs.push(...specs.balls);
+            const recsData = rec.recommendations as any;
+            
+            if (rec.category === "golf_ball" && recsData?.balls) {
+              // Extract golf balls from recommendations
+              if (Array.isArray(recsData.balls)) {
+                ballRecs.push(...recsData.balls);
               }
-            } else {
+            } else if (recsData) {
+              // Extract club recommendations
               recsByCategory[rec.category] = {
                 category: rec.category,
-                club_length: (rec as any).club_length || undefined,
-                lie_angle: (rec as any).lie_angle || undefined,
-                shaft_flex: (rec as any).shaft_flex || undefined,
-                shaft_weight: (rec as any).shaft_weight || undefined,
-                grip_size: (rec as any).grip_size || undefined,
-                head_style: (rec as any).head_style || undefined,
-                lofts: (rec as any).lofts || undefined,
-                specifications: (rec as any).specifications || undefined,
-                explanation: (rec as any).explanation || undefined,
+                club_length: recsData.club_length || undefined,
+                lie_angle: recsData.lie_angle || undefined,
+                shaft_flex: recsData.shaft_flex || undefined,
+                shaft_weight: recsData.shaft_weight || undefined,
+                grip_size: recsData.grip_size || undefined,
+                head_style: recsData.head_style || undefined,
+                lofts: recsData.lofts || undefined,
+                specifications: recsData.specifications || undefined,
+                explanation: recsData.explanation || undefined,
                 confidence_score: rec.confidence_score || undefined
               };
             }
