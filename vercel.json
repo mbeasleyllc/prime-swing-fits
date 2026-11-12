@@ -1,12 +1,14 @@
 {
+  "buildCommand": "NODE_OPTIONS='--max-old-space-size=4096' next build",
+  "installCommand": "npm ci",
   "framework": "nextjs",
-  "redirects": [
-    {
-      "source": "/old-path",
-      "destination": "/new-path",
-      "permanent": true
+  "regions": ["iad1"],
+  "functions": {
+    "api/**/*.ts": {
+      "memory": 1024,
+      "maxDuration": 10
     }
-  ],
+  },
   "headers": [
     {
       "source": "/(.*)",
@@ -14,10 +16,16 @@
         {
           "key": "X-Content-Type-Options",
           "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
         }
       ]
     }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false
+  ]
 }
