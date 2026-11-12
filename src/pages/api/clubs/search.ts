@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createClient } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,40 +10,33 @@ export default async function handler(
   }
 
   try {
-    const { category, specifications } = req.query;
-    
-    const supabase = createClient();
-    
+    const { category, shaft_flex, head_style } = req.query;
+
     let query = supabase
       .from("products")
       .select("*")
-      .eq("is_active", true);
+      .eq("status", "active");
 
-    // Filter by category if provided
-    if (category && typeof category === "string") {
+    if (category) {
       query = query.eq("category", category);
     }
 
-    // If specifications provided, filter by matching specs
-    // specifications should be a JSON string of key-value pairs
-    if (specifications && typeof specifications === "string") {
-      try {
-        const specs = JSON.parse(specifications);
-        // Add spec matching logic here based on your needs
-        // For now, just return all products in category
-      } catch (e) {
-        console.error("Failed to parse specifications:", e);
-      }
+    if (shaft_flex) {
+      query = query.contains("specifications", { shaft_flex });
     }
 
-    const { data: products, error } = await query.limit(50);
+    if (head_style) {
+      query = query.contains("specifications", { head_style });
+    }
+
+    const { data, error } = await query;
 
     if (error) {
-      console.error("Error fetching products:", error);
-      return res.status(500).json({ error: "Failed to fetch products" });
+      console.error("Database error:", error);
+      return res.status(500).json({ error: "Database query failed" });
     }
 
-    return res.status(200).json({ products: products || [] });
+    return res.status(200).json({ products: data || [] });
   } catch (error) {
     console.error("API error:", error);
     return res.status(500).json({ error: "Internal server error" });

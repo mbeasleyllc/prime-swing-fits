@@ -1,5 +1,5 @@
-import type { NextApiRequest, NextApiResponse} from "next";
-import { createClient } from "@/integrations/supabase/client";
+import type { NextApiRequest, NextApiResponse } from "next";
+import { supabase } from "@/integrations/supabase/client";
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,27 +10,30 @@ export default async function handler(
   }
 
   try {
-    const { swing_speed, spin_preference, compression } = req.query;
-    
-    const supabase = createClient();
-    
-    const query = supabase
+    const { swing_speed, compression } = req.query;
+
+    let query = supabase
       .from("products")
       .select("*")
-      .eq("category", "golf_balls")
-      .eq("is_active", true);
+      .eq("category", "golf_ball")
+      .eq("status", "active");
 
-    // Apply filters if provided
-    // These would match against specifications JSON field
-    
-    const { data: balls, error } = await query.limit(20);
-
-    if (error) {
-      console.error("Error fetching golf balls:", error);
-      return res.status(500).json({ error: "Failed to fetch golf balls" });
+    if (swing_speed) {
+      query = query.contains("specifications", { optimal_speed: swing_speed });
     }
 
-    return res.status(200).json({ balls: balls || [] });
+    if (compression) {
+      query = query.contains("specifications", { compression });
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Database error:", error);
+      return res.status(500).json({ error: "Database query failed" });
+    }
+
+    return res.status(200).json({ balls: data || [] });
   } catch (error) {
     console.error("API error:", error);
     return res.status(500).json({ error: "Internal server error" });

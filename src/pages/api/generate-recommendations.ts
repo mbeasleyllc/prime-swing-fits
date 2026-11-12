@@ -1,14 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { createClient } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PlayerProfile {
   height?: number;
+  wrist_to_floor?: number;
 }
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 // ============================================================================
 // TYPES

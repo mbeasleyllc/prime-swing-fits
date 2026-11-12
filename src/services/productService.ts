@@ -71,13 +71,15 @@ export async function searchClubsLocal(specs: Record<string, any>): Promise<any[
   return matchProductsForRecommendation(category, specs);
 }
 
-export async function getProductById(id: string) {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (error) throw error;
-  return data;
+export async function getProductById(id: string): Promise<any | null> {
+  try {
+    const response = await fetch(`/api/products/${id}`);
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    return data.product || null;
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    return null;
+  }
 }
