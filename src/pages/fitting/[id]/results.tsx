@@ -12,41 +12,80 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, Download, Printer, ArrowLeft, Play, Circle, Target, TrendingUp, Mail, Loader2 } from "lucide-react";
+import { AlertCircle, Download, Printer, ArrowLeft, Play, Target, TrendingUp, Mail, Loader2, Plus } from "lucide-react";
 import { GOLF_BALL_DATABASE } from "@/data/golfBallDatabase";
 import { CLUB_DATABASE } from "@/data/clubDatabase";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
-interface RecommendationCategory {
-  length?: string;
-  lieAngle?: string;
-  shaftFlex?: string;
-  shaftWeight?: string;
-  gripSize?: string;
-  headStyle?: string;
-  modelCategory?: string;
-  explanation?: string;
+interface CategoryRecommendation {
+  category: string;
+  club_length?: string;
+  lie_angle?: string;
+  shaft_flex?: string;
+  shaft_weight?: string;
+  grip_size?: string;
+  head_style?: string;
   lofts?: string;
-  bounce?: string;
-  toeHang?: string;
+  specifications?: Record<string, any>;
+  explanation?: string;
+  confidence_score?: number;
 }
 
-interface FullBagRecommendations {
-  driver?: RecommendationCategory;
-  fairwayWood?: RecommendationCategory;
-  hybrid?: RecommendationCategory;
-  irons?: RecommendationCategory;
-  wedges?: RecommendationCategory;
-  putter?: RecommendationCategory;
-  golfBalls?: Array<{
-    name: string;
-    compression: number;
-    spinRate: string;
-    optimalSpeed: string;
-    matchScore: number;
-  }>;
+interface GolfBallRecommendation {
+  name: string;
+  compression: number;
+  spinRate: string;
+  optimalSpeed: string;
+  matchScore: number;
 }
+
+interface SessionData {
+  id: string;
+  user_id: string;
+  player_name?: string;
+  updated_at?: string;
+  selected_categories?: string[];
+  subscription_tier?: string;
+}
+
+const CATEGORY_CONFIG = {
+  driver: {
+    key: "driver",
+    label: "Driver",
+    description: "Your driver specifications"
+  },
+  fairway_woods: {
+    key: "fairway_woods",
+    label: "Fairway Woods",
+    description: "3W, 5W, 7W specifications"
+  },
+  hybrids: {
+    key: "hybrids",
+    label: "Hybrids",
+    description: "Hybrid club specifications"
+  },
+  irons: {
+    key: "irons",
+    label: "Irons",
+    description: "Iron set specifications"
+  },
+  wedges: {
+    key: "wedges",
+    label: "Wedges",
+    description: "Wedge specifications"
+  },
+  putter: {
+    key: "putter",
+    label: "Putter",
+    description: "Putter specifications"
+  },
+  golf_ball: {
+    key: "golf_ball",
+    label: "Golf Balls",
+    description: "Recommended golf balls"
+  }
+};
 
 export default function FittingResults() {
   const router = useRouter();
@@ -54,10 +93,12 @@ export default function FittingResults() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
-  const [session, setSession] = useState<any>(null);
-  const [recommendations, setRecommendations] = useState<FullBagRecommendations | null>(null);
+  const [session, setSession] = useState<SessionData | null>(null);
+  const [recommendations, setRecommendations] = useState<Record<string, CategoryRecommendation>>({});
+  const [golfBalls, setGolfBalls] = useState<GolfBallRecommendation[]>([]);
   const [matchedProducts, setMatchedProducts] = useState<Record<string, any[]>>({});
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -74,41 +115,51 @@ export default function FittingResults() {
         .single();
 
       if (sessionData) {
-        setSession(sessionData);
+        const categories = (sessionData.selected_categories as string[]) || [];
+        setSession(sessionData as SessionData);
+        setSelectedCategories(categories);
         
-        // Fetch recommendations from fitting_recommendations table
+        // Fetch recommendations from fitting_recommendations_v2 (category-specific)
         const { data: recommendationsData } = await supabase
-          .from("fitting_recommendations")
+          .from("fitting_recommendations_v2")
           .select("*")
           .eq("session_id", sessionId)
-          .order("generated_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          .order("created_at", { ascending: false });
 
-        if (recommendationsData) {
-          // Reconstruct recommendations from individual columns
-          const recs: FullBagRecommendations = {
-            driver: recommendationsData.driver_spec ? JSON.parse(recommendationsData.driver_spec as string) : undefined,
-            fairwayWood: recommendationsData.fairway_woods ? JSON.parse(recommendationsData.fairway_woods as string) : undefined,
-            hybrid: recommendationsData.hybrids ? JSON.parse(recommendationsData.hybrids as string) : undefined,
-            irons: recommendationsData.irons_spec ? JSON.parse(recommendationsData.irons_spec as string) : undefined,
-            wedges: recommendationsData.wedges_spec ? JSON.parse(recommendationsData.wedges_spec as string) : undefined,
-            putter: recommendationsData.putter_spec ? JSON.parse(recommendationsData.putter_spec as string) : undefined,
-            golfBalls: recommendationsData.golf_balls_spec 
-              ? JSON.parse(recommendationsData.golf_balls_spec as string) 
-              : (recommendationsData.golf_ball_rec ? [{
-                  name: recommendationsData.golf_ball_rec,
-                  compression: recommendationsData.ball_compression || 0,
-                  spinRate: recommendationsData.ball_spin_rating || "",
-                  optimalSpeed: recommendationsData.ball_optimal_swing_speed || "",
-                  matchScore: 95
-                }] : undefined)
-          };
+        if (recommendationsData && recommendationsData.length > 0) {
+          // Group by category
+          const recsByCategory: Record<string, CategoryRecommendation> = {};
+          const ballRecs: GolfBallRecommendation[] = [];
+
+          recommendationsData.forEach(rec => {
+            if (rec.category === "golf_ball" && rec.specifications) {
+              // Extract golf balls from specifications
+              const specs = rec.specifications as any;
+              if (Array.isArray(specs.balls)) {
+                ballRecs.push(...specs.balls);
+              }
+            } else {
+              recsByCategory[rec.category] = {
+                category: rec.category,
+                club_length: rec.club_length,
+                lie_angle: rec.lie_angle,
+                shaft_flex: rec.shaft_flex,
+                shaft_weight: rec.shaft_weight,
+                grip_size: rec.grip_size,
+                head_style: rec.head_style,
+                lofts: rec.lofts,
+                specifications: rec.specifications,
+                explanation: rec.explanation,
+                confidence_score: rec.confidence_score
+              };
+            }
+          });
           
-          setRecommendations(recs);
+          setRecommendations(recsByCategory);
+          setGolfBalls(ballRecs);
 
           // Match products for each category
-          matchProductsByCategory(recs);
+          matchProductsByCategory(recsByCategory);
         }
       }
 
@@ -118,81 +169,30 @@ export default function FittingResults() {
     loadResults();
   }, [id, user]);
 
-  const matchProductsByCategory = (recs: FullBagRecommendations) => {
+  const matchProductsByCategory = (recs: Record<string, CategoryRecommendation>) => {
     const matched: Record<string, any[]> = {};
 
-    // Driver products
-    if (recs.driver) {
-      matched.driver = CLUB_DATABASE
-        .filter(club => club.category === "Driver")
+    Object.keys(recs).forEach(category => {
+      const rec = recs[category];
+      
+      let categoryName = category;
+      if (category === "fairway_woods") categoryName = "Fairway Wood";
+      if (category === "hybrids") categoryName = "Hybrid";
+      if (category === "irons") categoryName = "Irons";
+      if (category === "wedges") categoryName = "Wedge";
+      if (category === "putter") categoryName = "Putter";
+      if (category === "driver") categoryName = "Driver";
+
+      matched[category] = CLUB_DATABASE
+        .filter(club => club.category === categoryName)
         .filter(club => {
-          if (recs.driver?.shaftFlex && club.flex_category) {
-            return club.flex_category.toLowerCase().includes(recs.driver.shaftFlex.toLowerCase());
+          if (rec.shaft_flex && club.flex_category) {
+            return club.flex_category.toLowerCase().includes(rec.shaft_flex.toLowerCase());
           }
           return true;
         })
         .slice(0, 3);
-    }
-
-    // Fairway Wood products
-    if (recs.fairwayWood) {
-      matched.fairwayWood = CLUB_DATABASE
-        .filter(club => club.category === "Fairway Wood")
-        .slice(0, 3);
-    }
-
-    // Hybrid products
-    if (recs.hybrid) {
-      matched.hybrid = CLUB_DATABASE
-        .filter(club => club.category === "Hybrid")
-        .slice(0, 3);
-    }
-
-    // Iron products - filter by recommended_for text since no player_category field
-    if (recs.irons) {
-      matched.irons = CLUB_DATABASE
-        .filter(club => club.category === "Irons")
-        .filter(club => {
-          if (recs.irons?.modelCategory && club.recommended_for) {
-            const categoryLower = recs.irons.modelCategory.toLowerCase();
-            const recForLower = club.recommended_for.join(" ").toLowerCase();
-            
-            // Map model categories to recommended_for keywords
-            if (categoryLower.includes("game improvement") && recForLower.includes("game improvement")) return true;
-            if (categoryLower.includes("player") && recForLower.includes("scratch")) return true;
-            if (categoryLower.includes("distance") && recForLower.includes("distance")) return true;
-            if (categoryLower.includes("tour") && (recForLower.includes("tour") || recForLower.includes("0-"))) return true;
-          }
-          return true;
-        })
-        .slice(0, 3);
-    }
-
-    // Wedge products
-    if (recs.wedges) {
-      matched.wedges = CLUB_DATABASE
-        .filter(club => club.category === "Wedge")
-        .slice(0, 3);
-    }
-
-    // Putter products - filter by recommended_for keywords since no head_type field
-    if (recs.putter) {
-      matched.putter = CLUB_DATABASE
-        .filter(club => club.category === "Putter")
-        .filter(club => {
-          if (recs.putter?.headStyle && club.recommended_for) {
-            const headStyleLower = recs.putter.headStyle.toLowerCase();
-            const recForLower = club.recommended_for.join(" ").toLowerCase();
-            
-            // Map head styles to putter types
-            if (headStyleLower.includes("blade") && recForLower.includes("blade")) return true;
-            if (headStyleLower.includes("mallet") && recForLower.includes("mallet")) return true;
-            if (headStyleLower.includes("face balanced") && recForLower.includes("straight")) return true;
-          }
-          return true;
-        })
-        .slice(0, 3);
-    }
+    });
 
     setMatchedProducts(matched);
   };
@@ -281,12 +281,14 @@ export default function FittingResults() {
   };
 
   const renderCategoryCard = (
-    title: string,
-    icon: React.ReactNode,
-    category: RecommendationCategory | undefined,
-    products: any[]
+    categoryKey: string,
+    icon: React.ReactNode
   ) => {
-    if (!category) return null;
+    const rec = recommendations[categoryKey];
+    const products = matchedProducts[categoryKey] || [];
+    const config = CATEGORY_CONFIG[categoryKey as keyof typeof CATEGORY_CONFIG];
+    
+    if (!rec || !config) return null;
 
     return (
       <div className="space-y-6">
@@ -294,78 +296,65 @@ export default function FittingResults() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               {icon}
-              {title} Specifications
+              {config.label} Specifications
             </CardTitle>
+            {rec.confidence_score && (
+              <CardDescription>
+                Confidence Score: {rec.confidence_score}%
+              </CardDescription>
+            )}
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {category.length && (
+              {rec.club_length && (
                 <div>
                   <p className="text-sm text-muted-foreground">Length</p>
-                  <p className="font-semibold">{category.length}</p>
+                  <p className="font-semibold">{rec.club_length}</p>
                 </div>
               )}
-              {category.lieAngle && (
+              {rec.lie_angle && (
                 <div>
                   <p className="text-sm text-muted-foreground">Lie Angle</p>
-                  <p className="font-semibold">{category.lieAngle}</p>
+                  <p className="font-semibold">{rec.lie_angle}</p>
                 </div>
               )}
-              {category.shaftFlex && (
+              {rec.shaft_flex && (
                 <div>
                   <p className="text-sm text-muted-foreground">Shaft Flex</p>
-                  <p className="font-semibold">{category.shaftFlex}</p>
+                  <p className="font-semibold">{rec.shaft_flex}</p>
                 </div>
               )}
-              {category.shaftWeight && (
+              {rec.shaft_weight && (
                 <div>
                   <p className="text-sm text-muted-foreground">Shaft Weight</p>
-                  <p className="font-semibold">{category.shaftWeight}</p>
+                  <p className="font-semibold">{rec.shaft_weight}</p>
                 </div>
               )}
-              {category.gripSize && (
+              {rec.grip_size && (
                 <div>
                   <p className="text-sm text-muted-foreground">Grip Size</p>
-                  <p className="font-semibold capitalize">{category.gripSize}</p>
+                  <p className="font-semibold capitalize">{rec.grip_size}</p>
                 </div>
               )}
-              {category.headStyle && (
+              {rec.head_style && (
                 <div>
                   <p className="text-sm text-muted-foreground">Head Style</p>
-                  <p className="font-semibold">{category.headStyle}</p>
+                  <p className="font-semibold">{rec.head_style}</p>
                 </div>
               )}
-              {category.modelCategory && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Model Type</p>
-                  <p className="font-semibold">{category.modelCategory}</p>
-                </div>
-              )}
-              {category.lofts && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Lofts</p>
-                  <p className="font-semibold">{category.lofts}</p>
-                </div>
-              )}
-              {category.bounce && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Bounce</p>
-                  <p className="font-semibold">{category.bounce}</p>
-                </div>
-              )}
-              {category.toeHang && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Toe Hang</p>
-                  <p className="font-semibold">{category.toeHang}</p>
+              {rec.lofts && (
+                <div className="col-span-2 md:col-span-3">
+                  <p className="text-sm text-muted-foreground">Lofts/Setup</p>
+                  <p className="font-semibold">{rec.lofts}</p>
                 </div>
               )}
             </div>
 
-            {category.explanation && (
+            {rec.explanation && (
               <div className="bg-accent/10 rounded-lg p-4">
                 <p className="text-sm font-medium mb-2">Why these specs?</p>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {category.explanation}
+                  {rec.explanation}
                 </p>
               </div>
             )}
@@ -375,7 +364,7 @@ export default function FittingResults() {
         {products.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Recommended {title}s</CardTitle>
+              <CardTitle>Recommended {config.label}</CardTitle>
               <CardDescription>
                 Products matching your specifications
               </CardDescription>
@@ -424,6 +413,120 @@ export default function FittingResults() {
     );
   };
 
+  const renderGolfBallsTab = () => {
+    if (golfBalls.length === 0) {
+      return (
+        <Card>
+          <CardContent className="pt-6 text-center">
+            <p className="text-muted-foreground py-8">
+              No golf ball recommendations available
+            </p>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Recommended Golf Balls</CardTitle>
+          <CardDescription>
+            Top golf balls matched to your swing profile
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {golfBalls.map((ball, idx) => {
+              const fullBall = GOLF_BALL_DATABASE.find(b => b.name === ball.name);
+              return (
+                <Card key={idx} className="border-muted hover:border-accent/50 transition-colors">
+                  <CardContent className="pt-6">
+                    {idx === 0 && (
+                      <Badge className="mb-3 bg-gold text-gold-foreground">
+                        Best Match
+                      </Badge>
+                    )}
+                    <h4 className="font-bold text-lg mb-1">{ball.name}</h4>
+                    {fullBall && (
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {fullBall.manufacturer}
+                      </p>
+                    )}
+                    
+                    <div className="space-y-2 mb-4 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Match Score:</span>
+                        <span className="font-semibold">{ball.matchScore}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Compression:</span>
+                        <span className="font-medium">{ball.compression}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Spin Rate:</span>
+                        <span className="font-medium">{ball.spinRate}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Best Speed:</span>
+                        <span className="font-medium">{ball.optimalSpeed}</span>
+                      </div>
+                    </div>
+
+                    {fullBall && (
+                      <>
+                        <div className="mb-4">
+                          <p className="text-xs font-semibold mb-2">Performance:</p>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <div className="flex justify-between mb-1">
+                                <span>Distance</span>
+                                <span>{fullBall.distance}/10</span>
+                              </div>
+                              <div className="w-full bg-muted rounded-full h-1.5">
+                                <div className="bg-accent h-1.5 rounded-full" style={{ width: `${fullBall.distance * 10}%` }} />
+                              </div>
+                            </div>
+                            <div>
+                              <div className="flex justify-between mb-1">
+                                <span>Spin</span>
+                                <span>{fullBall.spin}/10</span>
+                              </div>
+                              <div className="w-full bg-muted rounded-full h-1.5">
+                                <div className="bg-accent h-1.5 rounded-full" style={{ width: `${fullBall.spin * 10}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mb-4">
+                          <p className="text-xs font-semibold mb-1">Best For:</p>
+                          <div className="flex flex-wrap gap-1">
+                            {fullBall.best_for.slice(0, 2).map((feature, i) => (
+                              <Badge key={i} variant="outline" className="text-xs">
+                                {feature}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Price:</span>
+                          <span className="text-lg font-bold text-accent">
+                            ${fullBall.price_per_dozen}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
   if (isLoading) {
     return (
       <ProtectedRoute>
@@ -440,7 +543,7 @@ export default function FittingResults() {
     );
   }
 
-  if (!recommendations) {
+  if (selectedCategories.length === 0 || Object.keys(recommendations).length === 0) {
     return (
       <ProtectedRoute>
         <div className="min-h-screen bg-background">
@@ -467,9 +570,19 @@ export default function FittingResults() {
     );
   }
 
+  // Build tabs only for selected categories
+  const availableTabs = selectedCategories
+    .filter(cat => CATEGORY_CONFIG[cat as keyof typeof CATEGORY_CONFIG])
+    .map(cat => ({
+      key: cat,
+      config: CATEGORY_CONFIG[cat as keyof typeof CATEGORY_CONFIG]
+    }));
+
+  const firstTab = availableTabs[0]?.key || "driver";
+
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background" id="fitting-report">
         <Navigation />
         
         <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -480,226 +593,76 @@ export default function FittingResults() {
             <p className="text-muted-foreground">
               {session?.player_name || "Golfer"} • Completed {session?.updated_at ? new Date(session.updated_at).toLocaleDateString() : ""}
             </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {selectedCategories.length} {selectedCategories.length === 1 ? "category" : "categories"} fitted: {selectedCategories.map(c => CATEGORY_CONFIG[c as keyof typeof CATEGORY_CONFIG]?.label).join(", ")}
+            </p>
           </div>
 
           <Card className="mb-8 border-accent/30 bg-gradient-to-br from-accent/5 to-transparent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-6 w-6 text-accent" />
-                Your Personalized Full-Bag Fitting
+                Your Personalized Club Fitting
               </CardTitle>
               <CardDescription>
-                Complete club specifications optimized for your swing, physique, and goals
+                Complete specifications optimized for your swing, physique, and goals
               </CardDescription>
             </CardHeader>
           </Card>
 
-          <Tabs defaultValue="driver" className="mb-8">
-            <TabsList className="w-full h-auto flex-wrap md:flex-nowrap justify-start gap-2 bg-muted/50 p-2 overflow-x-auto">
-              <TabsTrigger 
-                value="driver" 
-                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
-              >
-                Driver
-              </TabsTrigger>
-              <TabsTrigger 
-                value="woods" 
-                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
-              >
-                Woods
-              </TabsTrigger>
-              <TabsTrigger 
-                value="hybrids" 
-                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
-              >
-                Hybrids
-              </TabsTrigger>
-              <TabsTrigger 
-                value="irons" 
-                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
-              >
-                Irons
-              </TabsTrigger>
-              <TabsTrigger 
-                value="wedges" 
-                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
-              >
-                Wedges
-              </TabsTrigger>
-              <TabsTrigger 
-                value="putter" 
-                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
-              >
-                Putter
-              </TabsTrigger>
-              <TabsTrigger 
-                value="balls" 
-                className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
-              >
-                Golf Balls
-              </TabsTrigger>
-            </TabsList>
+          {availableTabs.length > 0 ? (
+            <Tabs defaultValue={firstTab} className="mb-8">
+              <TabsList className="w-full h-auto flex-wrap md:flex-nowrap justify-start gap-2 bg-muted/50 p-2 overflow-x-auto">
+                {availableTabs.map(({ key, config }) => (
+                  <TabsTrigger 
+                    key={key}
+                    value={key}
+                    className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground flex-shrink-0 px-4 py-2 text-sm md:text-base"
+                  >
+                    {config.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
 
-            <TabsContent value="driver" className="mt-6">
-              {renderCategoryCard(
-                "Driver",
-                <Target className="w-5 h-5 text-accent" />,
-                recommendations.driver,
-                matchedProducts.driver || []
-              )}
-            </TabsContent>
-
-            <TabsContent value="woods" className="mt-6 space-y-8">
-              {renderCategoryCard(
-                "Fairway Wood",
-                <Target className="w-5 h-5 text-accent" />,
-                recommendations.fairwayWood,
-                matchedProducts.fairwayWood || []
-              )}
-            </TabsContent>
-
-            <TabsContent value="hybrids" className="mt-6 space-y-8">
-              {renderCategoryCard(
-                "Hybrid",
-                <Target className="w-5 h-5 text-accent" />,
-                recommendations.hybrid,
-                matchedProducts.hybrid || []
-              )}
-            </TabsContent>
-
-            <TabsContent value="irons" className="mt-6">
-              {renderCategoryCard(
-                "Iron",
-                <Target className="w-5 h-5 text-accent" />,
-                recommendations.irons,
-                matchedProducts.irons || []
-              )}
-            </TabsContent>
-
-            <TabsContent value="wedges" className="mt-6">
-              {renderCategoryCard(
-                "Wedge",
-                <Target className="w-5 h-5 text-accent" />,
-                recommendations.wedges,
-                matchedProducts.wedges || []
-              )}
-            </TabsContent>
-
-            <TabsContent value="putter" className="mt-6">
-              {renderCategoryCard(
-                "Putter",
-                <Target className="w-5 h-5 text-accent" />,
-                recommendations.putter,
-                matchedProducts.putter || []
-              )}
-            </TabsContent>
-
-            <TabsContent value="balls" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recommended Golf Balls</CardTitle>
-                  <CardDescription>
-                    Top 5 golf balls matched to your swing profile and preferences
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {recommendations.golfBalls && recommendations.golfBalls.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {recommendations.golfBalls.map((ball, idx) => {
-                        const fullBall = GOLF_BALL_DATABASE.find(b => b.name === ball.name);
-                        return (
-                          <Card key={idx} className="border-muted hover:border-accent/50 transition-colors">
-                            <CardContent className="pt-6">
-                              {idx === 0 && (
-                                <Badge className="mb-3 bg-gold text-gold-foreground">
-                                  Best Match
-                                </Badge>
-                              )}
-                              <h4 className="font-bold text-lg mb-1">{ball.name}</h4>
-                              {fullBall && (
-                                <p className="text-sm text-muted-foreground mb-3">
-                                  {fullBall.manufacturer}
-                                </p>
-                              )}
-                              
-                              <div className="space-y-2 mb-4 text-sm">
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Match Score:</span>
-                                  <span className="font-semibold">{ball.matchScore}%</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Compression:</span>
-                                  <span className="font-medium">{ball.compression}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Spin Rate:</span>
-                                  <span className="font-medium">{ball.spinRate}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Best Speed:</span>
-                                  <span className="font-medium">{ball.optimalSpeed}</span>
-                                </div>
-                              </div>
-
-                              {fullBall && (
-                                <>
-                                  <div className="mb-4">
-                                    <p className="text-xs font-semibold mb-2">Performance:</p>
-                                    <div className="grid grid-cols-2 gap-2 text-xs">
-                                      <div>
-                                        <div className="flex justify-between mb-1">
-                                          <span>Distance</span>
-                                          <span>{fullBall.distance}/10</span>
-                                        </div>
-                                        <div className="w-full bg-muted rounded-full h-1.5">
-                                          <div className="bg-accent h-1.5 rounded-full" style={{ width: `${fullBall.distance * 10}%` }} />
-                                        </div>
-                                      </div>
-                                      <div>
-                                        <div className="flex justify-between mb-1">
-                                          <span>Spin</span>
-                                          <span>{fullBall.spin}/10</span>
-                                        </div>
-                                        <div className="w-full bg-muted rounded-full h-1.5">
-                                          <div className="bg-accent h-1.5 rounded-full" style={{ width: `${fullBall.spin * 10}%` }} />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <div className="mb-4">
-                                    <p className="text-xs font-semibold mb-1">Best For:</p>
-                                    <div className="flex flex-wrap gap-1">
-                                      {fullBall.best_for.slice(0, 2).map((feature, i) => (
-                                        <Badge key={i} variant="outline" className="text-xs">
-                                          {feature}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
-
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-sm text-muted-foreground">Price:</span>
-                                    <span className="text-lg font-bold text-accent">
-                                      ${fullBall.price_per_dozen}
-                                    </span>
-                                  </div>
-                                </>
-                              )}
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
+              {availableTabs.map(({ key }) => (
+                <TabsContent key={key} value={key} className="mt-6">
+                  {key === "golf_ball" ? (
+                    renderGolfBallsTab()
                   ) : (
-                    <p className="text-center text-muted-foreground py-8">
-                      No golf ball recommendations available
-                    </p>
+                    renderCategoryCard(key, <Target className="w-5 h-5 text-accent" />)
                   )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+                </TabsContent>
+              ))}
+            </Tabs>
+          ) : (
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <p className="text-muted-foreground">No fitting data available</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Add more categories CTA */}
+          {selectedCategories.length < 7 && (
+            <Card className="mb-8 border-accent/20">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold mb-1">Want to fit more clubs?</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Add {7 - selectedCategories.length} more {7 - selectedCategories.length === 1 ? "category" : "categories"} to complete your full bag fitting
+                    </p>
+                  </div>
+                  <Button asChild>
+                    <Link href="/fitting/new">
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Categories
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <div className="flex flex-wrap gap-3">
             <Button
